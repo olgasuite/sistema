@@ -283,6 +283,13 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .bpill.active-no{background:rgba(232,80,32,0.12);border-color:rgba(232,80,32,0.35);color:#ff8060;}
 /* range filters */
 .fp-range-group{display:flex;flex-direction:column;gap:6px;padding:8px 0 4px;}
+.fp-sessao-search{width:100%;font-family:var(--mono);font-size:11px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:5px 10px;outline:none;margin-bottom:6px;transition:border-color 0.15s;}
+.fp-sessao-search:focus{border-color:var(--accent);}
+.fp-sessao-list{display:flex;flex-direction:column;gap:2px;max-height:180px;overflow-y:auto;}
+.fp-sessao-item{display:flex;align-items:center;gap:7px;padding:3px 6px;cursor:pointer;border-radius:2px;transition:background 0.1s;}
+.fp-sessao-item:hover{background:var(--surface2);}
+.fp-sessao-item input{accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+.fp-sessao-item label{font-family:var(--mono);font-size:10px;color:var(--text-dim);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .fp-range-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .fp-range-label{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);min-width:72px;}
 .fp-range-inputs{display:flex;align-items:center;gap:5px;}
@@ -632,6 +639,10 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       <div class="fp-groups" id="fpBinaryGroups"></div>
     </div>
     <div class="fp-section">
+      <div class="fp-section-title">Sessão</div>
+      <div id="fpSessaoGroup"></div>
+    </div>
+    <div class="fp-section">
       <div class="fp-section-title">Intervalo</div>
       <div id="fpRangeGroups"></div>
     </div>
@@ -858,7 +869,8 @@ var buscaFilters={
   lente_ex:new Set(),som_ex:new Set(),kdm_ex:new Set(),status_ex:new Set(),col_k_ex:new Set(),
   resolucao_ex:new Set(),fps_ex:new Set(),
   titulo_bin:null,obs_bin:null,cpl_bin:null,cplOV_bin:null,col_n_bin:null,legenda_bin:null,
-  duracao_min:null,duracao_max:null,gb_min:null,gb_max:null
+  duracao_min:null,duracao_max:null,gb_min:null,gb_max:null,
+  sessao:new Set()
 };
 var PALETTE=[{bg:'#e8a020',text:'#000'},{bg:'#3dba6e',text:'#000'},{bg:'#4a9eff',text:'#000'},{bg:'#c87aff',text:'#000'},{bg:'#ff6b6b',text:'#000'},{bg:'#ffd93d',text:'#000'},{bg:'#6bcfcf',text:'#000'},{bg:'#ff9f43',text:'#000'}];
 
@@ -1407,7 +1419,14 @@ function buildGradeFilters(){
   rebuildGradeCinemaSelect();
 }
 
-function buildBuscaFilters(){buildPills(document.getElementById('buscaEventFilters'),eventColors,activeEventsBusca,function(){renderBuscaResults();buildBuscaFilterPanel();});}
+function buildBuscaFilters(){buildPills(document.getElementById('buscaEventFilters'),eventColors,activeEventsBusca,function(){
+  // remove any selected sessions that no longer belong to active events
+  buscaFilters.sessao.forEach(function(s){
+    var sess=sessoesMap[s];
+    if(sess&&sess.evento&&!activeEventsBusca.has(sess.evento))buscaFilters.sessao.delete(s);
+  });
+  renderBuscaResults();buildBuscaFilterPanel();
+});}
 
 function rebuildIngestCinemaSelect(){
   var active=sessoesIngest();
@@ -1872,6 +1891,7 @@ function countActiveFilters(){
   binKeys.forEach(function(k){if(buscaFilters[k]!==null)n++;});
   if(buscaFilters.duracao_min!==null||buscaFilters.duracao_max!==null)n++;
   if(buscaFilters.gb_min!==null||buscaFilters.gb_max!==null)n++;
+  if(buscaFilters.sessao.size>0)n++;
   return n;
 }
 
@@ -1890,6 +1910,8 @@ function clearAllBuscaFilters(){
   ['titulo_bin','obs_bin','cpl_bin','cplOV_bin','col_n_bin','legenda_bin'].forEach(function(k){buscaFilters[k]=null;});
   buscaFilters.duracao_min=null;buscaFilters.duracao_max=null;
   buscaFilters.gb_min=null;buscaFilters.gb_max=null;
+  buscaFilters.sessao.clear();
+  document.querySelectorAll('#fpSessaoGroup input[type=checkbox]').forEach(function(cb){cb.checked=false;});
   document.querySelectorAll('#fpNormalGroups .fpill').forEach(function(p){p.classList.remove('active','excluded');});
   document.querySelectorAll('#fpNormalGroups .fp-group-label').forEach(function(l){l.classList.remove('has-active');});
   document.querySelectorAll('#fpBinaryGroups .bpill').forEach(function(p){p.classList.remove('active-yes','active-no');});
@@ -1942,6 +1964,12 @@ function applyBuscaFilters(f){
     if(gv===null)return false;
     if(buscaFilters.gb_min!==null&&gv<buscaFilters.gb_min)return false;
     if(buscaFilters.gb_max!==null&&gv>buscaFilters.gb_max)return false;
+  }
+  // sessao filter — film must belong to at least one selected session
+  if(buscaFilters.sessao.size>0){
+    var filmSessoes=buscaReverseSessoes[f.codigo]||[];
+    var match=filmSessoes.some(function(s){return buscaFilters.sessao.has(s);});
+    if(!match)return false;
   }
   return true;
 }
@@ -2065,6 +2093,7 @@ function buildBuscaFilterPanel(){
   });
   updateFilterBadge();
   buildRangeFilters();
+  buildSessaoFilterSection();
 }
 
 function buildRangeFilters(){
@@ -2175,6 +2204,72 @@ function buildRangeFilters(){
     // spacer between fields
     var sp=document.createElement('div');sp.style.height='12px';rg.appendChild(sp);
   });
+}
+
+function buildSessaoFilterSection(){
+  var container=document.getElementById('fpSessaoGroup');
+  container.innerHTML='';
+  // collect session names from active events only
+  var allSessoes=new Set();
+  Object.keys(buscaReverseSessoes).forEach(function(cod){
+    var f=filmesMap[cod];
+    if(f&&f.evento&&!activeEventsBusca.has(f.evento))return;
+    (buscaReverseSessoes[cod]||[]).forEach(function(s){
+      var sess=sessoesMap[s];
+      if(!sess||!sess.evento||activeEventsBusca.has(sess.evento))allSessoes.add(s);
+    });
+  });
+  var sorted=Array.from(allSessoes).sort();
+  if(!sorted.length){container.innerHTML='<div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);padding:4px 0;">Nenhuma sessão disponível.</div>';return;}
+
+  // search input
+  var searchEl=document.createElement('input');
+  searchEl.type='text';searchEl.className='fp-sessao-search';searchEl.placeholder='Filtrar sessões…';
+
+  var listEl=document.createElement('div');listEl.className='fp-sessao-list';
+
+  function renderList(q){
+    listEl.innerHTML='';
+    var lower=q.toLowerCase();
+    sorted.forEach(function(s){
+      if(q&&s.toLowerCase().indexOf(lower)===-1)return;
+      var item=document.createElement('div');item.className='fp-sessao-item';
+      var cb=document.createElement('input');cb.type='checkbox';cb.id='fpsess_'+s;cb.checked=buscaFilters.sessao.has(s);
+      cb.addEventListener('change',function(){
+        if(cb.checked)buscaFilters.sessao.add(s);else buscaFilters.sessao.delete(s);
+        updateFilterBadge();renderBuscaResults();
+      });
+      var lbl=document.createElement('label');lbl.htmlFor='fpsess_'+s;lbl.textContent=s;lbl.title=s;
+      item.appendChild(cb);item.appendChild(lbl);listEl.appendChild(item);
+    });
+  }
+
+  searchEl.addEventListener('input',function(){renderList(searchEl.value.trim());});
+
+  var btnRow=document.createElement('div');
+  btnRow.style.cssText='display:flex;gap:6px;margin-bottom:6px;';
+  function mkBtn(label,fn){
+    var b=document.createElement('button');
+    b.textContent=label;
+    b.style.cssText='font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.08em;padding:3px 10px;border:1px solid var(--border);background:none;color:var(--text-dim);cursor:pointer;border-radius:2px;transition:color 0.12s,border-color 0.12s;';
+    b.addEventListener('mouseenter',function(){b.style.borderColor='var(--text-dim)';b.style.color='var(--text)';});
+    b.addEventListener('mouseleave',function(){b.style.borderColor='var(--border)';b.style.color='var(--text-dim)';});
+    b.addEventListener('click',fn);
+    return b;
+  }
+  btnRow.appendChild(mkBtn('Marcar todas',function(){
+    sorted.forEach(function(s){buscaFilters.sessao.add(s);});
+    renderList(searchEl.value.trim());updateFilterBadge();renderBuscaResults();
+  }));
+  btnRow.appendChild(mkBtn('Desmarcar todas',function(){
+    buscaFilters.sessao.clear();
+    renderList(searchEl.value.trim());updateFilterBadge();renderBuscaResults();
+  }));
+
+  renderList('');
+  container.appendChild(searchEl);
+  container.appendChild(btnRow);
+  container.appendChild(listEl);
 }
 
 function renderBuscaResults(){
@@ -2305,5 +2400,5 @@ window.addEventListener('popstate',function(e){
   _browserNav=false;
 });
 </script>
-<div id="page-footer"><span>última atualização · 05/04/2026 às 22:58</span></div>
+<div id="page-footer"><span>última atualização · 06/04/2026 às 15:07</span></div>
 </html>
