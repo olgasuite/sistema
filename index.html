@@ -1,0 +1,2304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OLGA Suite</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+:root {
+  --bg:#0a0a0a; --surface:#141414; --surface2:#1c1c1c;
+  --border:#272727; --border2:#333;
+  --accent:#e8a020; --accent-dim:rgba(232,160,32,0.12); --accent-glow:rgba(232,160,32,0.05);
+  --text:#e4e4e4; --text-dim:#666; --text-muted:#383838;
+  --ok:#3dba6e; --warn:#ff6055;
+  --cpl-bg:rgba(61,186,110,0.14); --cpl-color:#5ddc8a; --cpl-border:rgba(61,186,110,0.45);
+  --mono:'IBM Plex Mono',monospace; --sans:'IBM Plex Sans',sans-serif;
+  --col-w:220px; --time-w:64px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:200;background:rgba(10,10,10,0.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:stretch;height:52px;}
+.logo{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.22em;color:var(--accent);text-transform:uppercase;display:flex;align-items:center;padding-right:18px;border-right:1px solid var(--border);white-space:nowrap;flex-shrink:0;background:none;border-top:none;border-bottom:none;border-left:none;cursor:pointer;transition:color 0.15s;}
+.logo:hover{color:#ffbe50;}
+.back-btn{display:none;align-items:center;gap:6px;padding:0 16px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);background:none;border:none;border-left:1px solid var(--border);border-right:1px solid var(--border);cursor:pointer;height:100%;transition:color 0.15s;white-space:nowrap;flex-shrink:0;}
+.back-btn:hover{color:var(--accent);}
+.back-btn.visible{display:inline-flex;}
+.file-zone{display:flex;align-items:center;gap:10px;padding:0 18px;border-right:1px solid var(--border);flex-shrink:0;}
+.upload-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--accent);color:#000;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;border:none;cursor:pointer;transition:opacity 0.15s;white-space:nowrap;}
+.upload-btn:hover{opacity:0.82;}
+#fileInput{display:none;}
+.file-name{font-family:var(--mono);font-size:10px;color:var(--text-dim);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-name.loaded{color:var(--ok);}
+.nav-tabs{display:flex;align-items:stretch;gap:0;flex:1;}
+.nav-tab{display:flex;align-items:center;gap:7px;padding:0 20px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);background:none;border:none;cursor:pointer;border-right:1px solid var(--border);border-bottom:2px solid transparent;transition:color 0.15s,border-color 0.15s;white-space:nowrap;}
+.nav-tab:hover:not(:disabled){color:var(--text-dim);}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.nav-tab:disabled{opacity:0.22;cursor:not-allowed;}
+.tab-icon{font-size:13px;opacity:0.7;}
+
+/* MODE BARS */
+.mode-bar{border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-height:48px;background:var(--surface);}
+.mode-bar.hidden{display:none;}
+select{font-family:var(--mono);font-size:11px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:7px 12px;min-width:280px;cursor:pointer;outline:none;}
+select:focus{border-color:var(--accent);}
+select:disabled{opacity:0.35;cursor:not-allowed;}
+.print-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 18px;background:transparent;color:var(--accent);border:1px solid var(--accent);font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.15s;}
+.print-btn:hover{background:var(--accent);color:#000;}
+.print-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.search-wrap{flex:1;min-width:200px;max-width:460px;position:relative;}
+.search-wrap input{width:100%;font-family:var(--mono);font-size:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:7px 34px 7px 12px;outline:none;transition:border-color 0.15s;}
+.search-wrap input::placeholder{color:var(--text-muted);}
+.search-wrap input:focus{border-color:var(--accent);}
+.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:14px;color:var(--text-dim);cursor:pointer;display:none;background:none;border:none;line-height:1;}
+.search-clear:hover{color:var(--text);}
+.day-tabs{display:flex;gap:4px;flex-wrap:wrap;}
+.day-tab{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.day-tab:hover{border-color:var(--text-dim);color:var(--text);}
+.day-tab.active{background:var(--accent);color:#000;border-color:var(--accent);}
+.year-tab{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);background:none;border:1px solid var(--border);padding:5px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:color 0.15s,border-color 0.15s;white-space:nowrap;}
+.year-tab:hover{color:var(--text-dim);border-color:var(--text-muted);}
+.year-tab.open{color:var(--accent);border-color:rgba(232,160,32,0.4);}
+.year-arrow{font-size:9px;opacity:0.7;}
+.event-filters{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+.filter-label{font-family:var(--mono);font-size:9px;color:var(--text-muted);white-space:nowrap;}
+.event-pill{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.08em;padding:3px 10px;border-radius:2px;cursor:pointer;border:1px solid transparent;transition:all 0.15s;white-space:nowrap;opacity:0.45;}
+.event-pill.active{opacity:1;}
+.result-count{font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-left:auto;white-space:nowrap;}
+
+/* LANDING */
+#landing{min-height:calc(100vh - 52px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;}
+.landing-badge{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);margin-bottom:28px;border:1px solid rgba(232,160,32,0.3);padding:4px 14px;}
+.landing-title{font-family:var(--mono);font-size:52px;font-weight:600;color:var(--text);letter-spacing:-0.02em;line-height:1;margin-bottom:10px;text-align:center;}
+.landing-sub{font-family:var(--sans);font-size:14px;font-weight:300;color:var(--text-dim);text-align:center;line-height:1.6;margin-bottom:48px;max-width:400px;}
+.landing-drop{border:1px dashed rgba(232,160,32,0.35);background:var(--accent-glow);padding:36px 56px;display:flex;flex-direction:column;align-items:center;gap:12px;cursor:pointer;transition:all 0.2s;margin-bottom:48px;min-width:360px;}
+.landing-drop:hover:not(.loaded){border-color:rgba(232,160,32,0.65);background:var(--accent-dim);}
+.landing-drop.drag-over{border-color:var(--accent);background:var(--accent-dim);}
+.landing-drop.loaded{border-style:solid;border-color:rgba(61,186,110,0.45);background:rgba(61,186,110,0.06);cursor:default;}
+.drop-icon{font-size:30px;opacity:0.5;}
+.drop-label{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);}
+.drop-sub{font-family:var(--mono);font-size:10px;color:var(--text-muted);}
+.landing-modules{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;width:100%;max-width:640px;border:1px solid var(--border);}
+.module-card{background:var(--surface);padding:22px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:background 0.15s;}
+.module-card+.module-card{border-left:1px solid var(--border);}
+.module-card:hover:not(.disabled){background:var(--surface2);}
+.module-card.disabled{opacity:0.3;cursor:not-allowed;}
+.module-icon{font-size:18px;margin-bottom:4px;opacity:0.6;}
+.module-name{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-dim);}
+.module-desc{font-family:var(--sans);font-size:11px;color:var(--text-muted);line-height:1.5;}
+
+/* APP */
+#app{display:none;}
+.mode-panel{display:none;}
+.mode-panel.active{display:block;}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--text-muted);padding:80px 40px;min-height:55vh;}
+.empty-state .icon{font-size:38px;opacity:0.22;}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.empty-state p{font-size:12px;text-align:center;line-height:1.9;font-family:var(--mono);}
+
+
+
+/* FICHA */
+#ficha-container{padding:28px 32px;}
+.ficha{max-width:1100px;margin:0 auto;background:var(--surface);border:1px solid var(--border);}
+.ficha-header{padding:24px 28px 20px;border-bottom:2px solid var(--accent);}
+.ficha-session-name{font-family:var(--mono);font-size:26px;font-weight:600;color:var(--accent);letter-spacing:0.05em;text-transform:uppercase;line-height:1;}
+.ficha-meta{display:flex;gap:0;flex-wrap:wrap;}
+.meta-item{padding:6px 18px 6px 0;margin-right:18px;border-right:1px solid var(--border);}
+.meta-item:last-child{border-right:none;margin-right:0;}
+.meta-label{font-family:var(--mono);font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px;}
+.meta-value{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text);}
+.meta-value.highlight{color:var(--accent);}
+.film-table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead tr{background:rgba(232,160,32,0.07);border-bottom:1px solid var(--accent);}
+th{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);padding:9px 10px;text-align:left;white-space:nowrap;}
+th.center{text-align:center;}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+tbody tr:last-child{border-bottom:none;}
+td{padding:11px 10px;font-family:var(--sans);font-size:12px;color:var(--text);vertical-align:middle;}
+td.mono{font-family:var(--mono);font-size:11px;}
+td.num{font-family:var(--mono);font-size:11px;text-align:center;color:var(--text-dim);}
+td.center{text-align:center;}
+.film-num{font-family:var(--mono);font-size:10px;color:var(--text-muted);width:26px;text-align:center;}
+.film-title{font-weight:600;font-size:13px;color:var(--text);}
+.film-sub{display:flex;align-items:center;gap:7px;margin-top:2px;flex-wrap:wrap;}
+.film-code{font-family:var(--mono);font-size:10px;color:var(--text-dim);}
+.film-hd{font-family:var(--mono);font-size:9px;color:#a0c8e8;border:1px solid rgba(160,200,232,0.25);padding:1px 5px;border-radius:2px;}
+.leg-stack{display:flex;flex-direction:column;gap:3px;}
+.leg-text{font-family:var(--mono);font-size:11px;color:var(--text-dim);}
+.leg-vf-entry{display:flex;align-items:baseline;gap:4px;}
+.leg-vf-label{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.1em;color:#a0c890;text-transform:uppercase;}
+.idioma-text{font-family:var(--mono);font-size:9px;color:var(--text-dim);border:1px solid var(--border);padding:1px 5px;border-radius:2px;display:inline-block;max-width:9.5em;white-space:normal;word-break:normal;overflow-wrap:normal;line-height:1.4;text-transform:lowercase;}
+.badge{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.07em;padding:2px 6px;border-radius:2px;text-transform:uppercase;white-space:nowrap;}
+.badge-flat{background:rgba(100,180,255,0.13);color:#64b4ff;border:1px solid rgba(100,180,255,0.25);}
+.badge-flat200{background:rgba(80,210,200,0.13);color:#50d2c8;border:1px solid rgba(80,210,200,0.25);}
+.badge-flatc{background:rgba(100,200,140,0.13);color:#60c88a;border:1px solid rgba(100,200,140,0.25);}
+.badge-scope{background:rgba(180,100,255,0.13);color:#c87aff;border:1px solid rgba(180,100,255,0.25);}
+.badge-51{background:rgba(232,160,32,0.14);color:var(--accent);border:1px solid rgba(232,160,32,0.28);}
+.badge-stereo{background:rgba(232,160,32,0.07);color:#c8a060;border:1px solid rgba(232,160,32,0.15);}
+.badge-kdm-sim{background:rgba(232,80,32,0.14);color:#ff8060;border:1px solid rgba(232,80,32,0.3);}
+.badge-kdm-nao{background:transparent;color:var(--text-muted);border:1px solid var(--border);}
+.badge-kdm{background:rgba(232,55,32,0.18);color:#ff6e55;border:1px solid rgba(232,55,32,0.35);}
+td.cpl-cell{background:var(--cpl-bg);border-left:3px solid var(--cpl-border);padding-left:10px;vertical-align:top;}
+.cpl-text{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--cpl-color);word-break:break-all;line-height:1.5;min-width:354px;}
+.cpl-ov-ficha{font-family:var(--mono);font-size:9px;color:rgba(93,220,138,0.45);word-break:break-all;line-height:1.4;margin-top:5px;padding-top:5px;border-top:1px solid rgba(61,186,110,0.18);}
+.cpl-ov-ficha-label{font-weight:600;letter-spacing:0.1em;text-transform:uppercase;opacity:0.7;margin-right:3px;}
+.ficha-session-wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+.ficha-session-name{font-family:var(--mono);font-size:26px;font-weight:600;color:var(--accent);letter-spacing:0.05em;text-transform:uppercase;line-height:1;}
+.ficha-evento-badge{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:2px;white-space:nowrap;align-self:center;}
+.dur-text{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);}
+.fps-gb{display:flex;flex-direction:column;gap:2px;align-items:center;}
+.fps-val{font-family:var(--mono);font-size:11px;color:var(--text-dim);}
+.gb-val{font-family:var(--mono);font-size:9px;color:#e8e8e8;}
+.obs-text{font-size:11px;color:rgba(232,160,32,0.75);font-style:italic;max-width:200px;}
+.ficha-footer{padding:12px 28px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.footer-total{font-family:var(--mono);font-size:11px;color:var(--text-dim);}
+.footer-total strong{color:var(--text);font-size:14px;margin-left:8px;}
+.footer-stamp{font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.1em;}
+
+/* GRADE */
+#grade-container{padding:0 0 40px;}
+.grade-wrap{overflow-x:auto;overflow-y:visible;}
+.col-header-row{display:flex;position:sticky;top:100px;z-index:100;background:var(--bg);border-bottom:2px solid var(--accent);min-width:max-content;}
+.time-gutter-header{width:var(--time-w);min-width:var(--time-w);flex-shrink:0;background:var(--bg);border-right:1px solid var(--border);}
+.col-header{width:var(--col-w);min-width:var(--col-w);flex-shrink:0;padding:9px 12px;border-right:1px solid var(--border);background:var(--bg);}
+.col-header:last-child{border-right:none;}
+.col-cinema-name{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text);line-height:1.3;}
+.col-session-count{font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-top:2px;}
+.grid-body{display:flex;position:relative;min-width:max-content;}
+.time-gutter{width:var(--time-w);min-width:var(--time-w);flex-shrink:0;border-right:1px solid var(--border);position:relative;}
+.time-label{position:absolute;left:0;right:0;font-family:var(--mono);font-size:9px;color:var(--text-muted);text-align:center;padding-top:2px;border-top:1px solid var(--border);}
+.grid-col{width:var(--col-w);min-width:var(--col-w);flex-shrink:0;border-right:1px solid var(--border);position:relative;background:var(--surface);}
+.grid-col:last-child{border-right:none;}
+.hour-line{position:absolute;left:0;right:0;border-top:1px solid var(--border);pointer-events:none;}
+.hour-line.half{border-top-color:var(--text-muted);border-top-style:dotted;opacity:0.28;}
+.session-block{position:absolute;left:4px;right:4px;border-radius:3px;padding:6px 8px;cursor:pointer;overflow:hidden;transition:filter 0.15s,transform 0.1s;border-left:3px solid rgba(0,0,0,0.3);}
+.session-block:hover{filter:brightness(1.14);transform:translateX(1px);z-index:10;}
+.session-block.dimmed{opacity:0.15;}
+.block-time{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.06em;color:rgba(0,0,0,0.6);margin-bottom:3px;}
+.block-name{font-family:var(--sans);font-size:11px;font-weight:600;color:rgba(0,0,0,0.85);line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.block-films{font-family:var(--mono);font-size:9px;color:rgba(0,0,0,0.5);margin-top:3px;}
+.block-event{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(0,0,0,0.45);margin-top:2px;}
+.block-hint{font-family:var(--mono);font-size:8px;color:rgba(0,0,0,0.3);margin-top:4px;opacity:0;transition:opacity 0.15s;}
+.session-block:hover .block-hint{opacity:1;}
+#tooltip{position:fixed;z-index:9999;background:#1c1c1c;border:1px solid #333;padding:14px 16px;min-width:280px;max-width:380px;pointer-events:none;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.6);}
+.tt-name{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);margin-bottom:6px;}
+.tt-row{font-family:var(--mono);font-size:10px;color:var(--text-dim);line-height:1.8;}
+.tt-row span{color:var(--text);}
+.tt-films{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.tt-film{font-family:var(--mono);font-size:9px;color:var(--text-dim);line-height:1.7;}
+.tt-film span{color:#c8c8c8;}
+
+/* GRADE PRINT TABLE */
+.gpt-table{border-collapse:collapse;width:100%;font-size:11px;}
+.gpt-table th{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;background:rgba(232,160,32,0.1);color:var(--accent);padding:7px 10px;border:1px solid var(--border);text-align:left;white-space:nowrap;}
+.gpt-table td{font-family:var(--sans);font-size:11px;padding:6px 10px;border:1px solid var(--border);vertical-align:top;min-width:120px;}
+.gpt-table td.slot-label{font-family:var(--mono);font-size:10px;color:var(--text-muted);background:var(--surface2);white-space:nowrap;text-align:center;font-weight:600;min-width:52px;}
+.gpt-table td.empty{background:var(--surface);opacity:0.4;}
+.gpt-sess-entry{padding:3px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;border-radius:2px;}
+.gpt-sess-entry:hover{background:var(--accent-dim);}
+.gpt-sess-entry:hover .gpt-sess-name{color:var(--accent);}
+.gpt-sess-entry:last-child{border-bottom:none;padding-bottom:0;}
+.gpt-sess-time{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--accent);margin-bottom:1px;}
+.gpt-sess-name{font-family:var(--sans);font-size:11px;font-weight:600;color:var(--text);line-height:1.3;}
+.gpt-sess-films{font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-top:1px;}
+/* Grade table print mode */
+@media print{body.print-grade-table>*{display:none!important;}body.print-grade-table #gradePrintArea{display:block!important;}}
+#gradePrintArea{padding:14mm 11mm;}
+#gradePrintArea .gpt-table{border-collapse:collapse;width:100%;}
+#gradePrintArea .gpt-table th{font-family:monospace;font-size:8px;font-weight:700;background:#e8e8e8;color:#000;padding:5px 8px;border:1px solid #aaa;}
+#gradePrintArea .gpt-table td{font-size:10px;padding:5px 8px;border:1px solid #ccc;vertical-align:top;min-width:80px;}
+#gradePrintArea .gpt-table td.slot-label{font-family:monospace;font-size:9px;font-weight:700;background:#f0f0f0;color:#333;text-align:center;}
+#gradePrintArea .gpt-table td.empty{background:#fafafa;}
+#gradePrintArea .gpt-sess-time{font-family:monospace;font-size:8px;font-weight:700;color:#444;}
+#gradePrintArea .gpt-sess-name{font-family:sans-serif;font-size:10px;font-weight:600;color:#000;}
+#gradePrintArea .gpt-sess-films{font-family:monospace;font-size:8px;color:#666;}
+#gradePrintArea .gpt-print-header{font-family:monospace;font-size:12px;font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #000;color:#000;}
+
+/* BUSCA */
+#busca-results{padding:18px 24px;display:grid;gap:8px;}
+.film-card{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--border);display:grid;grid-template-columns:1fr auto;gap:0;transition:border-left-color 0.2s,background 0.15s;}
+.film-card:hover{background:var(--surface2);}
+.card-main{padding:13px 15px;}
+.card-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:5px;}
+.card-titulo{font-family:var(--sans);font-size:14px;font-weight:600;color:var(--text);line-height:1.2;}
+mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padding:0 1px;}
+.card-codigo{font-family:var(--mono);font-size:10px;color:var(--text-dim);white-space:nowrap;}
+.card-evento{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;border-radius:2px;}
+.card-meta{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:5px;}
+.meta-tag{font-family:var(--mono);font-size:10px;color:var(--text-dim);display:flex;align-items:center;gap:5px;}
+.meta-tag .label{font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);}
+.card-obs{margin-top:7px;font-family:var(--sans);font-size:11px;font-style:italic;color:rgba(232,160,32,0.7);line-height:1.4;padding:5px 9px;border-left:2px solid rgba(232,160,32,0.3);background:rgba(232,160,32,0.04);}
+.card-status{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.08em;padding:2px 8px;border-radius:2px;}
+.status-ok{background:rgba(61,186,110,0.14);color:#3dba6e;border:1px solid rgba(61,186,110,0.3);}
+.status-cancel{background:rgba(232,80,32,0.14);color:#ff6055;border:1px solid rgba(232,80,32,0.3);}
+.status-other{background:rgba(150,150,150,0.1);color:#888;border:1px solid rgba(150,150,150,0.2);}
+.card-cpl{padding:13px 15px;background:var(--cpl-bg);border-left:2px solid var(--cpl-border);min-width:190px;max-width:270px;display:flex;flex-direction:column;justify-content:center;gap:4px;}
+.cpl-label{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:rgba(93,220,138,0.5);margin-bottom:2px;}
+.cpl-value{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--cpl-color);word-break:break-all;line-height:1.5;}
+.cpl-sub{font-family:var(--mono);font-size:9px;color:rgba(93,220,138,0.45);margin-top:4px;line-height:1.6;}
+.card-sessions{padding:7px 15px 10px;border-top:1px solid var(--border);display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+.session-tag{font-family:var(--mono);font-size:9px;padding:2px 7px;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;white-space:nowrap;cursor:pointer;transition:border-color 0.15s,color 0.15s,background 0.15s;}
+.session-tag:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.sessions-label{font-family:var(--mono);font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);}
+.no-results{padding:60px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--text-muted);}
+
+/* FILTROS AVANÇADOS BUSCA */
+#filterPanel{display:none;background:var(--surface);border-bottom:2px solid var(--border);padding:14px 24px 18px;gap:0;flex-direction:column;}
+#filterPanel.open{display:flex;}
+.fp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.fp-title{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);}
+.fp-clear{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:3px 11px;border:1px solid rgba(232,80,32,0.35);background:transparent;color:#ff8060;cursor:pointer;transition:background 0.12s;display:none;}
+.fp-clear:hover{background:rgba(232,80,32,0.1);}
+.fp-clear.visible{display:inline-block;}
+.fp-sections{display:flex;gap:0;flex-wrap:wrap;}
+.fp-section{flex:1;min-width:260px;padding-right:28px;margin-right:28px;border-right:1px solid var(--border);}
+.fp-section:last-child{border-right:none;padding-right:0;margin-right:0;}
+.fp-section-title{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.fp-groups{display:flex;flex-direction:column;gap:2px;}
+.fp-group{display:flex;flex-direction:column;gap:0;}
+.fp-group-label{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);padding:4px 8px;cursor:pointer;display:flex;align-items:center;gap:5px;border:1px solid transparent;border-radius:2px;transition:color 0.12s,border-color 0.12s;user-select:none;}
+.fp-group-label:hover{color:var(--text-dim);border-color:var(--border);}
+.fp-group-label.has-active{color:var(--accent);}
+.fp-group-arrow{font-size:8px;opacity:0.5;transition:transform 0.15s;line-height:1;}
+.fp-group-label.open .fp-group-arrow{transform:rotate(90deg);opacity:0.8;}
+.fp-group-count{font-size:8px;font-weight:700;background:var(--accent);color:#000;border-radius:6px;padding:0 4px;line-height:14px;display:none;}
+.fp-group-label.has-active .fp-group-count{display:inline-block;}
+.fp-pills{display:none;flex-wrap:wrap;gap:3px;padding:4px 8px 6px;}
+.fp-group-label.open~.fp-pills{display:flex;}
+.fpill{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.04em;padding:2px 8px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;border-radius:2px;transition:all 0.1s;white-space:nowrap;}
+.fpill:hover{border-color:var(--text-dim);color:var(--text);}
+.fpill.active{background:var(--accent);border-color:var(--accent);color:#000;}
+.fpill.excluded{background:rgba(232,80,32,0.14);border-color:rgba(232,80,32,0.45);color:#ff8060;}
+.fp-hint{font-family:var(--mono);font-size:8px;color:var(--text-muted);margin-top:2px;}
+.bpill{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.06em;padding:2px 9px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;border-radius:2px;transition:all 0.1s;white-space:nowrap;}
+.bpill:hover{border-color:var(--text-dim);color:var(--text);}
+.bpill.active-yes{background:rgba(61,186,110,0.16);border-color:rgba(61,186,110,0.45);color:#5ddc8a;}
+.bpill.active-no{background:rgba(232,80,32,0.12);border-color:rgba(232,80,32,0.35);color:#ff8060;}
+/* range filters */
+.fp-range-group{display:flex;flex-direction:column;gap:6px;padding:8px 0 4px;}
+.fp-range-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.fp-range-label{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);min-width:72px;}
+.fp-range-inputs{display:flex;align-items:center;gap:5px;}
+.fp-range-op{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text-muted);min-width:22px;text-align:center;}
+.fp-range-input{font-family:var(--mono);font-size:11px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:4px 8px;width:72px;outline:none;transition:border-color 0.15s;}
+.fp-range-input:focus{border-color:var(--accent);}
+.fp-range-input.has-val{border-color:var(--accent);color:var(--accent);}
+.fp-range-unit{font-family:var(--mono);font-size:9px;color:var(--text-muted);}
+.fp-range-sep{font-family:var(--mono);font-size:9px;color:var(--text-muted);padding:0 2px;}
+.fp-range-presets{display:flex;gap:3px;flex-wrap:wrap;margin-top:2px;}
+.fp-range-preset{font-family:var(--mono);font-size:9px;padding:2px 8px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;border-radius:2px;transition:all 0.1s;white-space:nowrap;}
+.fp-range-preset:hover{border-color:var(--text-dim);color:var(--text);}
+.fp-range-preset.active{background:var(--accent);border-color:var(--accent);color:#000;}
+.filter-toggle-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;background:transparent;color:var(--text-dim);border:1px solid var(--border);font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.filter-toggle-btn:hover{border-color:var(--text-dim);color:var(--text);}
+.filter-toggle-btn.active{border-color:var(--accent);color:var(--accent);}
+.filter-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;background:var(--accent);color:#000;font-size:9px;font-weight:700;border-radius:8px;padding:0 4px;display:none;}
+.filter-badge.visible{display:inline-flex;}
+
+/* INGEST */
+#ingest-container{padding:24px 32px 48px;max-width:1100px;margin:0 auto;}
+.ingest-total-bar{font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);padding:10px 16px;margin-bottom:22px;display:flex;align-items:center;gap:10px;}
+.ingest-total-bar strong{color:var(--accent);font-size:15px;margin-left:4px;}
+.ingest-cinema-block{margin-bottom:28px;}
+.ingest-cinema-header{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;}
+.ingest-cinema-gb{font-size:11px;letter-spacing:0;font-weight:400;color:var(--text-dim);border:1px solid var(--border);padding:1px 9px;background:var(--bg);}
+.ingest-session{border:1px solid var(--border);border-top:none;background:var(--surface);}
+.ingest-session+.ingest-session{border-top:1px solid var(--border2);}
+.ingest-session-header{display:flex;align-items:center;gap:12px;padding:8px 14px 7px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.ingest-sess-name{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.06em;color:var(--accent);}
+.ingest-sess-meta{font-family:var(--mono);font-size:10px;color:var(--text-dim);}
+.ingest-sess-gb{font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-left:auto;border:1px solid var(--border);padding:1px 8px;white-space:nowrap;}
+.ingest-film-list{padding:2px 0;}
+.ingest-film-row{display:grid;grid-template-columns:20px 1fr;gap:0;padding:8px 14px;border-bottom:1px solid var(--border);}
+.ingest-film-row:last-child{border-bottom:none;}
+.ingest-film-num{font-family:var(--mono);font-size:10px;color:var(--text-muted);padding-top:3px;}
+.ingest-film-body{display:flex;flex-direction:column;gap:5px;}
+.ingest-film-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.ingest-film-title{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--text);}
+.ingest-film-code{font-family:var(--mono);font-size:10px;color:var(--text-muted);}
+.ingest-film-gb{font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-left:auto;white-space:nowrap;}
+.ingest-film-specs{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.ingest-spec-sep{color:var(--border2);font-size:10px;}
+.ingest-spec-res{font-family:var(--mono);font-size:9px;color:var(--text-dim);border:1px solid var(--border);padding:1px 5px;border-radius:2px;}
+.ingest-cpl-block{display:flex;flex-direction:column;gap:3px;padding:5px 8px;background:rgba(61,186,110,0.07);border-left:2px solid var(--cpl-border);}
+.ingest-cpl-label{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:rgba(93,220,138,0.45);margin-bottom:1px;}
+.ingest-cpl-line{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--cpl-color);word-break:break-all;line-height:1.5;}
+.ingest-cplov-line{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--cpl-color);word-break:break-all;line-height:1.5;display:flex;gap:6px;align-items:baseline;}
+.ingest-cplov-tag{font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:rgba(93,220,138,0.5);flex-shrink:0;border:1px solid rgba(93,220,138,0.25);padding:0px 4px;border-radius:2px;}
+.ingest-no-cpl{font-family:var(--mono);font-size:10px;color:var(--text-muted);font-style:italic;}
+/* CINEMAS */
+#cinemas-container{padding:24px 32px 48px;max-width:1200px;margin:0 auto;}
+.cinemas-complexo{margin-bottom:32px;}
+.cinemas-complexo-header{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);padding:8px 14px;}
+.cinemas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;border:1px solid var(--border);border-top:none;}
+.cinema-card{background:var(--surface);padding:14px 16px;cursor:pointer;transition:background 0.15s;border:none;text-align:left;width:100%;}
+.cinema-card:hover{background:var(--surface2);}
+.cinema-card-name{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.cinema-card-name-link{color:var(--accent);transition:opacity 0.15s;}
+.cinema-card:hover .cinema-card-name-link{opacity:0.8;}
+.cinema-card-arrow{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-left:auto;}
+.cinema-card-specs{display:flex;flex-wrap:wrap;gap:5px 10px;margin-bottom:7px;}
+.cinema-spec{font-family:var(--mono);font-size:9px;color:var(--text-muted);display:flex;gap:3px;}
+.cinema-spec-label{color:var(--text-muted);}
+.cinema-spec-val{color:var(--text-dim);}
+.cinema-card-events{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;}
+.cinema-ev-tag{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.06em;padding:1px 6px;border-radius:2px;white-space:nowrap;}
+.cinema-card-sessions-count{font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-top:5px;}
+.cinema-no-event{font-family:var(--mono);font-size:9px;color:var(--text-muted);font-style:italic;}
+/* cinema detail */
+#cinemaDetailWrap{padding:24px 32px 48px;max-width:1100px;margin:0 auto;}
+.cinema-detail-header{background:var(--surface);border:1px solid var(--border);margin-bottom:20px;}
+.cinema-detail-title{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--accent);letter-spacing:0.04em;padding:18px 24px 14px;border-bottom:1px solid var(--border);}
+.cinema-detail-meta{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--border);}
+.cinema-detail-spec{padding:10px 18px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:3px;}
+.cinema-detail-spec:last-child{border-right:none;}
+.cinema-detail-spec-label{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);}
+.cinema-detail-spec-val{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);}
+.cinema-detail-obs{padding:10px 24px;font-family:var(--sans);font-size:11px;font-style:italic;color:rgba(232,160,32,0.75);}
+.cinema-detail-sessions{background:var(--surface);border:1px solid var(--border);}
+.cinema-detail-sessions-header{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface2);}
+.cinema-sess-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s;}
+.cinema-sess-row:last-child{border-bottom:none;}
+.cinema-sess-row:hover{background:var(--surface2);}
+.cinema-sess-time{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text);white-space:nowrap;}
+.cinema-sess-date{font-family:var(--mono);font-size:9px;color:var(--text-muted);white-space:nowrap;}
+.cinema-sess-name{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--accent);flex:1;}
+.cinema-sess-films{font-family:var(--mono);font-size:9px;color:var(--text-muted);}
+.cinema-sess-body{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}
+.cinema-sess-film-list{font-family:var(--sans);font-size:10px;color:var(--text-muted);line-height:1.4;margin-top:1px;}
+.cinema-sess-dur{font-family:var(--mono);font-size:9px;color:var(--text-muted);white-space:nowrap;}
+.cinema-past-toggle{width:100%;padding:9px 16px;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);background:var(--surface2);border:none;border-top:1px solid var(--border);cursor:pointer;text-align:center;transition:color 0.15s;}
+.cinema-past-toggle:hover{color:var(--text-dim);}
+.cinema-past-section{border-top:1px solid var(--border2);}
+.cinema-cineassista-sim{color:#ff8060;font-weight:600;}
+
+/* expand */
+.card-titulo-wrap{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+.card-titulo-wrap:hover .card-titulo{color:var(--accent);}
+.expand-toggle{font-family:var(--mono);font-size:10px;color:var(--text-muted);transition:transform 0.2s,color 0.15s;line-height:1;flex-shrink:0;}
+.film-card.expanded .expand-toggle{transform:rotate(90deg);color:var(--accent);}
+.card-expand{display:none;border-top:1px solid var(--border);padding:14px 15px 16px;background:rgba(255,255,255,0.015);}
+.film-card.expanded .card-expand{display:block;}
+.expand-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px 20px;}
+.expand-field{display:flex;flex-direction:column;gap:2px;}
+.expand-label{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);}
+.expand-value{font-family:var(--mono);font-size:11px;color:var(--text-dim);word-break:break-all;line-height:1.4;}
+.expand-value.accent{color:var(--cpl-color);}
+.expand-value.warn{color:#ff8060;}
+.expand-sep{grid-column:1/-1;border-top:1px solid var(--border);margin:4px 0;}
+/* KDM discrete */
+.badge-kdm-no{font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.06em;}
+/* CPL OV */
+.cpl-ov-row{margin-top:8px;padding-top:7px;border-top:1px solid rgba(61,186,110,0.2);}
+.cpl-ov-label{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(93,220,138,0.35);margin-bottom:2px;}
+.cpl-ov-value{font-family:var(--mono);font-size:10px;color:rgba(93,220,138,0.5);word-break:break-all;line-height:1.4;}
+
+/* THEME TOGGLE */
+.theme-toggle{display:inline-flex;align-items:center;gap:7px;padding:0 16px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);background:none;border:none;border-left:1px solid var(--border);cursor:pointer;height:100%;transition:color 0.15s;white-space:nowrap;flex-shrink:0;}
+.theme-toggle:hover{color:var(--text);}
+.theme-toggle-icon{font-size:13px;opacity:0.8;}
+.zoom-controls{display:inline-flex;align-items:center;border-left:1px solid var(--border);height:100%;flex-shrink:0;}
+.zoom-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:100%;font-family:var(--mono);font-size:15px;font-weight:300;color:var(--text-dim);background:none;border:none;cursor:pointer;transition:color 0.15s;line-height:1;padding:0;}
+.zoom-btn:hover{color:var(--text);}
+.zoom-level{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text-muted);min-width:36px;text-align:center;letter-spacing:0.05em;cursor:default;user-select:none;}
+.zoom-level:hover{color:var(--text-dim);}
+.zoom-level[title]{cursor:pointer;}
+
+/* LIGHT THEME */
+[data-theme="light"]{
+  --bg:#f5f5f5; --surface:#ffffff; --surface2:#ebebeb;
+  --border:#d4d4d4; --border2:#c0c0c0;
+  --accent:#b06800; --accent-dim:rgba(176,104,0,0.10); --accent-glow:rgba(176,104,0,0.04);
+  --text:#1a1a1a; --text-dim:#555555; --text-muted:#b0b0b0;
+  --ok:#1f8a42; --warn:#c42b2b;
+  --cpl-bg:rgba(31,138,66,0.09); --cpl-color:#1f8a42; --cpl-border:rgba(31,138,66,0.4);
+}
+[data-theme="light"] header{background:rgba(245,245,245,0.97);}
+[data-theme="light"] .col-header-row,[data-theme="light"] .time-gutter-header,[data-theme="light"] .col-header{background:var(--bg);}
+[data-theme="light"] #tooltip{background:#fff;border:1px solid #d0d0d0;box-shadow:0 8px 24px rgba(0,0,0,0.12);}
+[data-theme="light"] .tt-name{color:var(--accent);}
+[data-theme="light"] .tt-row{color:#666;}
+[data-theme="light"] .tt-row span{color:#1a1a1a;}
+[data-theme="light"] .tt-film{color:#888;}
+[data-theme="light"] .tt-film span{color:#333;}
+[data-theme="light"] tbody tr:hover{background:rgba(0,0,0,0.03);}
+[data-theme="light"] .gb-val{color:#555;}
+[data-theme="light"] .card-expand{background:rgba(0,0,0,0.018);}
+[data-theme="light"] mark{background:rgba(176,104,0,0.18);color:var(--accent);}
+/* badges */
+[data-theme="light"] .badge-flat{background:rgba(30,100,210,0.10);color:#1a5dcc;border-color:rgba(30,100,210,0.25);}
+[data-theme="light"] .badge-flat200{background:rgba(0,140,135,0.10);color:#007a75;border-color:rgba(0,140,135,0.25);}
+[data-theme="light"] .badge-flatc{background:rgba(20,140,90,0.10);color:#107840;border-color:rgba(20,140,90,0.25);}
+[data-theme="light"] .badge-scope{background:rgba(130,50,210,0.10);color:#7a28bb;border-color:rgba(130,50,210,0.25);}
+[data-theme="light"] .badge-51{background:rgba(176,104,0,0.10);color:var(--accent);border-color:rgba(176,104,0,0.25);}
+[data-theme="light"] .badge-stereo{background:rgba(176,104,0,0.06);color:#886200;border-color:rgba(176,104,0,0.15);}
+[data-theme="light"] .badge-kdm-sim{background:rgba(160,30,20,0.10);color:#b52020;border-color:rgba(160,30,20,0.28);}
+[data-theme="light"] .badge-kdm{background:rgba(160,30,20,0.10);color:#b52020;border-color:rgba(160,30,20,0.28);}
+[data-theme="light"] .film-hd{color:#1a5090;border-color:rgba(26,80,144,0.3);}
+[data-theme="light"] .leg-vf-label{color:#2a7030;}
+[data-theme="light"] .obs-text{color:rgba(176,104,0,0.9);}
+[data-theme="light"] .card-obs{color:rgba(176,104,0,0.9);border-left-color:rgba(176,104,0,0.4);background:rgba(176,104,0,0.04);}
+[data-theme="light"] thead tr{background:rgba(176,104,0,0.07);}
+[data-theme="light"] .landing-badge{border-color:rgba(176,104,0,0.35);}
+[data-theme="light"] .landing-drop{border-color:rgba(176,104,0,0.4);}
+[data-theme="light"] .landing-drop:hover:not(.loaded){border-color:rgba(176,104,0,0.7);}
+[data-theme="light"] .cpl-label{color:rgba(31,138,66,0.55);}
+[data-theme="light"] .cpl-sub{color:rgba(31,138,66,0.5);}
+[data-theme="light"] .cpl-ov-label{color:rgba(31,138,66,0.45);}
+[data-theme="light"] .cpl-ov-value{color:rgba(31,138,66,0.65);}
+[data-theme="light"] .cpl-ov-ficha{color:rgba(31,138,66,0.6)!important;border-top-color:rgba(31,138,66,0.22)!important;}
+[data-theme="light"] .status-ok{background:rgba(31,138,66,0.10);color:#1f8a42;border-color:rgba(31,138,66,0.28);}
+[data-theme="light"] .status-cancel{background:rgba(160,30,20,0.10);color:#c42b2b;border-color:rgba(160,30,20,0.28);}
+[data-theme="light"] .status-other{background:rgba(120,120,120,0.08);color:#666;border-color:rgba(120,120,120,0.2);}
+[data-theme="light"] .expand-value.warn{color:#b52020;}
+[data-theme="light"] .expand-sep{border-top-color:var(--border);}
+[data-theme="light"] select{background:var(--surface2);color:var(--text);border-color:var(--border2);}
+[data-theme="light"] .search-wrap input{background:var(--surface2);color:var(--text);border-color:var(--border2);}
+[data-theme="light"] .search-wrap input::placeholder{color:var(--text-muted);}
+
+/* PRINT */
+@media print {
+  #main-content{zoom:1!important;}
+  @page{margin:14mm 11mm;size:A4 landscape;}
+  body{background:white;color:black;}
+  header,.mode-bar,#landing,.back-btn{display:none!important;}
+  #app{display:block!important;}
+  /* show only the active panel */
+  .mode-panel{display:none!important;}
+  .mode-panel.active{display:block!important;}
+  /* FICHA */
+  #ficha-container{padding:0;}
+  .ficha{max-width:none;background:white;border:1px solid #bbb;}
+  .ficha-header{padding:0 0 12px;border-bottom:2px solid black;}
+  .ficha-session-name{color:black!important;font-size:20px;}
+  .meta-label{color:#555!important;}
+  .meta-value{color:black!important;}
+  .meta-value.highlight{color:black!important;}
+  .meta-item{border-right-color:#ccc!important;}
+  thead tr{background:#e8e8e8!important;border-bottom:1.5px solid black!important;}
+  th{color:black!important;font-size:8px;}
+  tbody tr{border-bottom-color:#ddd!important;}
+  tbody tr:hover{background:none!important;}
+  td{color:black!important;padding:7px 9px;}
+  .film-num{color:#555!important;}
+  .film-title{color:black!important;font-size:12px;}
+  .film-code{color:#555!important;}
+  .film-hd{color:#333!important;border-color:#999!important;background:none!important;}
+  .badge{border:1px solid #555!important;color:#222!important;background:none!important;}
+  .badge-kdm-sim{border-color:#222!important;color:#000!important;font-weight:700!important;}
+  .badge-kdm-nao{border-color:#ccc!important;color:#999!important;}
+  .idioma-text{color:#333!important;border-color:#aaa!important;}
+  .leg-text{color:#333!important;}
+  .leg-vf-label{color:#555!important;}
+  td.cpl-cell{background:#e8e8e8!important;border-left:3px solid #555!important;padding-left:10px;}
+  .cpl-text{color:#000!important;font-size:11px;font-weight:700;}
+  .cpl-ov-ficha{color:#555!important;border-top-color:#bbb!important;}
+  .obs-text{color:#333!important;font-style:italic;}
+  .dur-text{color:black!important;}
+  .fps-val{color:#444!important;}
+  .gb-val{color:#444!important;}
+  .footer-total{color:black!important;}
+  .footer-total strong{color:black!important;}
+  .footer-stamp{color:#666!important;}
+  .empty-state{display:none!important;}
+  /* INGEST */
+  #ingest-container{padding:0!important;}
+  .ingest-total-bar{display:none!important;}
+  .ingest-cinema-header{background:#d8d8d8!important;border-left-color:#000!important;color:#000!important;}
+  .ingest-cinema-gb{color:#333!important;border-color:#aaa!important;background:none!important;}
+  .ingest-session{background:white!important;border-color:#ccc!important;}
+  .ingest-session-header{border-bottom-color:#ccc!important;}
+  .ingest-sess-name{color:#000!important;}
+  .ingest-sess-meta{color:#444!important;}
+  .ingest-sess-gb{color:#333!important;border-color:#aaa!important;}
+  .ingest-film-title{color:#000!important;}
+  .ingest-film-code{color:#555!important;}
+  .ingest-film-gb{color:#333!important;}
+  .ingest-cpl-block{background:#efefef!important;border-left-color:#555!important;}
+  .ingest-cpl-line,.ingest-cplov-line{color:#000!important;font-size:9px;}
+  .ingest-cpl-label{color:#555!important;}
+  .ingest-cplov-tag{color:#555!important;border-color:#aaa!important;}
+  .ingest-no-cpl{color:#888!important;}
+  .ingest-spec-res{color:#333!important;border-color:#aaa!important;}
+  .ingest-film-num{color:#888!important;}
+  .ingest-cinema-block{margin-bottom:14px!important;page-break-inside:avoid;}
+  .ingest-film-row{padding:5px 14px!important;}
+  /* BUSCA PRINT */
+  body.print-busca header,.mode-bar,#filterPanel,.filter-toggle-btn,.search-clear,.back-btn{display:none!important;}
+  body.print-busca #busca-panel{display:block!important;}
+  body.print-busca .film-card{background:white!important;border:1px solid #ccc!important;border-left:3px solid #999!important;page-break-inside:avoid;margin-bottom:6px;}
+  body.print-busca .film-card:hover{background:white!important;}
+  body.print-busca .card-titulo{color:#000!important;font-size:13px!important;}
+  body.print-busca .card-codigo{color:#555!important;}
+  body.print-busca .card-evento{color:#000!important;}
+  body.print-busca .card-top{flex-wrap:wrap;}
+  body.print-busca .expand-toggle{display:none!important;}
+  body.print-busca .card-expand{display:none!important;}
+  body.print-busca .card-obs{color:#333!important;}
+  body.print-busca .meta-tag{color:#333!important;}
+  body.print-busca .meta-tag .label{color:#777!important;}
+  body.print-busca .badge{background:none!important;border:1px solid #666!important;color:#222!important;}
+  body.print-busca .badge-kdm{background:none!important;border:1px solid #000!important;color:#000!important;font-weight:700!important;}
+  body.print-busca .badge-kdm-no{color:#bbb!important;}
+  body.print-busca .card-cpl{background:#efefef!important;border-left:2px solid #555!important;}
+  body.print-busca .cpl-label{color:#555!important;}
+  body.print-busca .cpl-value{color:#000!important;font-size:11px!important;}
+  body.print-busca .cpl-sub{color:#444!important;}
+  body.print-busca .cpl-ov-value{color:#000!important;}
+  body.print-busca .card-sessions{display:none!important;}
+  body.print-busca #busca-results{padding:0!important;gap:5px!important;}
+  body.print-busca .busca-print-header{display:block!important;font-family:var(--mono);font-size:10px;color:#666;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #ccc;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <button class="logo" onclick="goHome()" title="Página inicial">OLGA · Suite</button>
+  <button class="back-btn" id="backBtn" onclick="goBack()">← Voltar</button>
+  <div class="file-zone">
+    <label class="upload-btn" for="fileInput">▲ XLSX</label>
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
+    <span class="file-name" id="fileName">nenhum arquivo</span>
+  </div>
+  <nav class="nav-tabs">
+    <button class="nav-tab" id="tabFicha" disabled onclick="switchMode('ficha')"><span class="tab-icon">🎬</span> Ficha</button>
+    <button class="nav-tab" id="tabGrade" disabled onclick="switchMode('grade')"><span class="tab-icon">📅</span> Grade</button>
+    <button class="nav-tab" id="tabBusca" disabled onclick="switchMode('busca')"><span class="tab-icon">🔍</span> Busca</button>
+    <button class="nav-tab" id="tabIngest" disabled onclick="switchMode('ingest')"><span class="tab-icon">📥</span> Ingest</button>
+    <button class="nav-tab" id="tabCinemas" disabled onclick="switchMode('cinemas')"><span class="tab-icon">🎭</span> Cinemas</button>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar esquema de cores">
+    <span class="theme-toggle-icon" id="themeIcon">☀</span>
+    <span id="themeLabel">Claro</span>
+  </button>
+  <div class="zoom-controls">
+    <button class="zoom-btn" onclick="changeZoom(-1)" title="Diminuir zoom">−</button>
+    <span class="zoom-level" id="zoomLabel" onclick="resetZoom()" title="Clique para resetar">100%</span>
+    <button class="zoom-btn" onclick="changeZoom(+1)" title="Aumentar zoom">+</button>
+  </div>
+</header>
+
+<div id="main-content">
+
+<div class="mode-bar hidden" id="barFicha">
+  <select id="sessionSelect" disabled><option value="">— selecionar sessão —</option></select>
+  <div class="event-filters" id="fichaEventFilters"></div>
+  <button class="print-btn" id="printBtn" disabled onclick="window.print()">⎙ Imprimir</button>
+</div>
+<div class="mode-bar hidden" id="barGrade">
+  <div class="day-tabs" id="dayTabs"></div>
+  <div class="event-filters" id="gradeEventFilters"></div>
+  <select id="gradeCinemaSelect" style="min-width:160px;margin-left:4px;" onchange="gradeCinemaFilter=this.value;renderGrade();">
+    <option value="">Todas as salas</option>
+  </select>
+  <button class="print-btn" onclick="openGradePrintModal()" style="margin-left:6px;">⎙ Tabela</button>
+</div>
+<div class="mode-bar hidden" id="barBusca">
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="título, código, CPL, idioma…" disabled>
+    <button class="search-clear" id="searchClear">×</button>
+  </div>
+  <button class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleFilterPanel()">⊞ Filtros <span class="filter-badge" id="filterBadge"></span></button>
+  <div class="event-filters" id="buscaEventFilters"></div>
+  <span class="result-count" id="resultCount"></span>
+  <button class="print-btn" onclick="printBusca()" style="margin-left:auto;">⎙ Imprimir</button>
+</div>
+<div id="filterPanel">
+  <div class="fp-header">
+    <div>
+      <span class="fp-title">Filtros avançados</span>
+      <div class="fp-hint">1 clique = incluir · 2 cliques = excluir · 3 cliques = limpar</div>
+    </div>
+    <button class="fp-clear" id="fpClearBtn" onclick="clearAllBuscaFilters()">✕ Limpar todos</button>
+  </div>
+  <div class="fp-sections">
+    <div class="fp-section">
+      <div class="fp-section-title">Por valor</div>
+      <div class="fp-groups" id="fpNormalGroups"></div>
+    </div>
+    <div class="fp-section">
+      <div class="fp-section-title">Preenchimento</div>
+      <div class="fp-groups" id="fpBinaryGroups"></div>
+    </div>
+    <div class="fp-section">
+      <div class="fp-section-title">Intervalo</div>
+      <div id="fpRangeGroups"></div>
+    </div>
+  </div>
+</div>
+<div class="mode-bar hidden" id="barIngest">
+  <div class="day-tabs" id="ingestDayTabs"></div>
+  <select id="ingestCinemaSelect" style="min-width:180px;margin-left:8px;" onchange="ingestCinemaFilter=this.value;renderIngest();"><option value="">Todos os cinemas</option></select>
+  <div class="event-filters" id="ingestEventFilters" style="margin-left:4px;"></div>
+  <button class="print-btn" onclick="printIngest()" style="margin-left:4px;">⎙ Imprimir</button>
+</div>
+<div class="mode-bar hidden" id="barCinemas">
+  <div class="event-filters" id="cinemasEventFilters"></div>
+  <select id="cinemasEstadoSelect" style="min-width:120px;margin-left:8px;" onchange="cinemasEstadoFilter=this.value;rebuildCinemasComplexoSelect();renderCinemas();">
+    <option value="">Todos os estados</option>
+  </select>
+  <select id="cinemasComplexoSelect" style="min-width:180px;margin-left:8px;" onchange="cinemasComplexoFilter=this.value;renderCinemas();">
+    <option value="">Todos os complexos</option>
+  </select>
+</div>
+
+<div id="landing">
+  <div class="landing-badge">sistema de gestão de exibição</div>
+  <div class="landing-title">OLGA Suite</div>
+  <p class="landing-sub">Carregue o arquivo de programação para acessar os módulos abaixo.</p>
+  <div class="landing-drop" id="landingDrop">
+    <div class="drop-icon">📂</div>
+    <div class="drop-label">Carregar sistema_olga.xlsx</div>
+    <div class="drop-sub">clique ou arraste o arquivo aqui</div>
+  </div>
+  <div class="landing-modules" style="grid-template-columns:repeat(5,1fr);max-width:1060px;">
+    <div class="module-card disabled" id="modCardFicha" onclick="moduleCardClick('ficha')">
+      <div class="module-icon">🎬</div>
+      <div class="module-name">Ficha</div>
+      <div class="module-desc">Ficha técnica de sessão para projeção e impressão</div>
+    </div>
+    <div class="module-card disabled" id="modCardGrade" onclick="moduleCardClick('grade')">
+      <div class="module-icon">📅</div>
+      <div class="module-name">Grade</div>
+      <div class="module-desc">Grade visual de programação por dia e sala</div>
+    </div>
+    <div class="module-card disabled" id="modCardBusca" onclick="moduleCardClick('busca')">
+      <div class="module-icon">🔍</div>
+      <div class="module-name">Busca</div>
+      <div class="module-desc">Busca e filtragem de filmes na base de dados</div>
+    </div>
+    <div class="module-card disabled" id="modCardIngest" onclick="moduleCardClick('ingest')">
+      <div class="module-icon">📥</div>
+      <div class="module-name">Ingest</div>
+      <div class="module-desc">Cronograma de ingest por sala, com CPL e tamanhos</div>
+    </div>
+    <div class="module-card disabled" id="modCardCinemas" onclick="moduleCardClick('cinemas')">
+      <div class="module-icon">🎭</div>
+      <div class="module-name">Cinemas</div>
+      <div class="module-desc">Fichas técnicas das salas e equipamentos</div>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="mode-panel" id="ficha-panel">
+    <div id="ficha-container">
+      <div class="empty-state" id="fichaEmpty">
+        <div class="icon">🎬</div>
+        <p>Selecione uma sessão acima<br>para gerar a ficha.</p>
+      </div>
+      <div id="fichaWrap" style="display:none"></div>
+    </div>
+  </div>
+  <div class="mode-panel" id="grade-panel">
+    <div id="grade-container">
+      <div class="empty-state" id="gradeEmpty">
+        <div class="icon">📅</div>
+        <p>Nenhuma sessão para este dia.</p>
+      </div>
+      <div class="grade-wrap" id="gradeWrap" style="display:none">
+        <div class="col-header-row" id="colHeaderRow"></div>
+        <div class="grid-body" id="gridBody"></div>
+      </div>
+    </div>
+  </div>
+  <div class="mode-panel" id="busca-panel">
+    <div class="busca-print-header" id="buscaPrintHeader" style="display:none;padding:18px 24px 0;"></div>
+    <div class="empty-state" id="buscaEmpty">
+      <div class="icon">🔍</div>
+      <p>Digite para buscar filmes.</p>
+    </div>
+    <div class="empty-state" id="buscaLoading" style="display:none">
+      <div class="icon" style="animation:spin 1s linear infinite;display:inline-block">⟳</div>
+      <p>Carregando filmes…</p>
+    </div>
+    <div id="busca-results" style="display:none"></div>
+  </div>
+  <div class="mode-panel" id="ingest-panel">
+    <div class="empty-state" id="ingestEmpty">
+      <div class="icon">📥</div>
+      <p>Nenhuma sessão encontrada.</p>
+    </div>
+    <div id="ingest-container" style="display:none"></div>
+  </div>
+  <div class="mode-panel" id="cinemas-panel">
+    <div class="empty-state" id="cinemasEmpty">
+      <div class="icon">🎭</div>
+      <p>Nenhum cinema encontrado.</p>
+    </div>
+    <div id="cinemas-container" style="display:none;"></div>
+    <div id="cinemaDetailWrap" style="display:none;"></div>
+  </div>
+</div>
+
+
+<div id="gradePrintModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.7);overflow-y:auto;">
+  <div style="background:var(--surface);border:1px solid var(--border);max-width:900px;margin:40px auto;padding:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface2);">
+      <span style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);">⎙ Tabela de programação</span>
+      <button onclick="closeGradePrintModal()" style="font-family:var(--mono);font-size:13px;background:none;border:none;color:var(--text-dim);cursor:pointer;padding:0 4px;">✕</button>
+    </div>
+    <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;">
+      <div>
+        <div style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Modo</div>
+        <div style="display:flex;gap:0;">
+          <label id="gptModeALabel" style="font-family:var(--mono);font-size:10px;padding:6px 14px;border:1px solid var(--accent);color:var(--accent);cursor:pointer;background:var(--accent-dim);">
+            <input type="radio" name="gptMode" value="A" checked style="display:none;" onchange="updateGptSelectors()"> Horários × Dias
+          </label>
+          <label id="gptModeBLabel" style="font-family:var(--mono);font-size:10px;padding:6px 14px;border:1px solid var(--border);border-left:none;color:var(--text-dim);cursor:pointer;background:transparent;">
+            <input type="radio" name="gptMode" value="B" style="display:none;" onchange="updateGptSelectors()"> Horários × Salas
+          </label>
+        </div>
+      </div>
+      <div id="gptSalaWrap">
+        <div style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Sala fixa</div>
+        <select id="gptSalaSelect" style="min-width:200px;"></select>
+      </div>
+      <div id="gptDiaWrap" style="display:none;">
+        <div style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Dia fixo</div>
+        <select id="gptDiaSelect" style="min-width:200px;"></select>
+      </div>
+      <button onclick="buildGradePrintTable()" class="upload-btn" style="padding:7px 18px;align-self:flex-end;">Gerar</button>
+    </div>
+    <div id="gptTableWrap" style="padding:18px 20px;overflow-x:auto;min-height:80px;"></div>
+    <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">
+      <button onclick="closeGradePrintModal()" class="print-btn">Fechar</button>
+      <button onclick="printGradeTable()" class="upload-btn" style="padding:7px 18px;">⎙ Imprimir</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main-content -->
+
+<!-- Hidden area used during grade table print — MUST be direct child of body -->
+<div id="gradePrintArea" style="display:none;"></div>
+<div id="tooltip"></div>
+
+<!-- Worker script: parsed by Blob, runs off-thread -->
+<script id="workerScript" type="javascript/worker">
+importScripts(self._xlsxUrl||'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+
+function fmtDateStr(val){if(!val)return'—';var d=new Date(val);if(isNaN(d))return val;return d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});}
+function fmtTimeStr(val){if(!val)return'—';if(typeof val==='string'&&/^\d{1,2}:\d{2}/.test(val))return val.slice(0,5);var d=new Date(val);if(!isNaN(d))return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});return val;}
+function parseDate(v){if(!v)return null;var d=new Date(v);if(!isNaN(d))return new Date(d.getFullYear(),d.getMonth(),d.getDate());var m=v.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);if(m)return new Date(+m[3]<100?2000+Number(m[3]):+m[3],m[2]-1,+m[1]);return null;}
+function parseTime(v){if(!v)return{h:0,m:0,str:'?'};var h=0,m=0;if(typeof v==='string'&&/^\d{1,2}:\d{2}/.test(v)){var p=v.split(':').map(Number);h=p[0];m=p[1];}else{var d=new Date(v);if(!isNaN(d)){h=d.getHours();m=d.getMinutes();}}return{h:h,m:m,str:String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')};}
+
+self.onmessage=function(e){
+  var buffer=e.data.buffer;
+  var wb=XLSX.read(buffer,{type:'array',cellDates:true});
+  var filmesMap={},filmesArr=[];
+  var wsF=wb.Sheets['filmes'];
+  if(wsF){
+    var rows=XLSX.utils.sheet_to_json(wsF,{header:1,raw:false,dateNF:'dd/mm/yyyy'});
+    for(var i=1;i<rows.length;i++){
+      var r=rows[i];var codigo=(r[1]||'').toString().trim();
+      if(!codigo||codigo==='-'||codigo==='0')continue;
+      var f={evento:r[0]||'',codigo:codigo,hd:r[2]||'',titulo:r[3]||'',idioma:r[4]||'',legenda:r[5]||'',col_g:r[6]||'',vf:r[7]||'',lente:r[8]||'',som:r[9]||'',col_k:r[10]||'',kdm:r[11]||'',status:r[12]||'',col_n:r[13]||'',obs:r[14]||'',cpl:r[15]||'',resolucao:r[16]||'',duracao:r[19]||'',gb:r[21]||'',fps:r[23]||'',cplOV:r[24]||''};
+      filmesMap[codigo]=f;filmesArr.push(f);
+    }
+  }
+  var sessoesArr=[],sessoesMap={},buscaReverseSessoes={};
+  var wsS=wb.Sheets['sessões']||wb.Sheets['sessoes'];
+  if(wsS){
+    var rows2=XLSX.utils.sheet_to_json(wsS,{header:1,raw:false,dateNF:'dd/mm/yyyy'});
+    for(var i=1;i<rows2.length;i++){
+      var r=rows2[i];var nome=(r[0]||'').toString().trim();if(!nome)continue;
+      var codes=[];for(var f2=4;f2<=13;f2++){var c=(r[f2]||'').toString().trim();if(c&&c!=='-'&&!/^=/.test(c))codes.push(c);}
+      var evento=(r[15]||'').toString().trim();
+      if(!evento){for(var fi=0;fi<codes.length;fi++){if(filmesMap[codes[fi]]&&filmesMap[codes[fi]].evento){evento=filmesMap[codes[fi]].evento;break;}}}
+      var s={nome:nome,cinema:r[1]||'',dia:fmtDateStr(r[2]),hora:fmtTimeStr(r[3]),filmes:codes,date:parseDate(r[2]),time:parseTime(r[3]),evento:evento};
+      sessoesArr.push(s);sessoesMap[nome]=s;
+      codes.forEach(function(c){if(!buscaReverseSessoes[c])buscaReverseSessoes[c]=[];buscaReverseSessoes[c].push(nome);});
+    }
+  }
+  var cinemasArr=[];
+  var wsC=wb.Sheets['cinemas'];
+  if(wsC){
+    var rowsC=XLSX.utils.sheet_to_json(wsC,{header:1,raw:false});
+    for(var i=1;i<rowsC.length;i++){
+      var r=rowsC[i];var sala=(r[1]||'').toString().trim();if(!sala)continue;
+      cinemasArr.push({complexo:r[0]||'',sala:sala,servidor:r[2]||'',serial:(r[3]||'').toString().trim(),projetor:r[4]||'',assentos:r[5]||'',proporcao:(r[6]||'').toString().trim(),som:r[7]||'',obs:r[8]||'',cineassista:r[9]||'',evento:(r[10]||'').toString().trim(),estado:(r[11]||'').toString().trim()});
+    }
+  }
+  var evSet=new Set();
+  filmesArr.forEach(function(f){if(f.evento)evSet.add(f.evento);});
+  sessoesArr.forEach(function(s){if(s.evento)evSet.add(s.evento);});
+  cinemasArr.forEach(function(c){if(c.evento)c.evento.split(';').forEach(function(e){var t=e.trim();if(t)evSet.add(t);});});
+  self.postMessage({filmesMap:filmesMap,filmesArr:filmesArr,sessoesArr:sessoesArr,sessoesMap:sessoesMap,buscaReverseSessoes:buscaReverseSessoes,cinemasArr:cinemasArr,events:Array.from(evSet)});
+};
+</script>
+
+<script>
+var filmesMap={},filmesArr=[],sessoesArr=[],sessoesMap={};
+var buscaReverseSessoes={},eventColors={};
+var activeEventsGrade=new Set(),activeEventsBusca=new Set(),activeEventsIngest=new Set(),activeEventsFicha=new Set(),activeEventsCinemas=new Set();
+var days=[],currentDay=null,buscaQuery='',dataLoaded=false,currentMode=null;
+var _browserNav=false;// flag: popstate is driving navigation — don't push new history entries
+var filteredFilmes=[];
+var cinemasArr=[];
+var cinemasComplexoFilter='',cinemasEstadoFilter='',currentCinemaDetail=null;
+var ingestDays=[],currentIngestDay=null,ingestCinemaFilter='',gradeCinemaFilter='';
+var navHistory=[];// stack of {mode, label} for back navigation
+var buscaFilters={
+  evento:new Set(),hd:new Set(),idioma:new Set(),legenda:new Set(),vf:new Set(),
+  lente:new Set(),som:new Set(),kdm:new Set(),status:new Set(),col_k:new Set(),
+  resolucao:new Set(),fps:new Set(),
+  evento_ex:new Set(),hd_ex:new Set(),idioma_ex:new Set(),legenda_ex:new Set(),vf_ex:new Set(),
+  lente_ex:new Set(),som_ex:new Set(),kdm_ex:new Set(),status_ex:new Set(),col_k_ex:new Set(),
+  resolucao_ex:new Set(),fps_ex:new Set(),
+  titulo_bin:null,obs_bin:null,cpl_bin:null,cplOV_bin:null,col_n_bin:null,legenda_bin:null,
+  duracao_min:null,duracao_max:null,gb_min:null,gb_max:null
+};
+var PALETTE=[{bg:'#e8a020',text:'#000'},{bg:'#3dba6e',text:'#000'},{bg:'#4a9eff',text:'#000'},{bg:'#c87aff',text:'#000'},{bg:'#ff6b6b',text:'#000'},{bg:'#ffd93d',text:'#000'},{bg:'#6bcfcf',text:'#000'},{bg:'#ff9f43',text:'#000'}];
+
+var fileInput=document.getElementById('fileInput');
+var fileNameEl=document.getElementById('fileName');
+var landingDrop=document.getElementById('landingDrop');
+
+fileInput.addEventListener('change',function(e){var f=e.target.files[0];if(f)loadFile(f);});
+landingDrop.addEventListener('click',function(){if(!dataLoaded)fileInput.click();});
+landingDrop.addEventListener('dragover',function(e){e.preventDefault();landingDrop.classList.add('drag-over');});
+landingDrop.addEventListener('dragleave',function(){landingDrop.classList.remove('drag-over');});
+landingDrop.addEventListener('drop',function(e){e.preventDefault();landingDrop.classList.remove('drag-over');var f=e.dataTransfer.files[0];if(f)loadFile(f);});
+
+function loadFile(file){
+  fileNameEl.textContent=file.name;
+  landingDrop.innerHTML='<div class="drop-icon" style="opacity:1;animation:spin 1s linear infinite;display:inline-block">⟳</div><div class="drop-label" style="color:var(--accent)">Processando…</div><div class="drop-sub">'+file.name+'</div>';
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var buffer=ev.target.result;
+    // defer one frame so the browser paints the spinner before blocking
+    setTimeout(function(){parseWorkbook(buffer,file.name);},32);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function applyParsedData(d,filename){
+  filmesMap=d.filmesMap;filmesArr=d.filmesArr;
+  sessoesArr=d.sessoesArr;sessoesMap=d.sessoesMap;
+  buscaReverseSessoes=d.buscaReverseSessoes;
+  if(d.cinemasArr)cinemasArr=d.cinemasArr;
+  var events=d.events;
+  eventColors={};events.forEach(function(ev,i){eventColors[ev]=PALETTE[i%PALETTE.length];});
+  activeEventsGrade=new Set(events);activeEventsBusca=new Set(events);activeEventsIngest=new Set(events);activeEventsFicha=new Set(events);activeEventsCinemas=new Set(events);
+  dataLoaded=true;
+  ['tabFicha','tabGrade','tabBusca','tabIngest','tabCinemas'].forEach(function(id){document.getElementById(id).disabled=false;});
+  ['modCardFicha','modCardGrade','modCardBusca','modCardIngest','modCardCinemas'].forEach(function(id){document.getElementById(id).classList.remove('disabled');});
+  buildGradeDays();window._gradeYearsOpen=null;buildFichaFilters();buildGradeFilters();buildBuscaFilters();buildIngestDays();buildIngestFilters();buildBuscaFilterPanel();buildCinemasFilters();
+  fileNameEl.textContent=filename||'arquivo carregado';
+  fileNameEl.classList.add('loaded');
+  landingDrop.classList.add('loaded');
+  landingDrop.innerHTML='<div class="drop-icon" style="opacity:1">✓</div><div class="drop-label" style="color:var(--ok)">'+(filename||'arquivo carregado')+'</div><div class="drop-sub">arquivo carregado — selecione um módulo abaixo</div>';
+}
+
+function parseWorkbook(data,filename){
+  // main-thread fallback (used only if Worker fails)
+  var wb=XLSX.read(data,{type:'array',cellDates:true});
+  filmesMap={};filmesArr=[];
+  var wsF=wb.Sheets['filmes'];
+  if(wsF){
+    var rows=XLSX.utils.sheet_to_json(wsF,{header:1,raw:false,dateNF:'dd/mm/yyyy'});
+    for(var i=1;i<rows.length;i++){
+      var r=rows[i];var codigo=(r[1]||'').toString().trim();
+      if(!codigo||codigo==='-'||codigo==='0')continue;
+      var f={evento:r[0]||'',codigo:codigo,hd:r[2]||'',titulo:r[3]||'',idioma:r[4]||'',legenda:r[5]||'',col_g:r[6]||'',vf:r[7]||'',lente:r[8]||'',som:r[9]||'',col_k:r[10]||'',kdm:r[11]||'',status:r[12]||'',col_n:r[13]||'',obs:r[14]||'',cpl:r[15]||'',resolucao:r[16]||'',duracao:r[19]||'',gb:r[21]||'',fps:r[23]||'',cplOV:r[24]||''};
+      filmesMap[codigo]=f;filmesArr.push(f);
+    }
+  }
+  sessoesArr=[];sessoesMap={};buscaReverseSessoes={};
+  var wsS=wb.Sheets['sessões']||wb.Sheets['sessoes'];
+  if(wsS){
+    var rows2=XLSX.utils.sheet_to_json(wsS,{header:1,raw:false,dateNF:'dd/mm/yyyy'});
+    for(var i=1;i<rows2.length;i++){
+      var r=rows2[i];var nome=(r[0]||'').toString().trim();if(!nome)continue;
+      var codes=[];for(var f2=4;f2<=13;f2++){var c=(r[f2]||'').toString().trim();if(c&&c!=='-'&&!/^=/.test(c))codes.push(c);}
+      var evento=(r[15]||'').toString().trim();
+      if(!evento){for(var fi=0;fi<codes.length;fi++){if(filmesMap[codes[fi]]&&filmesMap[codes[fi]].evento){evento=filmesMap[codes[fi]].evento;break;}}}
+      var s={nome:nome,cinema:r[1]||'',dia:fmtDateStr(r[2]),hora:fmtTimeStr(r[3]),filmes:codes,date:parseDate(r[2]),time:parseTime(r[3]),evento:evento};
+      sessoesArr.push(s);sessoesMap[nome]=s;
+      codes.forEach(function(c){if(!buscaReverseSessoes[c])buscaReverseSessoes[c]=[];buscaReverseSessoes[c].push(nome);});
+    }
+  }
+  var evSet=new Set();filmesArr.forEach(function(f){if(f.evento)evSet.add(f.evento);});sessoesArr.forEach(function(s){if(s.evento)evSet.add(s.evento);});
+  cinemasArr=[];
+  var wsC=wb.Sheets['cinemas'];
+  if(wsC){
+    var rowsC=XLSX.utils.sheet_to_json(wsC,{header:1,raw:false});
+    for(var i=1;i<rowsC.length;i++){
+      var r=rowsC[i];var sala=(r[1]||'').toString().trim();if(!sala)continue;
+      cinemasArr.push({complexo:r[0]||'',sala:sala,servidor:r[2]||'',serial:(r[3]||'').toString().trim(),projetor:r[4]||'',assentos:r[5]||'',proporcao:(r[6]||'').toString().trim(),som:r[7]||'',obs:r[8]||'',cineassista:r[9]||'',evento:(r[10]||'').toString().trim(),estado:(r[11]||'').toString().trim()});
+    }
+  }
+  cinemasArr.forEach(function(c){if(c.evento)c.evento.split(';').forEach(function(e){var t=e.trim();if(t)evSet.add(t);});});
+  var events=Array.from(evSet);
+  applyParsedData({filmesMap:filmesMap,filmesArr:filmesArr,sessoesArr:sessoesArr,sessoesMap:sessoesMap,buscaReverseSessoes:buscaReverseSessoes,cinemasArr:cinemasArr,events:events},filename);
+}
+
+function goHome(){
+  if(currentMode){
+    currentMode=null;
+    navHistory=[];updateBackBtn();
+    ['ficha','grade','busca','ingest','cinemas'].forEach(function(m){
+      var cap=m.charAt(0).toUpperCase()+m.slice(1);
+      document.getElementById('tab'+cap).classList.remove('active');
+      document.getElementById('bar'+cap).classList.add('hidden');
+      document.getElementById(m+'-panel').classList.remove('active');
+    });
+    document.getElementById('app').style.display='none';
+    document.getElementById('landing').style.display='flex';
+  }
+}
+
+function moduleCardClick(mode){if(dataLoaded)switchMode(mode);}
+
+function switchMode(mode,noPush){
+  currentMode=mode;
+  if(!noPush){navHistory=[];updateBackBtn();}
+  if(!noPush&&!_browserNav)history.pushState({olga:mode},'');
+  // always collapse the busca filter panel when leaving busca
+  if(mode!=='busca'&&_fpOpen){_fpOpen=false;document.getElementById('filterPanel').classList.remove('open');document.getElementById('filterToggleBtn').classList.remove('active');}
+  document.getElementById('landing').style.display='none';
+  document.getElementById('app').style.display='block';
+  ['ficha','grade','busca','ingest','cinemas'].forEach(function(m){
+    var cap=m.charAt(0).toUpperCase()+m.slice(1);
+    document.getElementById('tab'+cap).classList.toggle('active',m===mode);
+    document.getElementById('bar'+cap).classList.toggle('hidden',m!==mode);
+    document.getElementById(m+'-panel').classList.toggle('active',m===mode);
+  });
+  if(mode==='grade')renderGrade();
+  if(mode==='ingest')renderIngest();
+  if(mode==='cinemas')renderCinemas();
+  if(mode==='busca'){
+    var bl=document.getElementById('buscaLoading'),be2=document.getElementById('buscaEmpty'),br=document.getElementById('busca-results');
+    bl.style.display='flex';be2.style.display='none';br.style.display='none';
+    document.getElementById('searchInput').focus();
+    setTimeout(function(){bl.style.display='none';renderBuscaResults();},0);
+  }
+}
+
+/* UTILS */
+function clean(v){return(!v||v==='-'||v==='0')?'':v;}
+function fmtDateStr(val){if(!val)return'—';var d=new Date(val);if(isNaN(d))return val;return d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});}
+function fmtTimeStr(val){if(!val)return'—';if(typeof val==='string'&&/^\d{1,2}:\d{2}/.test(val))return val.slice(0,5);var d=new Date(val);if(!isNaN(d))return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});return val;}
+function fmtDur(val){if(!val||val==='-')return'—';if(typeof val==='string'&&/^\d{1,2}:\d{2}/.test(val)){var p=val.split(':').map(Number);if(p[0]>0)return p[0]+'h'+String(p[1]).padStart(2,'0');return p[1]+'min';}return val;}
+function parseDate(v){if(!v)return null;var d=new Date(v);if(!isNaN(d))return new Date(d.getFullYear(),d.getMonth(),d.getDate());var m=v.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);if(m)return new Date(+m[3]<100?2000+Number(m[3]):+m[3],m[2]-1,+m[1]);return null;}
+function parseTime(v){if(!v)return{h:0,m:0,str:'?'};var h=0,m=0;if(typeof v==='string'&&/^\d{1,2}:\d{2}/.test(v)){var p=v.split(':').map(Number);h=p[0];m=p[1];}else{var d=new Date(v);if(!isNaN(d)){h=d.getHours();m=d.getMinutes();}}return{h:h,m:m,str:String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')};}
+function lenteBadge(v){var u=(v||'').toUpperCase();if(u.includes('FLAT')&&u.includes('200'))return'<span class="badge badge-flat200">FLAT 200</span>';if(u.includes('FLAT')&&(u.includes('(C)')||u.replace(/\s/g,'').includes('(C)')))return'<span class="badge badge-flatc">FLAT (C)</span>';if(u.includes('FLAT'))return'<span class="badge badge-flat">FLAT</span>';if(u.includes('SCOPE'))return'<span class="badge badge-scope">SCOPE</span>';if(u.includes('2.0'))return'<span class="badge badge-scope">2.0:1</span>';if(v&&v!=='-')return'<span class="badge badge-flat">'+v+'</span>';return'—';}
+function somBadge(v){var u=(v||'').toUpperCase();if(u.includes('5.1'))return'<span class="badge badge-51">5.1</span>';if(u.includes('STEREO'))return'<span class="badge badge-stereo">Stereo</span>';if(v&&v!=='-')return'<span class="badge badge-stereo">'+v+'</span>';return'—';}
+function kdmFichaBadge(v){if((v||'').toLowerCase()==='sim')return'<span class="badge badge-kdm-sim">KDM !</span>';return'<span class="badge badge-kdm-nao">não</span>';}
+
+/* FICHA */
+document.getElementById('sessionSelect').addEventListener('change',function(){
+  var nome=this.value;
+  var fe=document.getElementById('fichaEmpty'),fw=document.getElementById('fichaWrap'),pb=document.getElementById('printBtn');
+  if(!nome||!sessoesMap[nome]){fw.style.display='none';fe.style.display='flex';pb.disabled=true;return;}
+  renderFicha(nome,sessoesMap[nome]);fe.style.display='none';fw.style.display='block';pb.disabled=false;
+});
+
+function renderFicha(nome,s){
+  var films=s.filmes.map(function(c){return Object.assign({codigo:c},filmesMap[c]||{});}).filter(function(f){return f.titulo||f.codigo;});
+  var totalMins=0,totalGB=0;
+  films.forEach(function(f){var d=f.duracao||'';if(/^\d{1,2}:\d{2}/.test(d)){var p=d.split(':').map(Number);totalMins+=p[0]*60+p[1];}var g=parseFloat((f.gb||'').toString().replace(',','.'));if(!isNaN(g))totalGB+=g;});
+  var totalDur=totalMins>0?Math.floor(totalMins/60)+'h'+String(totalMins%60).padStart(2,'0'):'—';
+  var totalGBStr=totalGB>0?totalGB.toFixed(0)+' GB':'—';
+  var rows=films.map(function(f,idx){
+    var titulo=clean(f.titulo)||f.codigo,hd=clean(f.hd),lente=clean(f.lente),som=clean(f.som),legenda=clean(f.legenda),vf=clean(f.vf),kdm=f.kdm||'não',cpl=clean(f.cpl),obs=clean(f.obs),dur=clean(f.duracao),res=clean(f.resolucao),fps=clean(f.fps),gb=clean(f.gb);
+    var hdTag=hd?'<span class="film-hd">'+hd+'</span>':'';
+    var legParts=[];
+    if(vf)legParts.push('<span class="leg-text leg-vf-entry"><span class="leg-vf-label">VF</span> '+vf+'</span>');
+    else if(legenda)legParts.push('<span class="leg-text">'+legenda+'</span>');
+    var legCell=legParts.length?'<div class="leg-stack">'+legParts.join('')+'</div>':'<span style="color:var(--text-muted)">—</span>';
+    var idiomaCell=clean(f.idioma)?'<span class="idioma-text">'+f.idioma+'</span>':'<span style="color:var(--text-muted)">—</span>';
+    var fpsgb='<div class="fps-gb"><span class="fps-val">'+(fps||'—')+'</span>'+(gb?'<span class="gb-val">'+gb+' GB</span>':'')+'</div>';
+    return '<tr><td class="film-num">'+(idx+1)+'</td><td><div class="film-title">'+titulo+'</div><div class="film-sub"><span class="film-code">'+f.codigo+'</span>'+hdTag+'</div></td><td class="center">'+lenteBadge(lente)+'</td><td class="center">'+somBadge(som)+'</td><td>'+legCell+'</td><td class="center">'+idiomaCell+'</td><td class="center">'+kdmFichaBadge(kdm)+'</td><td class="cpl-cell">'+(cpl?'<div class="cpl-text">'+cpl+'</div>'+(clean(f.cplOV)?'<div class="cpl-ov-ficha"><span class="cpl-ov-ficha-label">CPL DA OV:</span>'+clean(f.cplOV)+'</div>':''):'<span style="color:var(--text-muted)">—</span>')+'</td><td><div class="dur-text">'+fmtDur(dur)+'</div></td><td>'+(obs?'<div class="obs-text">'+obs+'</div>':'<span style="color:var(--text-muted)">—</span>')+'</td><td class="num">'+(res||'—')+'</td><td class="num">'+fpsgb+'</td></tr>';
+  }).join('');
+  var eventoCol=s.evento&&eventColors[s.evento]?eventColors[s.evento]:null;
+  var eventoBadge=eventoCol?'<span class="ficha-evento-badge" style="background:'+eventoCol.bg+';color:'+eventoCol.text+'">'+s.evento+'</span>':(s.evento?'<span class="ficha-evento-badge" style="background:var(--surface2);color:var(--text-dim);border:1px solid var(--border)">'+s.evento+'</span>':'');
+  document.getElementById('fichaWrap').innerHTML='<div class="ficha"><div class="ficha-header"><div class="ficha-session-wrap"><div class="ficha-session-name">'+nome+'</div>'+eventoBadge+'</div><div class="ficha-meta"><div class="meta-item"><div class="meta-label">Cinema</div><div class="meta-value">'+(s.cinema||'—')+'</div></div><div class="meta-item"><div class="meta-label">Data</div><div class="meta-value">'+s.dia+'</div></div><div class="meta-item"><div class="meta-label">Hora</div><div class="meta-value">'+s.hora+'</div></div><div class="meta-item"><div class="meta-label">Filmes</div><div class="meta-value highlight">'+films.length+'</div></div></div></div><div class="film-table-wrap"><table><thead><tr><th>#</th><th>Filme</th><th class="center">Lente</th><th class="center">Som</th><th>Legenda</th><th class="center">Idioma</th><th class="center">KDM</th><th>CPL</th><th>Duração</th><th>OBS</th><th class="center">Res</th><th class="center">FPS · GB</th></tr></thead><tbody>'+(rows||'<tr><td colspan="12" style="text-align:center;color:var(--text-muted);padding:24px">Nenhum filme encontrado para esta sessão.</td></tr>')+'</tbody></table></div><div class="ficha-footer"><div class="footer-total">Duração total: <strong>'+totalDur+'</strong> &nbsp;·&nbsp; Tamanho: <strong>'+totalGBStr+'</strong></div><div class="footer-stamp">OLGA · '+new Date().toLocaleString('pt-BR')+'</div></div></div>';
+}
+
+/* GRADE */
+function buildGradeDays(){var seen=new Set();days=[];sessoesArr.forEach(function(s){if(!s.date)return;var k=s.date.toISOString().slice(0,10);if(!seen.has(k)){seen.add(k);days.push({key:k,date:s.date});}});days.sort(function(a,b){return a.date-b.date;});currentDay=days.length?days[days.length-1].key:null;}
+
+/* INGEST */
+function buildIngestDays(){
+  var seen=new Set();ingestDays=[];
+  sessoesArr.forEach(function(s){
+    if(!s.date)return;
+    var id=new Date(s.date.getTime());id.setDate(id.getDate()-2);
+    var k=id.toISOString().slice(0,10);
+    if(!seen.has(k)){seen.add(k);ingestDays.push({key:k,date:id});}
+  });
+  ingestDays.sort(function(a,b){return a.date-b.date;});
+  currentIngestDay=ingestDays.length?ingestDays[ingestDays.length-1].key:null;
+  ingestCinemaFilter='';
+  window._ingestYearsOpen=null;
+}
+
+function renderIngestDayTabs(){
+  var container=document.getElementById('ingestDayTabs');container.innerHTML='';
+  // only days that have ≥1 session from an active event
+  var activeDays=ingestDays.filter(function(d){
+    return sessoesArr.some(function(s){
+      if(!s.date)return false;
+      var id=new Date(s.date.getTime());id.setDate(id.getDate()-2);
+      return id.toISOString().slice(0,10)===d.key&&
+             (!s.evento||activeEventsIngest.has(s.evento))&&
+             (!ingestCinemaFilter||s.cinema===ingestCinemaFilter);
+    });
+  });
+  var validKeys=activeDays.map(function(d){return d.key;});
+  if(currentIngestDay&&validKeys.indexOf(currentIngestDay)===-1){
+    currentIngestDay=validKeys.length?validKeys[validKeys.length-1]:null;
+  }
+  var byYear={},yearOrder=[];
+  activeDays.forEach(function(d){
+    var y=d.date.getFullYear();
+    if(!byYear[y]){byYear[y]=[];yearOrder.push(y);}
+    byYear[y].push(d);
+  });
+  if(!window._ingestYearsOpen){
+    window._ingestYearsOpen=new Set();
+    if(currentIngestDay) window._ingestYearsOpen.add(new Date(currentIngestDay+'T00:00:00').getFullYear());
+    else if(yearOrder.length) window._ingestYearsOpen.add(yearOrder[yearOrder.length-1]);
+  }
+  yearOrder.forEach(function(y){
+    var isOpen=window._ingestYearsOpen.has(y);
+    var yBtn=document.createElement('button');
+    yBtn.className='year-tab'+(isOpen?' open':'');
+    yBtn.innerHTML=String(y)+'<span class="year-arrow">'+(isOpen?'▾':'▸')+'</span>';
+    yBtn.addEventListener('click',function(){
+      if(window._ingestYearsOpen.has(y)) window._ingestYearsOpen.delete(y);
+      else window._ingestYearsOpen.add(y);
+      renderIngestDayTabs();
+    });
+    container.appendChild(yBtn);
+    if(isOpen){
+      activeDays.filter(function(d){return d.date.getFullYear()===y;}).forEach(function(d){
+        var btn=document.createElement('button');btn.className='day-tab'+(d.key===currentIngestDay?' active':'');
+        btn.textContent=d.date.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+        btn.addEventListener('click',function(){currentIngestDay=d.key;renderIngest();});
+        container.appendChild(btn);
+      });
+    }
+  });
+}
+
+function renderIngest(){
+  renderIngestDayTabs();
+  var ie=document.getElementById('ingestEmpty'),iw=document.getElementById('ingest-container');
+  if(!currentIngestDay){iw.style.display='none';ie.style.display='flex';return;}
+  var sessions=sessoesArr.filter(function(s){
+    if(!s.date)return false;
+    var id=new Date(s.date.getTime());id.setDate(id.getDate()-2);
+    if(id.toISOString().slice(0,10)!==currentIngestDay)return false;
+    if(ingestCinemaFilter&&s.cinema!==ingestCinemaFilter)return false;
+    if(s.evento&&!activeEventsIngest.has(s.evento))return false;
+    return true;
+  });
+  if(!sessions.length){iw.style.display='none';ie.style.display='flex';ie.querySelector('p').textContent='Nenhuma sessão para ingest neste dia.';return;}
+  ie.style.display='none';iw.style.display='block';
+
+  // total GB for the day (all cinemas, regardless of filter)
+  var totalGB=0;
+  sessoesArr.forEach(function(s){
+    if(!s.date)return;
+    var id=new Date(s.date.getTime());id.setDate(id.getDate()-2);
+    if(id.toISOString().slice(0,10)!==currentIngestDay)return;
+    s.filmes.forEach(function(c){var f=filmesMap[c];if(!f)return;var g=parseFloat((f.gb||'').toString().replace(',','.'));if(!isNaN(g))totalGB+=g;});
+  });
+
+  // group by cinema
+  var byCinema={},cinemaOrder=[];
+  sessions.forEach(function(s){
+    if(!byCinema[s.cinema]){byCinema[s.cinema]=[];cinemaOrder.push(s.cinema);}
+    byCinema[s.cinema].push(s);
+  });
+
+  var html='<div class="ingest-total-bar">Total do dia'+(ingestCinemaFilter?' (todos os cinemas)':'')+': <strong>'+(totalGB>0?totalGB.toFixed(0)+' GB':'—')+'</strong></div>';
+
+  cinemaOrder.forEach(function(cinema){
+    // cinema-level GB total
+    var cinemaGB=0;
+    byCinema[cinema].forEach(function(s){
+      s.filmes.forEach(function(c){var f=filmesMap[c];if(!f)return;var g=parseFloat((f.gb||'').toString().replace(',','.'));if(!isNaN(g))cinemaGB+=g;});
+    });
+    html+='<div class="ingest-cinema-block"><div class="ingest-cinema-header"><span>'+cinema+'</span>'+(cinemaGB>0?'<span class="ingest-cinema-gb">'+cinemaGB.toFixed(0)+' GB</span>':'')+'</div>';
+
+    byCinema[cinema].forEach(function(s){
+      var sessGB=0;
+      s.filmes.forEach(function(c){var f=filmesMap[c];if(!f)return;var g=parseFloat((f.gb||'').toString().replace(',','.'));if(!isNaN(g))sessGB+=g;});
+      html+='<div class="ingest-session"><div class="ingest-session-header"><span class="ingest-sess-name">'+s.nome+'</span><span class="ingest-sess-meta">'+s.dia+' · '+s.hora+'</span>'+(sessGB>0?'<span class="ingest-sess-gb">'+sessGB.toFixed(0)+' GB</span>':'')+'</div>';
+      html+='<div class="ingest-film-list">';
+      s.filmes.forEach(function(c,idx){
+        var f=filmesMap[c]||{};
+        var titulo=clean(f.titulo)||c;
+        var cpl=clean(f.cpl),cplOV=clean(f.cplOV),gb=clean(f.gb);
+        var lente=clean(f.lente),som=clean(f.som),hd=clean(f.hd),res=clean(f.resolucao);
+        html+='<div class="ingest-film-row"><span class="ingest-film-num">'+(idx+1)+'</span><div class="ingest-film-body">';
+        // top row: title + code + badges + GB
+        html+='<div class="ingest-film-top"><span class="ingest-film-title">'+titulo+'</span><span class="ingest-film-code">'+c+'</span>'+(gb?'<span class="ingest-film-gb">'+gb+' GB</span>':'')+'</div>';
+        // specs row: HD · lente · som · res
+        var specs=[];
+        if(hd)specs.push('<span class="film-hd">'+hd+'</span>');
+        if(lente)specs.push(lenteBadge(lente));
+        if(som)specs.push(somBadge(som));
+        if(res)specs.push('<span class="ingest-spec-res">'+res+'</span>');
+        if(specs.length)html+='<div class="ingest-film-specs">'+specs.join('<span class="ingest-spec-sep"> · </span>')+'</div>';
+        // CPL block
+        if(cpl||cplOV){
+          html+='<div class="ingest-cpl-block">';
+          if(cpl)html+='<div><span class="ingest-cpl-label">CPL</span><div class="ingest-cpl-line">'+cpl+'</div></div>';
+          if(cplOV)html+='<div style="margin-top:'+(cpl?'6px':'0')+'"><span class="ingest-cpl-label">CPL · OV</span><div class="ingest-cplov-line">'+cplOV+'</div></div>';
+          html+='</div>';
+        }else{
+          html+='<div class="ingest-no-cpl">CPL não cadastrada</div>';
+        }
+        html+='</div></div>';
+      });
+      html+='</div></div>';
+    });
+    html+='</div>';
+  });
+
+  iw.innerHTML=html;
+}
+
+function printIngest(){window.print();}
+
+function printBusca(){
+  // build header with current query and filter summary
+  var q=buscaQuery;
+  var count=filteredFilmes.length;
+  var hdr=document.getElementById('buscaPrintHeader');
+  var qStr=q?'Busca: "'+q+'" · ':'';
+  hdr.textContent='OLGA · Busca · '+qStr+count+' filme'+(count!==1?'s':'')+' · '+new Date().toLocaleString('pt-BR');
+  hdr.style.display='block';
+  document.body.classList.add('print-busca');
+  window.print();
+  document.body.classList.remove('print-busca');
+  hdr.style.display='none';
+}
+
+/* GRADE PRINT TABLE */
+function openGradePrintModal(){
+  var modal=document.getElementById('gradePrintModal');
+  // populate sala select — only cinemas with sessions from active events
+  var cinemaSet=new Set();
+  sessoesGrade().forEach(function(s){if(s.cinema)cinemaSet.add(s.cinema);});
+  var ss=document.getElementById('gptSalaSelect');
+  ss.innerHTML='';
+  Array.from(cinemaSet).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;ss.appendChild(o);});
+  // populate dia select — only days with active-event sessions
+  var ds=document.getElementById('gptDiaSelect');
+  ds.innerHTML='';
+  days.filter(function(d){
+    return sessoesGrade().some(function(s){return s.date&&s.date.toISOString().slice(0,10)===d.key;});
+  }).forEach(function(d){
+    var o=document.createElement('option');o.value=d.key;
+    o.textContent=d.date.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+    if(d.key===currentDay)o.selected=true;
+    ds.appendChild(o);
+  });
+  document.querySelector('input[name="gptMode"][value="A"]').checked=true;
+  updateGptSelectors();
+  document.getElementById('gptTableWrap').innerHTML='';
+  modal.style.display='block';
+}
+
+function closeGradePrintModal(){
+  document.getElementById('gradePrintModal').style.display='none';
+}
+
+function updateGptSelectors(){
+  var mode=document.querySelector('input[name="gptMode"]:checked').value;
+  document.getElementById('gptSalaWrap').style.display=mode==='A'?'':'none';
+  document.getElementById('gptDiaWrap').style.display=mode==='B'?'':'none';
+  // style radio labels
+  var la=document.getElementById('gptModeALabel'),lb=document.getElementById('gptModeBLabel');
+  if(mode==='A'){la.style.cssText='font-family:var(--mono);font-size:10px;padding:6px 14px;border:1px solid var(--accent);color:var(--accent);cursor:pointer;background:var(--accent-dim);';lb.style.cssText='font-family:var(--mono);font-size:10px;padding:6px 14px;border:1px solid var(--border);border-left:none;color:var(--text-dim);cursor:pointer;background:transparent;';}
+  else{lb.style.cssText='font-family:var(--mono);font-size:10px;padding:6px 14px;border:1px solid var(--accent);color:var(--accent);cursor:pointer;background:var(--accent-dim);';la.style.cssText='font-family:var(--mono);font-size:10px;padding:6px 14px;border:1px solid var(--border);border-right:none;color:var(--text-dim);cursor:pointer;background:transparent;';}
+  document.getElementById('gptTableWrap').innerHTML='';
+}
+
+function slotKey(h,m){return(h%24)*60+(m<30?0:30);}
+function slotLabel(sk){var h=Math.floor(sk/60),m=sk%60;return String(h).padStart(2,'0')+':'+(m===0?'00':'30');}
+
+function buildGradePrintTable(){
+  var mode=document.querySelector('input[name="gptMode"]:checked').value;
+  var wrap=document.getElementById('gptTableWrap');
+  wrap.innerHTML='';
+
+  if(mode==='A'){
+    // Horários × Dias — sala fixa
+    var cinema=document.getElementById('gptSalaSelect').value;
+    if(!cinema){wrap.innerHTML='<p style="font-family:var(--mono);font-size:11px;color:var(--text-muted)">Selecione uma sala.</p>';return;}
+    var sessions=sessoesGrade().filter(function(s){return s.cinema===cinema&&s.date&&s.time;});
+    if(!sessions.length){wrap.innerHTML='<p style="font-family:var(--mono);font-size:11px;color:var(--text-muted)">Nenhuma sessão para esta sala.</p>';return;}
+    // collect unique day keys (sorted)
+    var daySet={};sessions.forEach(function(s){var k=s.date.toISOString().slice(0,10);if(!daySet[k])daySet[k]=s.date;});
+    var dayKeys=Object.keys(daySet).sort();
+    // collect unique slot keys
+    var slotSet=new Set();sessions.forEach(function(s){slotSet.add(slotKey(s.time.h,s.time.m));});
+    var slots=Array.from(slotSet).sort(function(a,b){return a-b;});
+    // index sessions by dayKey+slotKey
+    var idx={};sessions.forEach(function(s){var dk=s.date.toISOString().slice(0,10);var sk=slotKey(s.time.h,s.time.m);var key=dk+'|'+sk;if(!idx[key])idx[key]=[];idx[key].push(s);});
+    // build table
+    wrap.innerHTML=gptRenderTable(
+      ['Horário'].concat(dayKeys.map(function(k){return daySet[k].toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});})),
+      slots,
+      function(slot,colIdx){var dk=dayKeys[colIdx-1];return idx[dk+'|'+slot]||[];}
+    );
+    wrap.dataset.header='Sala: '+cinema;
+  }else{
+    // Horários × Salas — dia fixo
+    var dayKey=document.getElementById('gptDiaSelect').value;
+    if(!dayKey){wrap.innerHTML='<p style="font-family:var(--mono);font-size:11px;color:var(--text-muted)">Selecione um dia.</p>';return;}
+    var sessions2=sessoesGrade().filter(function(s){return s.date&&s.date.toISOString().slice(0,10)===dayKey&&s.time;});
+    if(!sessions2.length){wrap.innerHTML='<p style="font-family:var(--mono);font-size:11px;color:var(--text-muted)">Nenhuma sessão neste dia.</p>';return;}
+    var cinemaSet2=[];var cinemasSeen=new Set();sessions2.forEach(function(s){if(!cinemasSeen.has(s.cinema)){cinemasSeen.add(s.cinema);cinemaSet2.push(s.cinema);}});
+    var slotSet2=new Set();sessions2.forEach(function(s){slotSet2.add(slotKey(s.time.h,s.time.m));});
+    var slots2=Array.from(slotSet2).sort(function(a,b){return a-b;});
+    var idx2={};sessions2.forEach(function(s){var sk=slotKey(s.time.h,s.time.m);var key=s.cinema+'|'+sk;if(!idx2[key])idx2[key]=[];idx2[key].push(s);});
+    // find label for selected day
+    var dayObj=days.find(function(d){return d.key===dayKey;});
+    var dayLbl=dayObj?dayObj.date.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}):'';
+    wrap.innerHTML=gptRenderTable(
+      ['Horário'].concat(cinemaSet2),
+      slots2,
+      function(slot,colIdx){var c=cinemaSet2[colIdx-1];return idx2[c+'|'+slot]||[];}
+    );
+    wrap.dataset.header='Programação: '+dayLbl;
+  }
+}
+
+function gptRenderTable(headers,slots,getSessionsFn){
+  var html='<table class="gpt-table"><thead><tr>';
+  headers.forEach(function(h){html+='<th>'+h+'</th>';});
+  html+='</tr></thead><tbody>';
+  slots.forEach(function(sk){
+    html+='<tr><td class="slot-label">'+slotLabel(sk)+'</td>';
+    for(var c=1;c<headers.length;c++){
+      var ss=getSessionsFn(sk,c);
+      if(!ss.length){html+='<td class="empty"></td>';continue;}
+      html+='<td>';
+      ss.forEach(function(s){
+        var nf=s.filmes.length;
+        var safeName=s.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        html+='<div class="gpt-sess-entry" onclick="closeGradePrintModal();goToFicha(\''+safeName+'\')" title="Abrir ficha: '+s.nome.replace(/"/g,'&quot;')+'">';
+        html+='<div class="gpt-sess-time">'+s.time.str+'</div>';
+        html+='<div class="gpt-sess-name">'+s.nome+'</div>';
+        if(nf)html+='<div class="gpt-sess-films">'+nf+' filme'+(nf!==1?'s':'')+'</div>';
+        html+='</div>';
+      });
+      html+='</td>';
+    }
+    html+='</tr>';
+  });
+  html+='</tbody></table>';
+  return html;
+}
+
+function printGradeTable(){
+  var wrap=document.getElementById('gptTableWrap');
+  if(!wrap.querySelector('table')){buildGradePrintTable();if(!wrap.querySelector('table'))return;}
+  var header=wrap.dataset.header||'Programação';
+  var pa=document.getElementById('gradePrintArea');
+  pa.innerHTML='<div class="gpt-print-header">'+header+'</div>'+wrap.innerHTML;
+  document.body.classList.add('print-grade-table');
+  window.print();
+  document.body.classList.remove('print-grade-table');
+}
+
+function buildPills(container,evColors,activeSet,onToggle){
+  container.innerHTML='';if(!Object.keys(evColors).length)return;
+  var events=Object.keys(evColors);
+  function allActive(){return events.every(function(ev){return activeSet.has(ev);});}
+  function updateLbl(){
+    var all=allActive();
+    lbl.style.background=all?'#fff':'#000';
+    lbl.style.color=all?'#000':'#fff';
+    lbl.title=all?'Desmarcar todos':'Marcar todos';
+  }
+  var lbl=document.createElement('button');
+  lbl.className='filter-label';
+  lbl.textContent='EVENTO:';
+  lbl.style.cssText='cursor:pointer;padding:3px 8px;transition:background 0.15s,color 0.15s;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;border-radius:2px;white-space:nowrap;border:none;';
+  lbl.addEventListener('click',function(){
+    var activate=!allActive();
+    pills.forEach(function(p,i){
+      var ev=events[i],col=evColors[ev];
+      if(activate){activeSet.add(ev);p.style.background=col.bg;p.style.color=col.text;p.classList.add('active');}
+      else{activeSet.delete(ev);p.style.background='transparent';p.style.color='#555';p.classList.remove('active');}
+    });
+    updateLbl();onToggle();
+  });
+  container.appendChild(lbl);
+  var pills=[];
+  events.forEach(function(ev){var col=evColors[ev];
+    var pill=document.createElement('button');pill.className='event-pill active';pill.textContent=ev;pill.style.background=col.bg;pill.style.color=col.text;pill.style.borderColor=col.bg;
+    pill.addEventListener('click',function(){
+      if(activeSet.has(ev)){activeSet.delete(ev);pill.style.background='transparent';pill.style.color='#555';pill.classList.remove('active');}
+      else{activeSet.add(ev);pill.style.background=col.bg;pill.style.color=col.text;pill.classList.add('active');}
+      updateLbl();onToggle();
+    });
+    container.appendChild(pill);pills.push(pill);
+  });
+  updateLbl();
+}
+/* helpers: sessões filtradas por evento */
+function sessoesFicha(){return sessoesArr.filter(function(s){return!s.evento||activeEventsFicha.has(s.evento);});}
+function sessoesGrade(){return sessoesArr.filter(function(s){return!s.evento||activeEventsGrade.has(s.evento);});}
+function sessoesIngest(){return sessoesArr.filter(function(s){return!s.evento||activeEventsIngest.has(s.evento);});}
+
+function rebuildSessionSelect(){
+  var sel=document.getElementById('sessionSelect');
+  var prev=sel.value;
+  sel.innerHTML='<option value="">— selecionar sessão —</option>';
+  sessoesFicha().forEach(function(s){var o=document.createElement('option');o.value=s.nome;o.textContent=s.nome;sel.appendChild(o);});
+  sel.disabled=false;
+  // keep selection if still valid, otherwise reset ficha
+  if(prev&&sessoesMap[prev]&&(!sessoesMap[prev].evento||activeEventsFicha.has(sessoesMap[prev].evento))){
+    sel.value=prev;
+  }else if(prev){
+    sel.value='';
+    var fe=document.getElementById('fichaEmpty'),fw=document.getElementById('fichaWrap'),pb=document.getElementById('printBtn');
+    fw.style.display='none';fe.style.display='flex';pb.disabled=true;
+  }
+}
+
+function buildFichaFilters(){
+  buildPills(document.getElementById('fichaEventFilters'),eventColors,activeEventsFicha,function(){
+    rebuildSessionSelect();
+  });
+  rebuildSessionSelect();
+  document.getElementById('searchInput').disabled=false;
+}
+
+function rebuildGradeCinemaSelect(){
+  var active=sessoesGrade();
+  var cs=new Set();active.forEach(function(s){if(s.cinema)cs.add(s.cinema);});
+  var sel=document.getElementById('gradeCinemaSelect');
+  var prev=sel.value;
+  sel.innerHTML='<option value="">Todas as salas</option>';
+  Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  // keep selection only if still valid
+  if(prev&&cs.has(prev))sel.value=prev;
+  else{sel.value='';gradeCinemaFilter='';}
+}
+
+function buildGradeFilters(){
+  buildPills(document.getElementById('gradeEventFilters'),eventColors,activeEventsGrade,function(){
+    rebuildGradeCinemaSelect();
+    window._gradeYearsOpen=null;
+    renderGrade();
+  });
+  rebuildGradeCinemaSelect();
+}
+
+function buildBuscaFilters(){buildPills(document.getElementById('buscaEventFilters'),eventColors,activeEventsBusca,function(){renderBuscaResults();buildBuscaFilterPanel();});}
+
+function rebuildIngestCinemaSelect(){
+  var active=sessoesIngest();
+  var cs=new Set();active.forEach(function(s){if(s.cinema)cs.add(s.cinema);});
+  var sel=document.getElementById('ingestCinemaSelect');
+  var prev=sel.value;
+  sel.innerHTML='<option value="">Todos os cinemas</option>';
+  Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  if(prev&&cs.has(prev))sel.value=prev;
+  else{sel.value='';ingestCinemaFilter='';}
+}
+
+function buildIngestFilters(){
+  buildPills(document.getElementById('ingestEventFilters'),eventColors,activeEventsIngest,function(){
+    rebuildIngestCinemaSelect();
+    window._ingestYearsOpen=null;
+    renderIngest();
+  });
+  rebuildIngestCinemaSelect();
+}
+
+/* helpers: cinema event matching (semicolon-separated) */
+function cinemaEventTokens(c){
+  if(!c.evento)return[];
+  return c.evento.split(';').map(function(e){return e.trim();}).filter(Boolean);
+}
+
+/* build merged cinema list: sheet data + any sala from sessions not in sheet */
+function getAllCinemas(){
+  var map={};var order=[];
+  cinemasArr.forEach(function(c){map[c.sala]=c;order.push(c.sala);});
+  sessoesArr.forEach(function(s){
+    if(s.cinema&&!map[s.cinema]){
+      map[s.cinema]={complexo:s.cinema,sala:s.cinema,servidor:'',serial:'',projetor:'',assentos:'',proporcao:'',som:'',obs:'',cineassista:'',evento:''};
+      order.push(s.cinema);
+    }
+  });
+  return{map:map,order:order};
+}
+
+/* sessions for a given sala, filtered by active events */
+function sessoesByCinema(sala){
+  return sessoesArr.filter(function(s){
+    return s.cinema===sala&&(!s.evento||activeEventsCinemas.has(s.evento));
+  }).sort(function(a,b){return a.date&&b.date?a.date-b.date||0:0;});
+}
+
+/* derive merged event tokens for a cinema (sheet + sessions) */
+function cinemaAllEvents(c){
+  var evSet=new Set(cinemaEventTokens(c));
+  sessoesArr.forEach(function(s){if(s.cinema===c.sala&&s.evento)evSet.add(s.evento);});
+  return Array.from(evSet);
+}
+
+function buildCinemasFilters(){
+  buildPills(document.getElementById('cinemasEventFilters'),eventColors,activeEventsCinemas,function(){
+    renderCinemas();
+  });
+  // populate estado dropdown
+  var estados=new Set();
+  var all=getAllCinemas();
+  all.order.forEach(function(sala){var e=all.map[sala].estado;if(e)estados.add(e);});
+  var selE=document.getElementById('cinemasEstadoSelect');
+  selE.innerHTML='<option value="">Todos os estados</option>';
+  Array.from(estados).sort().forEach(function(e){
+    var o=document.createElement('option');o.value=e;o.textContent=e;selE.appendChild(o);
+  });
+  cinemasEstadoFilter='';
+  rebuildCinemasComplexoSelect();
+}
+
+function rebuildCinemasComplexoSelect(){
+  var complexos=new Set();
+  var all=getAllCinemas();
+  all.order.forEach(function(sala){
+    var c=all.map[sala];
+    if(cinemasEstadoFilter&&c.estado!==cinemasEstadoFilter)return;
+    complexos.add(c.complexo||sala);
+  });
+  var sel=document.getElementById('cinemasComplexoSelect');
+  var prev=sel.value;
+  sel.innerHTML='<option value="">Todos os complexos</option>';
+  Array.from(complexos).sort().forEach(function(c){
+    var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);
+  });
+  // keep previous selection only if still valid
+  if(prev&&complexos.has(prev))sel.value=prev;
+  else{sel.value='';cinemasComplexoFilter='';}
+}
+
+function renderCinemas(){
+  currentCinemaDetail=null;
+  var ce=document.getElementById('cinemasEmpty');
+  var cc=document.getElementById('cinemas-container');
+  var dw=document.getElementById('cinemaDetailWrap');
+  dw.style.display='none';
+
+  var all=getAllCinemas();
+  // group by complexo
+  var byComplexo={},complexoOrder=[];
+  all.order.forEach(function(sala){
+    var c=all.map[sala];
+    var cx=c.complexo||sala;
+    if(cinemasEstadoFilter&&c.estado!==cinemasEstadoFilter)return;
+    if(cinemasComplexoFilter&&cx!==cinemasComplexoFilter)return;
+    if(!byComplexo[cx]){byComplexo[cx]=[];complexoOrder.push(cx);}
+    byComplexo[cx].push(c);
+  });
+
+  if(!complexoOrder.length){cc.style.display='none';ce.style.display='flex';return;}
+  ce.style.display='none';cc.style.display='block';
+
+  var html='<div style="padding:24px 32px 48px;max-width:1200px;margin:0 auto;">';
+  complexoOrder.forEach(function(cx){
+    html+='<div class="cinemas-complexo"><div class="cinemas-complexo-header">'+cx+'</div>';
+    html+='<div class="cinemas-grid">';
+    byComplexo[cx].forEach(function(c){
+      var allEvs=cinemaAllEvents(c);
+      var activeEvTags=allEvs.filter(function(ev){return activeEventsCinemas.has(ev);}).map(function(ev){
+        var col=eventColors[ev]||{bg:'var(--surface2)',text:'var(--text-dim)'};
+        return'<span class="cinema-ev-tag" style="background:'+col.bg+';color:'+col.text+'">'+ev+'</span>';
+      }).join('');
+      var sessCount=sessoesByCinema(c.sala).length;
+      var safeSala=c.sala.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      html+='<button class="cinema-card" onclick="openCinemaDetail(\''+safeSala+'\')">';
+      html+='<div class="cinema-card-name"><span class="cinema-card-name-link">'+c.sala+'</span><span class="cinema-card-arrow">→</span></div>';
+      // specs row
+      var specs=[];
+      if(c.servidor)specs.push('<span class="cinema-spec"><span class="cinema-spec-label">SRV</span><span class="cinema-spec-val">'+c.servidor+'</span></span>');
+      if(c.projetor)specs.push('<span class="cinema-spec"><span class="cinema-spec-label">PROJ</span><span class="cinema-spec-val">'+c.projetor+'</span></span>');
+      if(c.som)specs.push('<span class="cinema-spec"><span class="cinema-spec-label">SOM</span><span class="cinema-spec-val">'+c.som+'</span></span>');
+      if(c.assentos)specs.push('<span class="cinema-spec"><span class="cinema-spec-label">Assentos</span><span class="cinema-spec-val">'+c.assentos+'</span></span>');
+      if(specs.length)html+='<div class="cinema-card-specs">'+specs.join('')+'</div>';
+      if(activeEvTags)html+='<div class="cinema-card-events">'+activeEvTags+'</div>';
+      html+='<div class="cinema-card-sessions-count">'+sessCount+' '+(sessCount===1?'sessão':'sessões')+' nos eventos ativos</div>';
+      html+='</button>';
+    });
+    html+='</div></div>';
+  });
+  html+='</div>';
+  cc.innerHTML=html;
+}
+
+function openCinemaDetail(sala){
+  // push cinemas to history
+  navHistory.push({mode:'_cinemaList',label:'Cinemas'});
+  updateBackBtn();
+  if(!_browserNav)history.pushState({olga:'_cinemaDetail',sala:sala},'');
+  currentCinemaDetail=sala;
+  var all=getAllCinemas();
+  var c=all.map[sala]||{complexo:sala,sala:sala,servidor:'',serial:'',projetor:'',assentos:'',proporcao:'',som:'',obs:'',cineassista:'',evento:''};
+  var ce=document.getElementById('cinemasEmpty');
+  var cc=document.getElementById('cinemas-container');
+  var dw=document.getElementById('cinemaDetailWrap');
+  ce.style.display='none';cc.style.display='none';dw.style.display='block';
+
+  var allEvs=cinemaAllEvents(c);
+  var evTags=allEvs.filter(function(ev){return activeEventsCinemas.has(ev);}).map(function(ev){
+    var col=eventColors[ev]||{bg:'var(--surface2)',text:'var(--text-dim)'};
+    return'<span class="cinema-ev-tag" style="background:'+col.bg+';color:'+col.text+'">'+ev+'</span>';
+  }).join('');
+
+  var specsHtml='';
+  function ds(label,val){if(!val)return'';return'<div class="cinema-detail-spec"><div class="cinema-detail-spec-label">'+label+'</div><div class="cinema-detail-spec-val">'+val+'</div></div>';}
+  specsHtml+=ds('Servidor',c.servidor);
+  specsHtml+=ds('Serial',c.serial);
+  specsHtml+=ds('Projetor',c.projetor);
+  specsHtml+=ds('Assentos',c.assentos);
+  specsHtml+=ds('Proporção',c.proporcao);
+  specsHtml+=ds('Som',c.som);
+  if(c.cineassista){specsHtml+='<div class="cinema-detail-spec"><div class="cinema-detail-spec-label">Cineassista</div><div class="cinema-detail-spec-val '+(c.cineassista.toString().toUpperCase()==='SIM'?'cinema-cineassista-sim':'')+'">'+c.cineassista+'</div></div>';}
+
+  var sessoes=sessoesByCinema(sala);
+  var today=new Date();today.setHours(0,0,0,0);
+
+  function sessRowHtml(s){
+    var evCol=s.evento&&eventColors[s.evento]?eventColors[s.evento]:null;
+    var evBadge=s.evento?'<span class="cinema-ev-tag" style="background:'+(evCol?evCol.bg:'var(--surface2)')+';color:'+(evCol?evCol.text:'var(--text-dim)')+'">'+s.evento+'</span>':'';
+    var safe=s.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    // film titles
+    var filmTitles=s.filmes.map(function(c){var f=filmesMap[c];return f&&f.titulo?f.titulo:c;}).filter(Boolean).join(' · ');
+    // total duration
+    var totalMins=0;
+    s.filmes.forEach(function(c){var f=filmesMap[c];if(!f)return;var d=f.duracao||'';if(/^\d{1,2}:\d{2}/.test(d)){var p=d.split(':').map(Number);totalMins+=p[0]*60+p[1];}});
+    var durStr=totalMins>0?Math.floor(totalMins/60)+'h'+String(totalMins%60).padStart(2,'0'):'';
+    var html='<div class="cinema-sess-row" onclick="goToFicha(\''+safe+'\')">';
+    html+='<span class="cinema-sess-date">'+s.dia+'</span>';
+    html+='<span class="cinema-sess-time">'+s.hora+'</span>';
+    html+='<div class="cinema-sess-body">';
+    html+='<span class="cinema-sess-name">'+s.nome+'</span>';
+    if(filmTitles)html+='<span class="cinema-sess-film-list">'+filmTitles+'</span>';
+    html+='</div>';
+    if(evBadge)html+=evBadge;
+    if(durStr)html+='<span class="cinema-sess-dur">'+durStr+'</span>';
+    html+='</div>';
+    return html;
+  }
+
+  var upcoming=sessoes.filter(function(s){return!s.date||s.date>=today;});
+  var past=sessoes.filter(function(s){return s.date&&s.date<today;});
+
+  var sessHtml='';
+  if(!sessoes.length){
+    sessHtml='<div style="padding:20px 16px;font-family:var(--mono);font-size:11px;color:var(--text-muted);">Sem sessões para os eventos selecionados.</div>';
+  }else{
+    if(upcoming.length){
+      upcoming.forEach(function(s){sessHtml+=sessRowHtml(s);});
+    }else{
+      sessHtml='<div style="padding:14px 16px;font-family:var(--mono);font-size:11px;color:var(--text-muted);">Sem próximas sessões nos eventos selecionados.</div>';
+    }
+    if(past.length){
+      sessHtml+='<div class="cinema-past-section" id="pastSessSection" style="display:none;">';
+      past.slice().reverse().forEach(function(s){sessHtml+=sessRowHtml(s);});
+      sessHtml+='</div>';
+      sessHtml+='<button class="cinema-past-toggle" onclick="togglePastSess(this)">▸ Ver '+past.length+' '+(past.length===1?'sessão anterior':'sessões anteriores')+'</button>';
+    }
+  }
+
+  dw.innerHTML='<div style="padding:24px 32px 48px;max-width:1100px;margin:0 auto;">'
+    +'<div class="cinema-detail-header">'
+    +'<div class="cinema-detail-title">'+sala+(c.complexo&&c.complexo!==sala?' <span style="font-size:13px;font-weight:400;opacity:0.5">'+c.complexo+'</span>':'')+'</div>'
+    +(specsHtml?'<div class="cinema-detail-meta">'+specsHtml+'</div>':'')
+    +(evTags?'<div style="padding:8px 16px;border-top:1px solid var(--border);display:flex;gap:4px;flex-wrap:wrap;">'+evTags+'</div>':'')
+    +(c.obs?'<div class="cinema-detail-obs">'+c.obs+'</div>':'')
+    +'</div>'
+    +'<div class="cinema-detail-sessions">'
+    +'<div class="cinema-detail-sessions-header">Próximas sessões</div>'
+    +sessHtml
+    +'</div>'
+    +'</div>';
+}
+
+function togglePastSess(btn){
+  var sec=document.getElementById('pastSessSection');
+  if(!sec)return;
+  var open=sec.style.display!=='none';
+  sec.style.display=open?'none':'block';
+  var count=sec.querySelectorAll('.cinema-sess-row').length;
+  btn.textContent=(open?'▸':'▾')+' '+(open?'Ver ':'Ocultar ')+count+' '+(count===1?'sessão anterior':'sessões anteriores');
+}
+
+
+function renderDayTabs(){
+  var container=document.getElementById('dayTabs');container.innerHTML='';
+  // only days that have ≥1 session from an active event (and optional cinema filter)
+  var activeDays=days.filter(function(d){
+    return sessoesArr.some(function(s){
+      return s.date&&s.date.toISOString().slice(0,10)===d.key&&
+             (!s.evento||activeEventsGrade.has(s.evento))&&
+             (!gradeCinemaFilter||s.cinema===gradeCinemaFilter);
+    });
+  });
+  // if currentDay is no longer valid, pick the last valid day
+  var validKeys=activeDays.map(function(d){return d.key;});
+  if(currentDay&&validKeys.indexOf(currentDay)===-1){
+    currentDay=validKeys.length?validKeys[validKeys.length-1]:null;
+  }
+  var byYear={},yearOrder=[];
+  activeDays.forEach(function(d){
+    var y=d.date.getFullYear();
+    if(!byYear[y]){byYear[y]=[];yearOrder.push(y);}
+    byYear[y].push(d);
+  });
+  if(!window._gradeYearsOpen){
+    window._gradeYearsOpen=new Set();
+    if(currentDay) window._gradeYearsOpen.add(new Date(currentDay+'T00:00:00').getFullYear());
+    else if(yearOrder.length) window._gradeYearsOpen.add(yearOrder[yearOrder.length-1]);
+  }
+  yearOrder.forEach(function(y){
+    var isOpen=window._gradeYearsOpen.has(y);
+    var yBtn=document.createElement('button');
+    yBtn.className='year-tab'+(isOpen?' open':'');
+    yBtn.innerHTML=String(y)+'<span class="year-arrow">'+(isOpen?'▾':'▸')+'</span>';
+    yBtn.addEventListener('click',function(){
+      if(window._gradeYearsOpen.has(y)) window._gradeYearsOpen.delete(y);
+      else window._gradeYearsOpen.add(y);
+      renderDayTabs();
+    });
+    container.appendChild(yBtn);
+    if(isOpen){
+      byYear[y].forEach(function(d){
+        var btn=document.createElement('button');btn.className='day-tab'+(d.key===currentDay?' active':'');
+        btn.textContent=d.date.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+        btn.addEventListener('click',function(){currentDay=d.key;renderDayTabs();renderGrade();});
+        container.appendChild(btn);
+      });
+    }
+  });
+}
+
+function goBack(){
+  if(!navHistory.length)return;
+  var prev=navHistory.pop();
+  updateBackBtn();
+  if(prev.mode==='_cinemaList'){
+    // return to cinema list view within the cinemas module
+    renderCinemas();
+  }else{
+    switchMode(prev.mode,true);
+  }
+}
+
+function updateBackBtn(){
+  var btn=document.getElementById('backBtn');
+  if(navHistory.length){
+    btn.classList.add('visible');
+    btn.textContent='← '+navHistory[navHistory.length-1].label;
+  }else{
+    btn.classList.remove('visible');
+  }
+}
+
+function goToFicha(nomeSessao){
+  if(!_browserNav)history.pushState({olga:'ficha',session:nomeSessao},'');
+  // push current mode to history before navigating
+  if(currentMode&&currentMode!=='ficha'){
+    var labels={grade:'Grade',busca:'Busca',ingest:'Ingest'};
+    navHistory.push({mode:currentMode,label:labels[currentMode]||currentMode});
+    updateBackBtn();
+  }
+  var sel=document.getElementById('sessionSelect');
+  sel.value=nomeSessao;
+  var ev=document.createEvent('Event');ev.initEvent('change',true,true);sel.dispatchEvent(ev);
+  switchMode('ficha',true); // true = no push
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderGrade(){
+  renderDayTabs();
+  var ge=document.getElementById('gradeEmpty'),gw=document.getElementById('gradeWrap');
+  var chr=document.getElementById('colHeaderRow'),gb2=document.getElementById('gridBody');
+  var tip=document.getElementById('tooltip');
+  var ds=sessoesArr.filter(function(s){
+    return s.date&&s.date.toISOString().slice(0,10)===currentDay&&
+           (!s.evento||activeEventsGrade.has(s.evento))&&
+           (!gradeCinemaFilter||s.cinema===gradeCinemaFilter);
+  });
+  if(!ds.length){gw.style.display='none';ge.style.display='flex';return;}
+  ge.style.display='none';gw.style.display='block';
+  var co=[],cs=new Set();ds.forEach(function(s){if(!cs.has(s.cinema)){cs.add(s.cinema);co.push(s.cinema);}});
+  var minH=24,maxH=0;ds.forEach(function(s){if(!s.time)return;minH=Math.min(minH,s.time.h);var totalM=0;s.filmes.forEach(function(c){var f=filmesMap[c];if(!f)return;var d=f.duracao||'';if(/^\d{1,2}:\d{2}/.test(d)){var p=d.split(':').map(Number);totalM+=p[0]*60+p[1];}});var endH=s.time.h+(s.time.m+(totalM||90))/60;maxH=Math.max(maxH,endH);});
+  if(minH===24)minH=9;minH=Math.max(0,minH-1);maxH=Math.min(26,maxH+1);
+  var PPM=2.4,gridH=(maxH-minH)*60*PPM;
+  chr.innerHTML='';var gh=document.createElement('div');gh.className='time-gutter-header';chr.appendChild(gh);
+  co.forEach(function(cinema){var cnt=ds.filter(function(s){return s.cinema===cinema;}).length;var div=document.createElement('div');div.className='col-header';div.innerHTML='<div class="col-cinema-name">'+cinema+'</div><div class="col-session-count">'+cnt+' sessão'+(cnt!==1?'ões':'')+'</div>';chr.appendChild(div);});
+  gb2.innerHTML='';gb2.style.height=gridH+'px';
+  var gut=document.createElement('div');gut.className='time-gutter';gut.style.height=gridH+'px';
+  for(var h=minH;h<=maxH;h++){var top=(h-minH)*60*PPM;var lbl=document.createElement('div');lbl.className='time-label';lbl.style.top=top+'px';lbl.textContent=String(h%24).padStart(2,'0')+':00';gut.appendChild(lbl);var half=document.createElement('div');half.className='hour-line half';half.style.top=(top+30*PPM)+'px';gut.appendChild(half);}
+  gb2.appendChild(gut);
+  co.forEach(function(cinema){
+    var col=document.createElement('div');col.className='grid-col';col.style.height=gridH+'px';
+    for(var h=minH;h<=maxH;h++){var line=document.createElement('div');line.className='hour-line';line.style.top=((h-minH)*60*PPM)+'px';col.appendChild(line);}
+    ds.filter(function(s){return s.cinema===cinema;}).forEach(function(s){
+      if(!s.time)return;
+      var totalMinsS=0;
+      s.filmes.forEach(function(c){var f=filmesMap[c];if(!f)return;var d=f.duracao||'';if(/^\d{1,2}:\d{2}/.test(d)){var p=d.split(':').map(Number);totalMinsS+=p[0]*60+p[1];}});
+      var dur2=totalMinsS>0?totalMinsS:Math.max(60,s.filmes.length*25);
+      var tm=(s.time.h-minH)*60+s.time.m;
+      var c2=eventColors[s.evento]||{bg:'#555',text:'#fff'};
+      var blk=document.createElement('div');blk.className='session-block';
+      blk.style.top=(tm*PPM)+'px';blk.style.height=Math.max(32,dur2*PPM)+'px';blk.style.background=c2.bg;blk.style.color=c2.text;
+      blk.innerHTML='<div class="block-time">'+s.time.str+'</div><div class="block-name">'+s.nome+'</div>'+(s.filmes.length?'<div class="block-films">'+s.filmes.length+' filme'+(s.filmes.length!==1?'s':'')+'</div>':'')+(s.evento?'<div class="block-event">'+s.evento+'</div>':'')+'<div class="block-hint">↗ ficha</div>';
+      blk.addEventListener('mouseenter',function(ev){showTooltip(ev,s);});
+      blk.addEventListener('mousemove',function(ev){moveTooltip(ev);});
+      blk.addEventListener('mouseleave',function(){tip.style.display='none';});
+      blk.addEventListener('click',function(){tip.style.display='none';goToFicha(s.nome);});
+      col.appendChild(blk);
+    });
+    gb2.appendChild(col);
+  });
+}
+
+function showTooltip(ev,s){
+  var tip=document.getElementById('tooltip');
+  var totalMinsS=0;
+  s.filmes.forEach(function(c){var f=filmesMap[c];if(!f)return;var d=f.duracao||'';if(/^\d{1,2}:\d{2}/.test(d)){var p=d.split(':').map(Number);totalMinsS+=p[0]*60+p[1];}});
+  var durStr=totalMinsS>0?Math.floor(totalMinsS/60)+'h'+String(totalMinsS%60).padStart(2,'0'):'';
+  var fl=s.filmes.map(function(c){var f=filmesMap[c];if(!f)return'<div class="tt-film">'+c+'</div>';return'<div class="tt-film"><span>'+f.titulo+'</span> · '+c+'</div>';}).join('');
+  tip.innerHTML='<div class="tt-name">'+s.nome+'</div><div class="tt-row">📅 <span>'+s.dia+'</span></div><div class="tt-row">⏰ <span>'+(s.time?s.time.str:'—')+(durStr?' · '+durStr:'')+'</span></div><div class="tt-row">🎭 <span>'+s.cinema+'</span></div>'+(s.evento?'<div class="tt-row">📋 <span>'+s.evento+'</span></div>':'')+(fl?'<div class="tt-films">'+fl+'</div>':'');
+  tip.style.display='block';moveTooltip(ev);
+}
+function moveTooltip(ev){
+  var tip=document.getElementById('tooltip');
+  var tw=tip.offsetWidth,th=tip.offsetHeight;
+  var mx=ev.clientX,my=ev.clientY;
+  var gap=8;// px between cursor and tooltip edge
+  var x=mx+gap,y=my+gap;
+  if(x+tw>window.innerWidth-gap) x=mx-tw-gap;
+  if(y+th>window.innerHeight-gap) y=my-th-gap;
+  if(x<gap) x=gap;
+  if(y<gap) y=gap;
+  tip.style.left=x+'px';tip.style.top=y+'px';
+}
+
+/* BUSCA */
+document.getElementById('searchInput').addEventListener('input',function(){buscaQuery=this.value.trim();document.getElementById('searchClear').style.display=buscaQuery?'block':'none';renderBuscaResults();});
+document.getElementById('searchClear').addEventListener('click',function(){document.getElementById('searchInput').value='';buscaQuery='';this.style.display='none';renderBuscaResults();});
+
+function hl(str,q){if(!q||!str)return str||'';var re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');return str.replace(re,'<mark>$1</mark>');}
+function statusBadge(v){if(!v||v==='-')return'';var u=v.toUpperCase();if(u.includes('OK'))return'<span class="card-status status-ok">'+v+'</span>';if(u.includes('CANCEL'))return'<span class="card-status status-cancel">'+v+'</span>';return'<span class="card-status status-other">'+v+'</span>';}
+
+function toggleExpand(idx){
+  var card=document.getElementById('bcard-'+idx);
+  if(!card)return;
+  // lazy render: build expand content only on first open
+  var expandDiv=card.querySelector('.card-expand');
+  if(expandDiv&&expandDiv.dataset.lazy==='1'){
+    var f=filteredFilmes[idx];
+    if(f){
+      var kdm=(f.kdm||'').toLowerCase()==='sim';
+      function ef(label,value,cls){
+        var v=efv(value);if(v==='—'&&!value)return'';
+        return'<div class="expand-field"><div class="expand-label">'+label+'</div><div class="expand-value'+(cls?' '+cls:'')+'">'+v+'</div></div>';
+      }
+      var expandContent=[
+        ef('A · Evento',f.evento),
+        ef('B · Código',f.codigo),
+        ef('C · HD',f.hd),
+        ef('D · Título',f.titulo),
+        ef('E · Idioma',f.idioma),
+        ef('F · Legenda',f.legenda),
+        ef('H · VF',f.vf),
+        ef('I · Lente',f.lente),
+        ef('J · Som',f.som),
+        ef('K',f.col_k),
+        ef('L · KDM',f.kdm,kdm?'warn':''),
+        ef('M · Status',f.status),
+        ef('N',f.col_n),
+        ef('O · Observações',f.obs),
+        '<div class="expand-sep"></div>',
+        ef('P · CPL',f.cpl,'accent'),
+        ef('Y · CPL OV',f.cplOV,'accent'),
+        ef('Q · Resolução',f.resolucao),
+        ef('T · Duração',f.duracao),
+        ef('V · GB',f.gb),
+        ef('X · FPS',f.fps),
+      ].filter(Boolean).join('');
+      expandDiv.innerHTML='<div class="expand-grid">'+expandContent+'</div>';
+      delete expandDiv.dataset.lazy;
+    }
+  }
+  card.classList.toggle('expanded');
+}
+
+function efv(v){return(!v||v==='-'||v==='0')?'—':v;}// expand field value
+
+/* FILTROS AVANÇADOS */
+var _fpOpen=false;
+function toggleFilterPanel(){
+  _fpOpen=!_fpOpen;
+  var fp=document.getElementById('filterPanel');
+  var btn=document.getElementById('filterToggleBtn');
+  fp.classList.toggle('open',_fpOpen);
+  btn.classList.toggle('active',_fpOpen);
+}
+
+function countActiveFilters(){
+  var n=0;
+  var normKeys=['evento','hd','idioma','legenda','vf','lente','som','kdm','status','col_k','resolucao','fps'];
+  normKeys.forEach(function(k){if(buscaFilters[k].size>0||buscaFilters[k+'_ex'].size>0)n++;});
+  var binKeys=['titulo_bin','obs_bin','cpl_bin','cplOV_bin','col_n_bin','legenda_bin'];
+  binKeys.forEach(function(k){if(buscaFilters[k]!==null)n++;});
+  if(buscaFilters.duracao_min!==null||buscaFilters.duracao_max!==null)n++;
+  if(buscaFilters.gb_min!==null||buscaFilters.gb_max!==null)n++;
+  return n;
+}
+
+function updateFilterBadge(){
+  var n=countActiveFilters();
+  var badge=document.getElementById('filterBadge');
+  var clearBtn=document.getElementById('fpClearBtn');
+  badge.textContent=n;
+  badge.classList.toggle('visible',n>0);
+  clearBtn.classList.toggle('visible',n>0);
+}
+
+function clearAllBuscaFilters(){
+  var normKeys=['evento','hd','idioma','legenda','vf','lente','som','kdm','status','col_k','resolucao','fps'];
+  normKeys.forEach(function(k){buscaFilters[k].clear();buscaFilters[k+'_ex'].clear();});
+  ['titulo_bin','obs_bin','cpl_bin','cplOV_bin','col_n_bin','legenda_bin'].forEach(function(k){buscaFilters[k]=null;});
+  buscaFilters.duracao_min=null;buscaFilters.duracao_max=null;
+  buscaFilters.gb_min=null;buscaFilters.gb_max=null;
+  document.querySelectorAll('#fpNormalGroups .fpill').forEach(function(p){p.classList.remove('active','excluded');});
+  document.querySelectorAll('#fpNormalGroups .fp-group-label').forEach(function(l){l.classList.remove('has-active');});
+  document.querySelectorAll('#fpBinaryGroups .bpill').forEach(function(p){p.classList.remove('active-yes','active-no');});
+  document.querySelectorAll('#fpBinaryGroups .fp-group-label').forEach(function(l){l.classList.remove('has-active');});
+  document.querySelectorAll('#fpRangeGroups .fp-range-input').forEach(function(i){i.value='';i.classList.remove('has-val');});
+  document.querySelectorAll('#fpRangeGroups .fp-range-preset').forEach(function(p){p.classList.remove('active');});
+  updateFilterBadge();
+  renderBuscaResults();
+}
+
+function parseDurMinutes(v){
+  if(!v)return null;
+  v=v.toString().trim();
+  // H:MM:SS ou HH:MM:SS — formato canônico da planilha
+  var m3=v.match(/^(\d{1,3}):(\d{2}):\d{2}/);
+  if(m3)return parseInt(m3[1])*60+parseInt(m3[2]);
+  // H:MM sem segundos — fallback
+  var m2=v.match(/^(\d+):(\d{2})$/);
+  if(m2)return parseInt(m2[1])*60+parseInt(m2[2]);
+  // número puro (minutos)
+  var n=parseFloat(v.replace(',','.'));return isNaN(n)?null:n;
+}
+function parseGB(v){if(!v)return null;var n=parseFloat(v.toString().replace(',','.'));return isNaN(n)?null:n;}
+
+function applyBuscaFilters(f){
+  var normMap={evento:'evento',hd:'hd',idioma:'idioma',legenda:'legenda',vf:'vf',lente:'lente',som:'som',kdm:'kdm',status:'status',col_k:'col_n',resolucao:'resolucao',fps:'fps'};
+  for(var key in normMap){
+    var val=(f[normMap[key]]||'').toString().trim();
+    if(buscaFilters[key].size>0&&!buscaFilters[key].has(val))return false;
+    if(buscaFilters[key+'_ex']&&buscaFilters[key+'_ex'].has(val))return false;
+  }
+  var binMap={titulo_bin:'titulo',obs_bin:'obs',cpl_bin:'cpl',cplOV_bin:'cplOV',col_n_bin:'col_n',legenda_bin:'legenda'};
+  for(var bk in binMap){
+    var state=buscaFilters[bk];
+    if(state===null)continue;
+    var bval=clean(f[binMap[bk]]);
+    if(state==='sim'&&!bval)return false;
+    if(state==='nao'&&bval)return false;
+  }
+  // range: duracao (in minutes)
+  if(buscaFilters.duracao_min!==null||buscaFilters.duracao_max!==null){
+    var dm=parseDurMinutes(f.duracao);
+    if(dm===null)return false;
+    if(buscaFilters.duracao_min!==null&&dm<buscaFilters.duracao_min)return false;
+    if(buscaFilters.duracao_max!==null&&dm>buscaFilters.duracao_max)return false;
+  }
+  // range: GB
+  if(buscaFilters.gb_min!==null||buscaFilters.gb_max!==null){
+    var gv=parseGB(f.gb);
+    if(gv===null)return false;
+    if(buscaFilters.gb_min!==null&&gv<buscaFilters.gb_min)return false;
+    if(buscaFilters.gb_max!==null&&gv>buscaFilters.gb_max)return false;
+  }
+  return true;
+}
+
+function buildBuscaFilterPanel(){
+  // reset filter state
+  var normKeys=['evento','hd','idioma','legenda','vf','lente','som','kdm','status','col_k','resolucao','fps'];
+  normKeys.forEach(function(k){buscaFilters[k].clear();});
+  ['titulo_bin','obs_bin','cpl_bin','cplOV_bin','col_n_bin','legenda_bin'].forEach(function(k){buscaFilters[k]=null;});
+
+  var fieldMap=[
+    {key:'evento',label:'Evento',field:'evento'},
+    {key:'hd',label:'HD',field:'hd'},
+    {key:'idioma',label:'Idioma',field:'idioma'},
+    {key:'legenda',label:'Leg DCP',field:'legenda'},
+    {key:'vf',label:'VF',field:'vf'},
+    {key:'lente',label:'Lente',field:'lente'},
+    {key:'som',label:'Som',field:'som'},
+    {key:'kdm',label:'KDM',field:'kdm'},
+    {key:'status',label:'Status',field:'status'},
+    {key:'col_k',label:'Stat. Leg.',field:'col_n'},
+    {key:'resolucao',label:'Resolução',field:'resolucao'},
+    {key:'fps',label:'FPS',field:'fps'},
+  ];
+
+  var ng=document.getElementById('fpNormalGroups');
+  ng.innerHTML='';
+  fieldMap.forEach(function(fd){
+    var valCount={};
+    filmesArr.forEach(function(f){
+      // for evento, only include values active in the busca pills
+      if(fd.key==='evento'&&!activeEventsBusca.has(f[fd.field]))return;
+      var v=(f[fd.field]||'').toString().trim();
+      if(v&&v!=='-'&&v!=='0'){valCount[v]=(valCount[v]||0)+1;}
+    });
+    if(!Object.keys(valCount).length)return;
+    var sorted=Object.keys(valCount).sort(function(a,b){return a.localeCompare(b,'pt');});
+    if(fd.key==='idioma'){
+      sorted=Object.keys(valCount).sort(function(a,b){return valCount[b]-valCount[a];}).slice(0,20).sort(function(a,b){return a.localeCompare(b,'pt');});
+    }
+
+    var row=document.createElement('div');row.className='fp-group';
+
+    var lbl=document.createElement('button');lbl.className='fp-group-label';
+    var arrow=document.createElement('span');arrow.className='fp-group-arrow';arrow.textContent='▶';
+    var countBadge=document.createElement('span');countBadge.className='fp-group-count';
+    lbl.appendChild(arrow);
+    lbl.appendChild(document.createTextNode(fd.label));
+    lbl.appendChild(countBadge);
+    lbl.addEventListener('click',function(){lbl.classList.toggle('open');});
+
+    var wrap=document.createElement('div');wrap.className='fp-pills';
+
+    function refreshLblState(){
+      var n=buscaFilters[fd.key].size+buscaFilters[fd.key+'_ex'].size;
+      countBadge.textContent=n;
+      lbl.classList.toggle('has-active',n>0);
+    }
+
+    sorted.forEach(function(v){
+      var p=document.createElement('button');p.className='fpill';p.textContent=v;
+      p.addEventListener('click',function(){
+        if(buscaFilters[fd.key].has(v)){
+          // included → excluded
+          buscaFilters[fd.key].delete(v);
+          buscaFilters[fd.key+'_ex'].add(v);
+          p.classList.remove('active');p.classList.add('excluded');
+        }else if(buscaFilters[fd.key+'_ex'].has(v)){
+          // excluded → neutral
+          buscaFilters[fd.key+'_ex'].delete(v);
+          p.classList.remove('excluded');
+        }else{
+          // neutral → included
+          buscaFilters[fd.key].add(v);p.classList.add('active');
+        }
+        refreshLblState();updateFilterBadge();renderBuscaResults();
+      });
+      wrap.appendChild(p);
+    });
+    row.appendChild(lbl);row.appendChild(wrap);ng.appendChild(row);
+  });
+
+  var binFields=[
+    {key:'titulo_bin',label:'Título'},
+    {key:'obs_bin',label:'Observações'},
+    {key:'cpl_bin',label:'CPL'},
+    {key:'cplOV_bin',label:'CPL OV'},
+    {key:'col_n_bin',label:'Link DCP'},
+    {key:'legenda_bin',label:'Leg / Trans.'},
+  ];
+  var bg=document.getElementById('fpBinaryGroups');
+  bg.innerHTML='';
+  binFields.forEach(function(fd){
+    var row=document.createElement('div');row.className='fp-group';
+
+    var lbl=document.createElement('button');lbl.className='fp-group-label';
+    var arrow=document.createElement('span');arrow.className='fp-group-arrow';arrow.textContent='▶';
+    lbl.appendChild(arrow);
+    lbl.appendChild(document.createTextNode(fd.label));
+    lbl.addEventListener('click',function(){lbl.classList.toggle('open');});
+
+    var wrap=document.createElement('div');wrap.className='fp-pills';
+
+    function mkBpill(label,state,cls){
+      var p=document.createElement('button');p.className='bpill';p.textContent=label;
+      p.addEventListener('click',function(){
+        if(buscaFilters[fd.key]===state){
+          buscaFilters[fd.key]=null;p.classList.remove(cls);
+        }else{
+          wrap.querySelectorAll('.bpill').forEach(function(s){s.classList.remove('active-yes','active-no');});
+          buscaFilters[fd.key]=state;p.classList.add(cls);
+        }
+        lbl.classList.toggle('has-active',buscaFilters[fd.key]!==null);
+        updateFilterBadge();renderBuscaResults();
+      });
+      return p;
+    }
+    wrap.appendChild(mkBpill('✓ preenchido','sim','active-yes'));
+    wrap.appendChild(mkBpill('— vazio','nao','active-no'));
+    row.appendChild(lbl);row.appendChild(wrap);bg.appendChild(row);
+  });
+  updateFilterBadge();
+  buildRangeFilters();
+}
+
+function buildRangeFilters(){
+  var rg=document.getElementById('fpRangeGroups');
+  rg.innerHTML='';
+
+  var fields=[
+    {
+      label:'Duração',unit:'min',
+      minKey:'duracao_min',maxKey:'duracao_max',
+      parse:parseDurMinutes,
+      minPh:'mín',maxPh:'máx',
+      presets:[
+        {label:'< 1h',min:null,max:59},
+        {label:'1–2h',min:60,max:119},
+        {label:'> 2h',min:120,max:null},
+        {label:'curta < 15\'',min:null,max:14},
+      ]
+    },
+    {
+      label:'Tamanho',unit:'GB',
+      minKey:'gb_min',maxKey:'gb_max',
+      parse:parseGB,
+      minPh:'mín',maxPh:'máx',
+      presets:[
+        {label:'< 50 GB',min:null,max:50},
+        {label:'50–100 GB',min:50,max:100},
+        {label:'> 100 GB',min:100,max:null},
+        {label:'> 200 GB',min:200,max:null},
+      ]
+    }
+  ];
+
+  fields.forEach(function(fd){
+    var wrap=document.createElement('div');wrap.className='fp-range-group';
+
+    // label row
+    var titleRow=document.createElement('div');
+    titleRow.style.cssText='font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);padding:0 0 4px 0;border-bottom:1px solid var(--border);margin-bottom:6px;';
+    titleRow.textContent=fd.label;
+    wrap.appendChild(titleRow);
+
+    // inputs row
+    var inputsRow=document.createElement('div');inputsRow.className='fp-range-row';
+
+    function makeInput(ph,stateKey,isMax){
+      var inp=document.createElement('input');
+      inp.type='number';inp.min='0';inp.step='1';
+      inp.className='fp-range-input';inp.placeholder=ph;
+      if(buscaFilters[stateKey]!==null){inp.value=buscaFilters[stateKey];inp.classList.add('has-val');}
+      inp.addEventListener('input',function(){
+        var v=inp.value.trim();
+        inp.classList.toggle('has-val',v!=='');
+        buscaFilters[stateKey]=v===''?null:parseFloat(v);
+        // clear any active preset whose values don't match anymore
+        wrap.querySelectorAll('.fp-range-preset').forEach(function(p){
+          var mn=p.dataset.min===''?null:parseFloat(p.dataset.min);
+          var mx=p.dataset.max===''?null:parseFloat(p.dataset.max);
+          if(mn!==buscaFilters[fd.minKey]||mx!==buscaFilters[fd.maxKey])p.classList.remove('active');
+          else p.classList.add('active');
+        });
+        updateFilterBadge();renderBuscaResults();
+      });
+      return inp;
+    }
+
+    var opMin=document.createElement('span');opMin.className='fp-range-op';opMin.textContent='≥';
+    var inpMin=makeInput(fd.minPh,fd.minKey,false);
+    var sep=document.createElement('span');sep.className='fp-range-sep';sep.textContent='·';
+    var opMax=document.createElement('span');opMax.className='fp-range-op';opMax.textContent='≤';
+    var inpMax=makeInput(fd.maxPh,fd.maxKey,true);
+    var unit=document.createElement('span');unit.className='fp-range-unit';unit.textContent=fd.unit;
+    inputsRow.appendChild(opMin);inputsRow.appendChild(inpMin);
+    inputsRow.appendChild(sep);
+    inputsRow.appendChild(opMax);inputsRow.appendChild(inpMax);
+    inputsRow.appendChild(unit);
+    wrap.appendChild(inputsRow);
+
+    // presets row
+    var presetsRow=document.createElement('div');presetsRow.className='fp-range-presets';
+    fd.presets.forEach(function(pr){
+      var btn=document.createElement('button');btn.className='fp-range-preset';btn.textContent=pr.label;
+      btn.dataset.min=pr.min===null?'':pr.min;
+      btn.dataset.max=pr.max===null?'':pr.max;
+      // mark active if matches current state
+      if(buscaFilters[fd.minKey]===pr.min&&buscaFilters[fd.maxKey]===pr.max)btn.classList.add('active');
+      btn.addEventListener('click',function(){
+        var alreadyActive=btn.classList.contains('active');
+        // clear all presets
+        presetsRow.querySelectorAll('.fp-range-preset').forEach(function(p){p.classList.remove('active');});
+        if(alreadyActive){
+          buscaFilters[fd.minKey]=null;buscaFilters[fd.maxKey]=null;
+          inpMin.value='';inpMin.classList.remove('has-val');
+          inpMax.value='';inpMax.classList.remove('has-val');
+        }else{
+          btn.classList.add('active');
+          buscaFilters[fd.minKey]=pr.min;buscaFilters[fd.maxKey]=pr.max;
+          inpMin.value=pr.min===null?'':pr.min;inpMin.classList.toggle('has-val',pr.min!==null);
+          inpMax.value=pr.max===null?'':pr.max;inpMax.classList.toggle('has-val',pr.max!==null);
+        }
+        updateFilterBadge();renderBuscaResults();
+      });
+      presetsRow.appendChild(btn);
+    });
+    wrap.appendChild(presetsRow);
+    rg.appendChild(wrap);
+
+    // spacer between fields
+    var sp=document.createElement('div');sp.style.height='12px';rg.appendChild(sp);
+  });
+}
+
+function renderBuscaResults(){
+  var re=document.getElementById('busca-results'),be=document.getElementById('buscaEmpty');
+  document.getElementById('buscaLoading').style.display='none';
+  var q=buscaQuery.toLowerCase();
+  var filtered=filmesArr.filter(function(f){
+    if(f.evento&&!activeEventsBusca.has(f.evento))return false;
+    if(!applyBuscaFilters(f))return false;
+    if(!q)return true;
+    return f.titulo.toLowerCase().includes(q)||f.codigo.toLowerCase().includes(q)||f.cpl.toLowerCase().includes(q)||f.idioma.toLowerCase().includes(q)||f.obs.toLowerCase().includes(q)||f.status.toLowerCase().includes(q)||f.cplOV.toLowerCase().includes(q);
+  });
+  document.getElementById('resultCount').textContent=filtered.length+' filme'+(filtered.length!==1?'s':'');
+  if(!filtered.length){re.style.display='none';be.style.display='flex';var hasFilters=countActiveFilters()>0;be.querySelector('p').textContent=q?'Nenhum resultado para "'+buscaQuery+'"':(hasFilters?'Nenhum resultado para os filtros ativos.':'Digite para buscar filmes.');return;}
+  be.style.display='none';re.style.display='grid';
+  filteredFilmes=filtered;
+
+  re.innerHTML=filtered.map(function(f,idx){
+    var col=eventColors[f.evento]||null;
+    var cpl=clean(f.cpl),obs=clean(f.obs),vf=clean(f.vf),leg=clean(f.legenda);
+    var kdm=(f.kdm||'').toLowerCase()==='sim';
+    var dur=fmtDur(clean(f.duracao)),gb=clean(f.gb),res=clean(f.resolucao),fps=clean(f.fps),hd=clean(f.hd);
+    var gbRaw=(f.gb&&f.gb!=='-')?f.gb.toString().trim():'';
+    var cplOV=clean(f.cplOV);
+    var sess=buscaReverseSessoes[f.codigo]||[];
+    var legStr=vf?'VF '+vf:leg;
+
+    var kdmTag=kdm
+      ?'<span class="badge badge-kdm">⚠ KDM</span>'
+      :'<span class="badge-kdm-no">kdm —</span>';
+    var resTag=res?'<div class="meta-tag"><span class="label">Res</span>'+res+'</div>':'';
+    var cplOVRow=cplOV?'<div class="cpl-ov-row"><div class="cpl-ov-label">CPL OV</div><div class="cpl-ov-value">'+hl(cplOV,buscaQuery)+'</div></div>':'';
+    var cplPanel=cpl
+      ?'<div class="card-cpl"><div class="cpl-label">CPL</div><div class="cpl-value">'+hl(cpl,buscaQuery)+'</div><div class="cpl-sub">'+(fps?fps+'fps ':'')+(gb?gb+' GB':'')+'</div>'+cplOVRow+'</div>'
+      :cplOV?'<div class="card-cpl"><div class="cpl-ov-row" style="margin:0;padding:0;border:none"><div class="cpl-ov-label">CPL OV</div><div class="cpl-ov-value">'+hl(cplOV,buscaQuery)+'</div></div></div>':'';
+    var sessRow=sess.length?'<div class="card-sessions"><span class="sessions-label">Sessões</span>'+sess.map(function(s){return'<span class="session-tag" onclick="goToFicha(\''+s.replace(/'/g,"\\'")+'\')" title="Abrir ficha: '+s.replace(/"/g,'&quot;')+'">'+s+'</span>';}).join('')+'</div>':'';
+
+    return'<div class="film-card" id="bcard-'+idx+'" style="border-left-color:'+(col?col.bg:'var(--border)')+'">'+
+      '<div>'+
+        '<div class="card-main">'+
+          '<div class="card-top">'+
+            '<span class="card-titulo-wrap" onclick="toggleExpand('+idx+')">'+
+              '<span class="card-titulo">'+hl(f.titulo||f.codigo,buscaQuery)+'</span>'+
+              '<span class="expand-toggle">▶</span>'+
+            '</span>'+
+            '<span class="card-codigo">'+hl(f.codigo,buscaQuery)+'</span>'+
+            (f.evento&&col?'<span class="card-evento" style="background:'+col.bg+';color:'+col.text+'">'+f.evento+'</span>':'')+
+            statusBadge(f.status)+
+            kdmTag+
+          '</div>'+
+          '<div class="card-meta">'+
+            lenteBadge(clean(f.lente))+' '+somBadge(clean(f.som))+
+            (hd?'<div class="meta-tag"><span class="label">HD</span>'+hl(hd,buscaQuery)+'</div>':'')+
+            (f.idioma?'<div class="meta-tag"><span class="label">Idioma</span>'+hl(f.idioma,buscaQuery)+'</div>':'')+
+            (legStr?'<div class="meta-tag"><span class="label">Leg</span>'+hl(legStr,buscaQuery)+'</div>':'')+
+            (dur&&dur!=='—'?'<div class="meta-tag"><span class="label">Dur</span>'+dur+'</div>':'')+
+            (gbRaw?'<div class="meta-tag"><span class="label">GB</span>'+gbRaw+'</div>':'')+
+            resTag+
+          '</div>'+
+          (obs?'<div class="card-obs">'+hl(obs,buscaQuery)+'</div>':'')+
+        '</div>'+
+        sessRow+
+        '<div class="card-expand" data-lazy="1"></div>'+
+      '</div>'+
+      cplPanel+
+    '</div>';
+  }).join('');
+}
+/* ZOOM */
+var ZOOM_STEPS=[70,80,90,100,110,120,130,150];
+var zoomIdx=ZOOM_STEPS.indexOf(100);
+function applyZoom(idx){
+  zoomIdx=Math.max(0,Math.min(ZOOM_STEPS.length-1,idx));
+  var pct=ZOOM_STEPS[zoomIdx];
+  document.getElementById('main-content').style.zoom=(pct/100);
+  document.getElementById('zoomLabel').textContent=pct+'%';
+  try{localStorage.setItem('olga-zoom',zoomIdx);}catch(e){}
+}
+function changeZoom(dir){applyZoom(zoomIdx+dir);}
+function resetZoom(){applyZoom(ZOOM_STEPS.indexOf(100));}
+(function(){
+  try{
+    var z=localStorage.getItem('olga-zoom');
+    if(z!==null){var i=parseInt(z);if(!isNaN(i))applyZoom(i);}
+  }catch(e){}
+})();
+/* THEME TOGGLE */
+function toggleTheme(){
+  var html=document.documentElement;
+  var isLight=html.getAttribute('data-theme')==='light';
+  var next=isLight?'dark':'light';
+  applyTheme(next);
+  try{localStorage.setItem('olga-theme',next);}catch(e){}
+}
+function applyTheme(theme){
+  var html=document.documentElement;
+  var icon=document.getElementById('themeIcon');
+  var label=document.getElementById('themeLabel');
+  if(theme==='light'){
+    html.setAttribute('data-theme','light');
+    icon.textContent='●';
+    label.textContent='Escuro';
+  }else{
+    html.removeAttribute('data-theme');
+    icon.textContent='☀';
+    label.textContent='Claro';
+  }
+}
+(function(){
+  try{
+    var t=localStorage.getItem('olga-theme');
+    if(t==='light')applyTheme('light');
+  }catch(e){}
+})();
+
+/* BROWSER BACK BUTTON — intercept popstate so the user never leaves the page accidentally */
+history.replaceState({olga:'landing'},'');
+window.addEventListener('popstate',function(e){
+  _browserNav=true;
+  if(navHistory.length>0){
+    goBack();
+    // re-insert a state so further back presses still work
+    history.pushState({olga:currentMode||'landing'},'');
+  }else if(currentMode){
+    goHome();
+    // don't push here — next back press should leave the page normally
+  }
+  _browserNav=false;
+});
+</script>
+</html>
