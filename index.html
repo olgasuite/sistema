@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -409,6 +410,9 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .zoom-level{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text-muted);min-width:36px;text-align:center;letter-spacing:0.05em;cursor:default;user-select:none;}
 .zoom-level:hover{color:var(--text-dim);}
 .zoom-level[title]{cursor:pointer;}
+#page-footer{position:fixed;bottom:0;left:0;right:0;z-index:100;height:22px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;padding:0 16px;pointer-events:none;}
+#page-footer span{font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.08em;}
+@media print{#page-footer{display:none!important;}}
 
 /* LIGHT THEME */
 [data-theme="light"]{
@@ -2240,7 +2244,7 @@ function renderBuscaResults(){
   }).join('');
 }
 /* ZOOM */
-var ZOOM_STEPS=[70,80,90,100,110,120,130,150];
+var ZOOM_STEPS=[70,80,90,100,110,120,130,150,170,200];
 var zoomIdx=ZOOM_STEPS.indexOf(100);
 function applyZoom(idx){
   zoomIdx=Math.max(0,Math.min(ZOOM_STEPS.length-1,idx));
@@ -2301,4 +2305,5 @@ window.addEventListener('popstate',function(e){
   _browserNav=false;
 });
 </script>
+<div id="page-footer"><span>última atualização · 05/04/2025 às 16:23</span></div>
 </html>
