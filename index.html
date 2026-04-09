@@ -1798,7 +1798,7 @@ function renderGrade(){
   });
   if(!ds.length){gw.style.display='none';ge.style.display='flex';return;}
   ge.style.display='none';gw.style.display='block';
-  var co=[],cs=new Set();ds.forEach(function(s){if(!cs.has(s.cinema)){cs.add(s.cinema);co.push(s.cinema);}});
+  var co=[],cs=new Set();ds.forEach(function(s){if(!cs.has(s.cinema)){cs.add(s.cinema);co.push(s.cinema);}});co.sort(function(a,b){return a.localeCompare(b,'pt-BR',{sensitivity:'base'});});
   var minH=24,maxH=0;ds.forEach(function(s){if(!s.time)return;minH=Math.min(minH,s.time.h);var totalM=0;s.filmes.forEach(function(c){var f=filmesMap[c];if(!f)return;var d=f.duracao||'';if(/^\d{1,2}:\d{2}/.test(d)){var p=d.split(':').map(Number);totalM+=p[0]*60+p[1];}});var endH=s.time.h+(s.time.m+(totalM||90))/60;maxH=Math.max(maxH,endH);});
   if(minH===24)minH=9;minH=Math.max(0,minH-1);maxH=Math.min(26,maxH+1);
   var PPM=2.4,gridH=(maxH-minH)*60*PPM;
