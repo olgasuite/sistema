@@ -209,17 +209,22 @@ td.cpl-cell{background:var(--cpl-bg);border-left:3px solid var(--cpl-border);pad
 .gpt-sess-name{font-family:var(--sans);font-size:11px;font-weight:600;color:var(--text);line-height:1.3;}
 .gpt-sess-films{font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-top:1px;}
 /* Grade table print mode */
-@media print{body.print-grade-table>*{display:none!important;}body.print-grade-table #gradePrintArea{display:block!important;}}
-#gradePrintArea{padding:14mm 11mm;}
-#gradePrintArea .gpt-table{border-collapse:collapse;width:100%;}
-#gradePrintArea .gpt-table th{font-family:monospace;font-size:8px;font-weight:700;background:#e8e8e8;color:#000;padding:5px 8px;border:1px solid #aaa;}
-#gradePrintArea .gpt-table td{font-size:10px;padding:5px 8px;border:1px solid #ccc;vertical-align:top;min-width:80px;}
-#gradePrintArea .gpt-table td.slot-label{font-family:monospace;font-size:9px;font-weight:700;background:#f0f0f0;color:#333;text-align:center;}
+@page{size:A4 landscape;margin:8mm;}
+@media print{
+  body.print-grade-table>*{display:none!important;}
+  body.print-grade-table #gradePrintArea{display:block!important;}
+  body.print-grade-table #gradePrintArea table{width:100%!important;}
+}
+#gradePrintArea{padding:0;display:none;}
+#gradePrintArea .gpt-table{border-collapse:collapse;width:100%;table-layout:fixed;}
+#gradePrintArea .gpt-table th{font-family:monospace;font-size:7px;font-weight:700;background:#e8e8e8;color:#000;padding:4px 6px;border:1px solid #aaa;word-break:break-word;}
+#gradePrintArea .gpt-table td{font-size:9px;padding:4px 6px;border:1px solid #ccc;vertical-align:top;}
+#gradePrintArea .gpt-table td.slot-label{font-family:monospace;font-size:8px;font-weight:700;background:#f0f0f0;color:#333;text-align:center;white-space:nowrap;width:44px;}
 #gradePrintArea .gpt-table td.empty{background:#fafafa;}
-#gradePrintArea .gpt-sess-time{font-family:monospace;font-size:8px;font-weight:700;color:#444;}
-#gradePrintArea .gpt-sess-name{font-family:sans-serif;font-size:10px;font-weight:600;color:#000;}
-#gradePrintArea .gpt-sess-films{font-family:monospace;font-size:8px;color:#666;}
-#gradePrintArea .gpt-print-header{font-family:monospace;font-size:12px;font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #000;color:#000;}
+#gradePrintArea .gpt-sess-time{font-family:monospace;font-size:7px;font-weight:700;color:#444;}
+#gradePrintArea .gpt-sess-name{font-family:sans-serif;font-size:9px;font-weight:600;color:#000;word-break:break-word;}
+#gradePrintArea .gpt-sess-films{font-family:monospace;font-size:7px;color:#666;}
+#gradePrintArea .gpt-print-header{font-family:monospace;font-size:11px;font-weight:700;margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid #000;color:#000;}
 
 /* BUSCA */
 #busca-results{padding:18px 24px;display:grid;gap:8px;}
@@ -1041,7 +1046,20 @@ function renderFicha(nome,s){
 }
 
 /* GRADE */
-function buildGradeDays(){var seen=new Set();days=[];sessoesArr.forEach(function(s){if(!s.date)return;var k=s.date.toISOString().slice(0,10);if(!seen.has(k)){seen.add(k);days.push({key:k,date:s.date});}});days.sort(function(a,b){return a.date-b.date;});currentDay=days.length?days[days.length-1].key:null;}
+/* Pick the best default day: today if available, else first future day, else last available */
+function pickBestDay(dayArr){
+  if(!dayArr.length)return null;
+  var today=new Date();today.setHours(0,0,0,0);
+  var todayKey=today.toISOString().slice(0,10);
+  // exact match for today
+  for(var i=0;i<dayArr.length;i++){if(dayArr[i].key===todayKey)return dayArr[i].key;}
+  // first day on or after today
+  for(var i=0;i<dayArr.length;i++){if(dayArr[i].date>=today)return dayArr[i].key;}
+  // fallback: last available day
+  return dayArr[dayArr.length-1].key;
+}
+
+function buildGradeDays(){var seen=new Set();days=[];sessoesArr.forEach(function(s){if(!s.date)return;var k=s.date.toISOString().slice(0,10);if(!seen.has(k)){seen.add(k);days.push({key:k,date:s.date});}});days.sort(function(a,b){return a.date-b.date;});currentDay=pickBestDay(days);}
 
 /* INGEST */
 function buildIngestDays(){
@@ -1053,7 +1071,7 @@ function buildIngestDays(){
     if(!seen.has(k)){seen.add(k);ingestDays.push({key:k,date:id});}
   });
   ingestDays.sort(function(a,b){return a.date-b.date;});
-  currentIngestDay=ingestDays.length?ingestDays[ingestDays.length-1].key:null;
+  currentIngestDay=pickBestDay(ingestDays);
   ingestCinemaFilter='';
   window._ingestYearsOpen=null;
 }
@@ -1072,7 +1090,7 @@ function renderIngestDayTabs(){
   });
   var validKeys=activeDays.map(function(d){return d.key;});
   if(currentIngestDay&&validKeys.indexOf(currentIngestDay)===-1){
-    currentIngestDay=validKeys.length?validKeys[validKeys.length-1]:null;
+    currentIngestDay=pickBestDay(activeDays);
   }
   var byYear={},yearOrder=[];
   activeDays.forEach(function(d){
@@ -1308,8 +1326,12 @@ function gptRenderTable(headers,slots,getSessionsFn){
       ss.forEach(function(s){
         var nf=s.filmes.length;
         var safeName=s.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        // compute total duration
+        var totalMins=0;
+        s.filmes.forEach(function(cod){var f=filmesMap[cod];if(!f)return;var d=f.duracao||'';var m3=d.match(/^(\d{1,3}):(\d{2}):\d{2}/);if(m3){totalMins+=parseInt(m3[1])*60+parseInt(m3[2]);}});
+        var durStr=totalMins>0?Math.floor(totalMins/60)+'h'+String(totalMins%60).padStart(2,'0'):'';
         html+='<div class="gpt-sess-entry" onclick="closeGradePrintModal();goToFicha(\''+safeName+'\')" title="Abrir ficha: '+s.nome.replace(/"/g,'&quot;')+'">';
-        html+='<div class="gpt-sess-time">'+s.time.str+'</div>';
+        if(durStr)html+='<div class="gpt-sess-time">'+durStr+'</div>';
         html+='<div class="gpt-sess-name">'+s.nome+'</div>';
         if(nf)html+='<div class="gpt-sess-films">'+nf+' filme'+(nf!==1?'s':'')+'</div>';
         html+='</div>';
@@ -1326,11 +1348,16 @@ function printGradeTable(){
   var wrap=document.getElementById('gptTableWrap');
   if(!wrap.querySelector('table')){buildGradePrintTable();if(!wrap.querySelector('table'))return;}
   var header=wrap.dataset.header||'Programação';
+  var evNames=Array.from(activeEventsGrade).sort().join(' · ');
+  var subHeader=evNames?'<div style="font-family:monospace;font-size:9px;color:#555;margin-top:3px;letter-spacing:0.08em;">'+evNames+'</div>':'';
   var pa=document.getElementById('gradePrintArea');
-  pa.innerHTML='<div class="gpt-print-header">'+header+'</div>'+wrap.innerHTML;
+  pa.innerHTML='<div class="gpt-print-header">'+header+subHeader+'</div>'+wrap.querySelector('table').outerHTML;
+  pa.style.display='block';
   document.body.classList.add('print-grade-table');
   window.print();
   document.body.classList.remove('print-grade-table');
+  pa.style.display='none';
+  pa.innerHTML='';
 }
 
 function buildPills(container,evColors,activeSet,onToggle){
@@ -1359,7 +1386,12 @@ function buildPills(container,evColors,activeSet,onToggle){
   container.appendChild(lbl);
   var pills=[];
   events.forEach(function(ev){var col=evColors[ev];
-    var pill=document.createElement('button');pill.className='event-pill active';pill.textContent=ev;pill.style.background=col.bg;pill.style.color=col.text;pill.style.borderColor=col.bg;
+    var isActive=activeSet.has(ev);
+    var pill=document.createElement('button');
+    pill.className='event-pill'+(isActive?' active':'');
+    pill.textContent=ev;
+    if(isActive){pill.style.background=col.bg;pill.style.color=col.text;pill.style.borderColor=col.bg;}
+    else{pill.style.background='transparent';pill.style.color='#555';pill.style.borderColor='transparent';}
     pill.addEventListener('click',function(){
       if(activeSet.has(ev)){activeSet.delete(ev);pill.style.background='transparent';pill.style.color='#555';pill.classList.remove('active');}
       else{activeSet.add(ev);pill.style.background=col.bg;pill.style.color=col.text;pill.classList.add('active');}
@@ -1679,10 +1711,10 @@ function renderDayTabs(){
              (!gradeCinemaFilter||s.cinema===gradeCinemaFilter);
     });
   });
-  // if currentDay is no longer valid, pick the last valid day
+  // if currentDay is no longer valid, pick best available day
   var validKeys=activeDays.map(function(d){return d.key;});
   if(currentDay&&validKeys.indexOf(currentDay)===-1){
-    currentDay=validKeys.length?validKeys[validKeys.length-1]:null;
+    currentDay=pickBestDay(activeDays);
   }
   var byYear={},yearOrder=[];
   activeDays.forEach(function(d){
@@ -2400,5 +2432,5 @@ window.addEventListener('popstate',function(e){
   _browserNav=false;
 });
 </script>
-<div id="page-footer"><span>última atualização · 06/04/2026 às 15:07</span></div>
+<div id="page-footer"><span>última atualização · 09/04/2026 às 15:07</span></div>
 </html>
