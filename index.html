@@ -1090,8 +1090,9 @@ function renderIngestDayTabs(){
     });
   });
   var validKeys=activeDays.map(function(d){return d.key;});
-  if(currentIngestDay&&validKeys.indexOf(currentIngestDay)===-1){
+  if(!currentIngestDay||validKeys.indexOf(currentIngestDay)===-1){
     currentIngestDay=pickBestDay(activeDays);
+    if(currentIngestDay) window._ingestYearsOpen=new Set([new Date(currentIngestDay+'T00:00:00').getFullYear()]);
   }
   var byYear={},yearOrder=[];
   activeDays.forEach(function(d){
@@ -1139,6 +1140,7 @@ function renderIngest(){
     return true;
   });
   rebuildIngestHdSelect();
+  rebuildIngestCinemaSelect();
   if(!sessions.length){iw.style.display='none';ie.style.display='flex';ie.querySelector('p').textContent='Nenhuma sessão para ingest neste dia.';return;}
   if(ingestHdFilter){
     var hasHdFilms=sessions.some(function(s){return s.filmes.some(function(c){var f=filmesMap[c];return f&&(f.hd||'').toString().trim()===ingestHdFilter;});});
@@ -1160,6 +1162,10 @@ function renderIngest(){
   sessions.forEach(function(s){
     if(!byCinema[s.cinema]){byCinema[s.cinema]=[];cinemaOrder.push(s.cinema);}
     byCinema[s.cinema].push(s);
+  });
+  // sort each cinema's sessions by start time
+  cinemaOrder.forEach(function(c){
+    byCinema[c].sort(function(a,b){return(a.time?a.time.h*60+a.time.m:0)-(b.time?b.time.h*60+b.time.m:0);});
   });
 
   var html='<div class="ingest-total-bar">Total do dia'+(ingestCinemaFilter?' (todos os cinemas)':'')+': <strong>'+(totalGB>0?totalGB.toFixed(0)+' GB':'—')+'</strong></div>';
@@ -1470,8 +1476,18 @@ function buildBuscaFilters(){buildPills(document.getElementById('buscaEventFilte
 });}
 
 function rebuildIngestCinemaSelect(){
-  var active=sessoesIngest();
-  var cs=new Set();active.forEach(function(s){if(s.cinema)cs.add(s.cinema);});
+  var cs=new Set();
+  sessoesArr.forEach(function(s){
+    if(!s.date)return;
+    if(s.evento&&!activeEventsIngest.has(s.evento))return;
+    var id=new Date(s.date.getTime());id.setDate(id.getDate()-2);
+    if(currentIngestDay&&id.toISOString().slice(0,10)!==currentIngestDay)return;
+    if(ingestHdFilter){
+      var hasHd=s.filmes.some(function(c){var f=filmesMap[c];return f&&(f.hd||'').toString().trim()===ingestHdFilter;});
+      if(!hasHd)return;
+    }
+    if(s.cinema)cs.add(s.cinema);
+  });
   var sel=document.getElementById('ingestCinemaSelect');
   var prev=sel.value;
   sel.innerHTML='<option value="">Todos os cinemas</option>';
@@ -2463,5 +2479,5 @@ window.addEventListener('popstate',function(e){
   _browserNav=false;
 });
 </script>
-<div id="page-footer"><span>última atualização · 09/04/2026 às 15:07</span></div>
+<div id="page-footer"><span>última atualização · 10/04/2026 às 14:00</span></div>
 </html>
