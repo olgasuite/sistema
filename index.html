@@ -655,7 +655,8 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 </div>
 <div class="mode-bar hidden" id="barIngest">
   <div class="day-tabs" id="ingestDayTabs"></div>
-  <select id="ingestCinemaSelect" style="min-width:180px;margin-left:8px;" onchange="ingestCinemaFilter=this.value;renderIngest();"><option value="">Todos os cinemas</option></select>
+  <select id="ingestCinemaSelect" style="min-width:180px;margin-left:8px;" onchange="ingestCinemaFilter=this.value;ingestHdFilter='';renderIngest();"><option value="">Todos os cinemas</option></select>
+  <select id="ingestHdSelect" style="min-width:120px;margin-left:8px;" onchange="ingestHdFilter=this.value;renderIngest();"><option value="">Todos os HDs</option></select>
   <div class="event-filters" id="ingestEventFilters" style="margin-left:4px;"></div>
   <button class="print-btn" onclick="printIngest()" style="margin-left:4px;">⎙ Imprimir</button>
 </div>
@@ -864,7 +865,7 @@ var _browserNav=false;// flag: popstate is driving navigation — don't push new
 var filteredFilmes=[];
 var cinemasArr=[];
 var cinemasComplexoFilter='',cinemasEstadoFilter='',currentCinemaDetail=null;
-var ingestDays=[],currentIngestDay=null,ingestCinemaFilter='',gradeCinemaFilter='';
+var ingestDays=[],currentIngestDay=null,ingestCinemaFilter='',ingestHdFilter='',gradeCinemaFilter='';
 var navHistory=[];// stack of {mode, label} for back navigation
 var buscaFilters={
   evento:new Set(),hd:new Set(),idioma:new Set(),legenda:new Set(),vf:new Set(),
@@ -1137,7 +1138,12 @@ function renderIngest(){
     if(s.evento&&!activeEventsIngest.has(s.evento))return false;
     return true;
   });
+  rebuildIngestHdSelect();
   if(!sessions.length){iw.style.display='none';ie.style.display='flex';ie.querySelector('p').textContent='Nenhuma sessão para ingest neste dia.';return;}
+  if(ingestHdFilter){
+    var hasHdFilms=sessions.some(function(s){return s.filmes.some(function(c){var f=filmesMap[c];return f&&(f.hd||'').toString().trim()===ingestHdFilter;});});
+    if(!hasHdFilms){iw.style.display='none';ie.style.display='flex';ie.querySelector('p').textContent='Nenhum filme para o HD "'+ingestHdFilter+'" neste dia.';return;}
+  }
   ie.style.display='none';iw.style.display='block';
 
   // total GB for the day (all cinemas, regardless of filter)
@@ -1159,19 +1165,22 @@ function renderIngest(){
   var html='<div class="ingest-total-bar">Total do dia'+(ingestCinemaFilter?' (todos os cinemas)':'')+': <strong>'+(totalGB>0?totalGB.toFixed(0)+' GB':'—')+'</strong></div>';
 
   cinemaOrder.forEach(function(cinema){
-    // cinema-level GB total
+    function getFilmList(s){return ingestHdFilter?s.filmes.filter(function(c){var f=filmesMap[c];return f&&(f.hd||'').toString().trim()===ingestHdFilter;}):s.filmes;}
+    var visibleSessions=byCinema[cinema].filter(function(s){return getFilmList(s).length>0;});
+    if(!visibleSessions.length)return;
     var cinemaGB=0;
-    byCinema[cinema].forEach(function(s){
-      s.filmes.forEach(function(c){var f=filmesMap[c];if(!f)return;var g=parseFloat((f.gb||'').toString().replace(',','.'));if(!isNaN(g))cinemaGB+=g;});
+    visibleSessions.forEach(function(s){
+      getFilmList(s).forEach(function(c){var f=filmesMap[c];if(!f)return;var g=parseFloat((f.gb||'').toString().replace(',','.'));if(!isNaN(g))cinemaGB+=g;});
     });
     html+='<div class="ingest-cinema-block"><div class="ingest-cinema-header"><span>'+cinema+'</span>'+(cinemaGB>0?'<span class="ingest-cinema-gb">'+cinemaGB.toFixed(0)+' GB</span>':'')+'</div>';
 
-    byCinema[cinema].forEach(function(s){
+    visibleSessions.forEach(function(s){
+      var filmList=getFilmList(s);
       var sessGB=0;
-      s.filmes.forEach(function(c){var f=filmesMap[c];if(!f)return;var g=parseFloat((f.gb||'').toString().replace(',','.'));if(!isNaN(g))sessGB+=g;});
+      filmList.forEach(function(c){var f=filmesMap[c];if(!f)return;var g=parseFloat((f.gb||'').toString().replace(',','.'));if(!isNaN(g))sessGB+=g;});
       html+='<div class="ingest-session"><div class="ingest-session-header"><span class="ingest-sess-name">'+s.nome+'</span><span class="ingest-sess-meta">'+s.dia+' · '+s.hora+'</span>'+(sessGB>0?'<span class="ingest-sess-gb">'+sessGB.toFixed(0)+' GB</span>':'')+'</div>';
       html+='<div class="ingest-film-list">';
-      s.filmes.forEach(function(c,idx){
+      filmList.forEach(function(c,idx){
         var f=filmesMap[c]||{};
         var titulo=clean(f.titulo)||c;
         var cpl=clean(f.cpl),cplOV=clean(f.cplOV),gb=clean(f.gb);
@@ -1471,9 +1480,31 @@ function rebuildIngestCinemaSelect(){
   else{sel.value='';ingestCinemaFilter='';}
 }
 
+function rebuildIngestHdSelect(){
+  var hdSet=new Set();
+  sessoesArr.forEach(function(s){
+    if(!s.date)return;
+    var id=new Date(s.date.getTime());id.setDate(id.getDate()-2);
+    if(id.toISOString().slice(0,10)!==currentIngestDay)return;
+    if(ingestCinemaFilter&&s.cinema!==ingestCinemaFilter)return;
+    if(s.evento&&!activeEventsIngest.has(s.evento))return;
+    s.filmes.forEach(function(c){
+      var f=filmesMap[c];var h=f&&(f.hd||'').toString().trim();
+      if(h&&h!=='-')hdSet.add(h);
+    });
+  });
+  var sel=document.getElementById('ingestHdSelect');
+  var prev=sel.value;
+  sel.innerHTML='<option value="">Todos os HDs</option>';
+  Array.from(hdSet).sort().forEach(function(h){var o=document.createElement('option');o.value=h;o.textContent=h;sel.appendChild(o);});
+  if(prev&&hdSet.has(prev))sel.value=prev;
+  else{sel.value='';ingestHdFilter='';}
+}
+
 function buildIngestFilters(){
   buildPills(document.getElementById('ingestEventFilters'),eventColors,activeEventsIngest,function(){
     rebuildIngestCinemaSelect();
+    ingestHdFilter='';
     window._ingestYearsOpen=null;
     renderIngest();
   });
