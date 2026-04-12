@@ -314,8 +314,20 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .filter-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;background:var(--accent);color:#000;font-size:9px;font-weight:700;border-radius:8px;padding:0 4px;display:none;}
 .filter-badge.visible{display:inline-flex;}
 
+/* BUSCA ADITIVA */
+#buscaAdditiveBar{background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 24px;display:none;align-items:center;gap:8px;flex-wrap:wrap;}
+#buscaAdditiveBar.visible{display:flex;}
+.additive-bar-label{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap;}
+.additive-slot-tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;font-weight:600;padding:3px 4px 3px 8px;border:1px solid rgba(232,160,32,0.35);background:rgba(232,160,32,0.08);color:var(--accent);border-radius:2px;white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;}
+.additive-slot-rm{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:rgba(232,160,32,0.2);border:none;color:var(--accent);cursor:pointer;border-radius:2px;font-size:11px;font-weight:700;line-height:1;flex-shrink:0;transition:background 0.1s;}
+.additive-slot-rm:hover{background:rgba(232,160,32,0.4);}
+.additive-clear-btn{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.08em;padding:3px 9px;border:1px solid rgba(232,80,32,0.3);background:transparent;color:#ff8060;cursor:pointer;border-radius:2px;margin-left:4px;transition:background 0.1s;white-space:nowrap;}
+.additive-clear-btn:hover{background:rgba(232,80,32,0.1);}
+.add-slot-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:transparent;color:var(--text-dim);border:1px solid var(--border);font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.add-slot-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+.add-slot-btn:disabled{opacity:0.28;cursor:not-allowed;}
+
 /* INGEST */
-#ingest-container{padding:24px 32px 48px;max-width:1100px;margin:0 auto;}
 .ingest-total-bar{font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);padding:10px 16px;margin-bottom:22px;display:flex;align-items:center;gap:10px;}
 .ingest-total-bar strong{color:var(--accent);font-size:15px;margin-left:4px;}
 .ingest-cinema-block{margin-bottom:28px;}
@@ -622,6 +634,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <button class="search-clear" id="searchClear">×</button>
   </div>
   <button class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleFilterPanel()">⊞ Filtros <span class="filter-badge" id="filterBadge"></span></button>
+  <button class="add-slot-btn" id="addSlotBtn" onclick="addBuscaSlot()" title="Salvar filtros atuais como conjunto e iniciar novo" disabled>⊕ Conjunto</button>
   <div class="event-filters" id="buscaEventFilters"></div>
   <span class="result-count" id="resultCount"></span>
   <button class="print-btn" onclick="printBusca()" style="margin-left:auto;">⎙ Imprimir</button>
@@ -732,6 +745,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   </div>
   <div class="mode-panel" id="busca-panel">
     <div class="busca-print-header" id="buscaPrintHeader" style="display:none;padding:18px 24px 0;"></div>
+    <div id="buscaAdditiveBar"></div>
     <div class="empty-state" id="buscaEmpty">
       <div class="icon">🔍</div>
       <p>Digite para buscar filmes.</p>
@@ -867,6 +881,7 @@ var cinemasArr=[];
 var cinemasComplexoFilter='',cinemasEstadoFilter='',currentCinemaDetail=null;
 var ingestDays=[],currentIngestDay=null,ingestCinemaFilter='',ingestHdFilter='',gradeCinemaFilter='';
 var navHistory=[];// stack of {mode, label} for back navigation
+var buscaAdditiveSlots=[];// additive search snapshots
 var buscaFilters={
   evento:new Set(),hd:new Set(),idioma:new Set(),legenda:new Set(),vf:new Set(),
   lente:new Set(),som:new Set(),kdm:new Set(),status:new Set(),col_k:new Set(),
@@ -981,6 +996,11 @@ function goHome(){
 function moduleCardClick(mode){if(dataLoaded)switchMode(mode);}
 
 function switchMode(mode,noPush){
+  // sync event filters from the current module to all others, then rebuild pills for new module
+  if(currentMode&&currentMode!==mode){
+    var src=activeEventsForMode(currentMode);
+    if(src)syncEventFiltersFrom(src);
+  }
   currentMode=mode;
   if(!noPush){navHistory=[];updateBackBtn();}
   if(!noPush&&!_browserNav)history.pushState({olga:mode},'');
@@ -994,6 +1014,7 @@ function switchMode(mode,noPush){
     document.getElementById('bar'+cap).classList.toggle('hidden',m!==mode);
     document.getElementById(m+'-panel').classList.toggle('active',m===mode);
   });
+  rebuildPillsForMode(mode);
   if(mode==='grade')renderGrade();
   if(mode==='ingest')renderIngest();
   if(mode==='cinemas')renderCinemas();
@@ -1478,10 +1499,7 @@ function buildBuscaFilters(){buildPills(document.getElementById('buscaEventFilte
 function rebuildIngestCinemaSelect(){
   var cs=new Set();
   sessoesArr.forEach(function(s){
-    if(!s.date)return;
     if(s.evento&&!activeEventsIngest.has(s.evento))return;
-    var id=new Date(s.date.getTime());id.setDate(id.getDate()-2);
-    if(currentIngestDay&&id.toISOString().slice(0,10)!==currentIngestDay)return;
     if(ingestHdFilter){
       var hasHd=s.filmes.some(function(c){var f=filmesMap[c];return f&&(f.hd||'').toString().trim()===ingestHdFilter;});
       if(!hasHd)return;
@@ -1758,10 +1776,11 @@ function renderDayTabs(){
              (!gradeCinemaFilter||s.cinema===gradeCinemaFilter);
     });
   });
-  // if currentDay is no longer valid, pick best available day
+  // if currentDay is no longer valid (or was never set), pick best available day
   var validKeys=activeDays.map(function(d){return d.key;});
-  if(currentDay&&validKeys.indexOf(currentDay)===-1){
+  if(!currentDay||validKeys.indexOf(currentDay)===-1){
     currentDay=pickBestDay(activeDays);
+    if(currentDay) window._gradeYearsOpen=new Set([new Date(currentDay+'T00:00:00').getFullYear()]);
   }
   var byYear={},yearOrder=[];
   activeDays.forEach(function(d){
@@ -1951,6 +1970,74 @@ function toggleExpand(idx){
 }
 
 function efv(v){return(!v||v==='-'||v==='0')?'—':v;}// expand field value
+
+/* EVENT FILTER SYNC */
+function syncEventFiltersFrom(src){
+  [activeEventsGrade,activeEventsBusca,activeEventsIngest,activeEventsFicha,activeEventsCinemas].forEach(function(s){s.clear();src.forEach(function(e){s.add(e);});});
+}
+function activeEventsForMode(m){
+  if(m==='grade')return activeEventsGrade;if(m==='busca')return activeEventsBusca;
+  if(m==='ingest')return activeEventsIngest;if(m==='ficha')return activeEventsFicha;
+  if(m==='cinemas')return activeEventsCinemas;return null;
+}
+function rebuildPillsForMode(m){
+  if(m==='grade')buildGradeFilters();else if(m==='ingest')buildIngestFilters();
+  else if(m==='ficha')buildFichaFilters();else if(m==='cinemas')buildCinemasFilters();
+  else if(m==='busca')buildBuscaFilters();
+}
+
+/* BUSCA ADITIVA */
+function snapshotCurrentSearch(){
+  var snap={query:buscaQuery,eventos:new Set(activeEventsBusca),sessao:new Set(buscaFilters.sessao),duracao_min:buscaFilters.duracao_min,duracao_max:buscaFilters.duracao_max,gb_min:buscaFilters.gb_min,gb_max:buscaFilters.gb_max,norm:{},bin:{}};
+  var nk=['evento','hd','idioma','legenda','vf','lente','som','kdm','status','col_k','resolucao','fps'];
+  nk.forEach(function(k){snap.norm[k]=new Set(buscaFilters[k]);snap.norm[k+'_ex']=new Set(buscaFilters[k+'_ex']);});
+  ['titulo_bin','obs_bin','cpl_bin','cplOV_bin','col_n_bin','legenda_bin'].forEach(function(k){snap.bin[k]=buscaFilters[k];});
+  return snap;
+}
+function slotDescription(snap,idx){
+  var parts=[];if(snap.query)parts.push('"'+snap.query+'"');
+  var kl=['lente','som','hd','idioma','kdm','status','fps','resolucao','evento'];
+  kl.forEach(function(k){if(snap.norm[k]&&snap.norm[k].size>0)parts.push(Array.from(snap.norm[k]).join('/'));});
+  if(snap.bin.cpl_bin==='sim')parts.push('CPL✓');if(snap.bin.titulo_bin==='sim')parts.push('Título✓');
+  if(snap.duracao_min!==null||snap.duracao_max!==null)parts.push('Dur');if(snap.gb_min!==null||snap.gb_max!==null)parts.push('GB');
+  if(snap.sessao.size>0)parts.push(snap.sessao.size+' sessão(ões)');
+  return'Conj.'+(idx+1)+(parts.length?': '+parts.slice(0,4).join(' · '):'');
+}
+function filmMatchesSnapshot(f,snap){
+  if(f.evento&&!snap.eventos.has(f.evento))return false;
+  var normMap={evento:'evento',hd:'hd',idioma:'idioma',legenda:'legenda',vf:'vf',lente:'lente',som:'som',kdm:'kdm',status:'status',col_k:'col_n',resolucao:'resolucao',fps:'fps'};
+  for(var key in normMap){var val=(f[normMap[key]]||'').toString().trim();if(snap.norm[key]&&snap.norm[key].size>0&&!snap.norm[key].has(val))return false;if(snap.norm[key+'_ex']&&snap.norm[key+'_ex'].has(val))return false;}
+  var binMap={titulo_bin:'titulo',obs_bin:'obs',cpl_bin:'cpl',cplOV_bin:'cplOV',col_n_bin:'col_n',legenda_bin:'legenda'};
+  for(var bk in binMap){var state=snap.bin[bk];if(state===null)continue;var bval=clean(f[binMap[bk]]);if(state==='sim'&&!bval)return false;if(state==='nao'&&bval)return false;}
+  if(snap.duracao_min!==null||snap.duracao_max!==null){var dm=parseDurMinutes(f.duracao);if(dm===null)return false;if(snap.duracao_min!==null&&dm<snap.duracao_min)return false;if(snap.duracao_max!==null&&dm>snap.duracao_max)return false;}
+  if(snap.gb_min!==null||snap.gb_max!==null){var gv=parseGB(f.gb);if(gv===null)return false;if(snap.gb_min!==null&&gv<snap.gb_min)return false;if(snap.gb_max!==null&&gv>snap.gb_max)return false;}
+  if(snap.sessao.size>0){var fs=buscaReverseSessoes[f.codigo]||[];if(!fs.some(function(s){return snap.sessao.has(s);}))return false;}
+  if(snap.query){var q2=snap.query.toLowerCase();if(!f.titulo.toLowerCase().includes(q2)&&!f.codigo.toLowerCase().includes(q2)&&!f.cpl.toLowerCase().includes(q2)&&!f.idioma.toLowerCase().includes(q2)&&!f.obs.toLowerCase().includes(q2)&&!f.status.toLowerCase().includes(q2)&&!f.cplOV.toLowerCase().includes(q2))return false;}
+  return true;
+}
+function addBuscaSlot(){
+  if(!buscaQuery&&countActiveFilters()===0)return;
+  buscaAdditiveSlots.push(snapshotCurrentSearch());
+  buscaQuery='';
+  document.getElementById('searchInput').value='';document.getElementById('searchClear').style.display='none';
+  clearAllBuscaFilters();
+  renderBuscaResults();
+}
+function removeAdditiveSlot(idx){buscaAdditiveSlots.splice(idx,1);renderBuscaResults();}
+function clearAdditiveSlots(){buscaAdditiveSlots=[];renderBuscaResults();}
+function renderAdditiveSlots(){
+  var bar=document.getElementById('buscaAdditiveBar');
+  var btn=document.getElementById('addSlotBtn');
+  if(btn)btn.disabled=!(buscaQuery||(countActiveFilters()>0));
+  if(!buscaAdditiveSlots.length){bar.classList.remove('visible');return;}
+  bar.classList.add('visible');
+  var html='<span class="additive-bar-label">Busca aditiva</span>';
+  buscaAdditiveSlots.forEach(function(snap,i){
+    html+='<span class="additive-slot-tag">'+slotDescription(snap,i)+'<button class="additive-slot-rm" onclick="removeAdditiveSlot('+i+')" title="Remover conjunto">×</button></span>';
+  });
+  html+='<button class="additive-clear-btn" onclick="clearAdditiveSlots()">✕ Limpar conjuntos</button>';
+  bar.innerHTML=html;
+}
 
 /* FILTROS AVANÇADOS */
 var _fpOpen=false;
@@ -2355,14 +2442,30 @@ function renderBuscaResults(){
   var re=document.getElementById('busca-results'),be=document.getElementById('buscaEmpty');
   document.getElementById('buscaLoading').style.display='none';
   var q=buscaQuery.toLowerCase();
-  var filtered=filmesArr.filter(function(f){
-    if(f.evento&&!activeEventsBusca.has(f.evento))return false;
-    if(!applyBuscaFilters(f))return false;
-    if(!q)return true;
-    return f.titulo.toLowerCase().includes(q)||f.codigo.toLowerCase().includes(q)||f.cpl.toLowerCase().includes(q)||f.idioma.toLowerCase().includes(q)||f.obs.toLowerCase().includes(q)||f.status.toLowerCase().includes(q)||f.cplOV.toLowerCase().includes(q);
-  });
-  document.getElementById('resultCount').textContent=filtered.length+' filme'+(filtered.length!==1?'s':'');
-  if(!filtered.length){re.style.display='none';be.style.display='flex';var hasFilters=countActiveFilters()>0;be.querySelector('p').textContent=q?'Nenhum resultado para "'+buscaQuery+'"':(hasFilters?'Nenhum resultado para os filtros ativos.':'Digite para buscar filmes.');return;}
+  var hasCurrentFilters=q||(countActiveFilters()>0);
+  var filtered;
+  if(!buscaAdditiveSlots.length||hasCurrentFilters){
+    filtered=filmesArr.filter(function(f){
+      if(f.evento&&!activeEventsBusca.has(f.evento))return false;
+      if(!applyBuscaFilters(f))return false;
+      if(!q)return true;
+      return f.titulo.toLowerCase().includes(q)||f.codigo.toLowerCase().includes(q)||f.cpl.toLowerCase().includes(q)||f.idioma.toLowerCase().includes(q)||f.obs.toLowerCase().includes(q)||f.status.toLowerCase().includes(q)||f.cplOV.toLowerCase().includes(q);
+    });
+  }else{
+    filtered=[];
+  }
+  if(buscaAdditiveSlots.length){
+    var seenCodes=new Set(filtered.map(function(f){return f.codigo;}));
+    buscaAdditiveSlots.forEach(function(snap){
+      filmesArr.forEach(function(f){
+        if(!seenCodes.has(f.codigo)&&filmMatchesSnapshot(f,snap)){seenCodes.add(f.codigo);filtered.push(f);}
+      });
+    });
+  }
+  renderAdditiveSlots();
+  var slotSuffix=buscaAdditiveSlots.length?' ('+(buscaAdditiveSlots.length+1)+' conj.)':'';
+  document.getElementById('resultCount').textContent=filtered.length+' filme'+(filtered.length!==1?'s':'')+slotSuffix;
+  if(!filtered.length){re.style.display='none';be.style.display='flex';var hasFilters=countActiveFilters()>0||buscaAdditiveSlots.length>0;be.querySelector('p').textContent=q?'Nenhum resultado para "'+buscaQuery+'"':(hasFilters?'Nenhum resultado para os filtros ativos.':'Digite para buscar filmes.');return;}
   be.style.display='none';re.style.display='grid';
   filteredFilmes=filtered;
 
@@ -2479,5 +2582,5 @@ window.addEventListener('popstate',function(e){
   _browserNav=false;
 });
 </script>
-<div id="page-footer"><span>última atualização · 10/04/2026 às 14:00</span></div>
+<div id="page-footer"><span>última atualização · 10/04/2026 às 15:00</span></div>
 </html>
