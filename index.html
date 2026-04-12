@@ -1973,7 +1973,8 @@ function efv(v){return(!v||v==='-'||v==='0')?'—':v;}// expand field value
 
 /* EVENT FILTER SYNC */
 function syncEventFiltersFrom(src){
-  [activeEventsGrade,activeEventsBusca,activeEventsIngest,activeEventsFicha,activeEventsCinemas].forEach(function(s){s.clear();src.forEach(function(e){s.add(e);});});
+  var evs=Array.from(src);// snapshot BEFORE clearing (src may be one of the target sets)
+  [activeEventsGrade,activeEventsBusca,activeEventsIngest,activeEventsFicha,activeEventsCinemas].forEach(function(s){s.clear();evs.forEach(function(e){s.add(e);});});
 }
 function activeEventsForMode(m){
   if(m==='grade')return activeEventsGrade;if(m==='busca')return activeEventsBusca;
@@ -2582,5 +2583,5 @@ window.addEventListener('popstate',function(e){
   _browserNav=false;
 });
 </script>
-<div id="page-footer"><span>última atualização · 10/04/2026 às 15:00</span></div>
+<div id="page-footer"><span>última atualização · 10/04/2026 às 19:00</span></div>
 </html>
