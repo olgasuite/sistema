@@ -357,6 +357,44 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .ingest-cplov-line{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--cpl-color);word-break:break-all;line-height:1.5;display:flex;gap:6px;align-items:baseline;}
 .ingest-cplov-tag{font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:rgba(93,220,138,0.5);flex-shrink:0;border:1px solid rgba(93,220,138,0.25);padding:0px 4px;border-radius:2px;}
 .ingest-no-cpl{font-family:var(--mono);font-size:10px;color:var(--text-muted);font-style:italic;}
+/* DASHBOARD */
+#dash-container{padding:28px 32px 60px;max-width:1280px;margin:0 auto;}
+.dash-total-bar{font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.dash-total-bar strong{color:var(--text);font-size:14px;margin-left:4px;}
+.dash-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:28px;}
+.dash-tile{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--border2);padding:18px 20px;cursor:pointer;transition:background 0.15s,border-top-color 0.15s;display:flex;flex-direction:column;gap:6px;text-align:left;}
+.dash-tile:hover{background:var(--surface2);}
+.dash-tile.active{background:var(--accent-dim);border-color:rgba(232,160,32,0.35);}
+.dash-tile.st-ok{border-top-color:var(--ok);}
+.dash-tile.st-ok .dash-tile-count{color:var(--ok);}
+.dash-tile.st-ok.active{background:rgba(61,186,110,0.1);border-color:rgba(61,186,110,0.3);}
+.dash-tile.st-cancel{border-top-color:var(--warn);}
+.dash-tile.st-cancel .dash-tile-count{color:var(--warn);}
+.dash-tile.st-cancel.active{background:rgba(255,96,85,0.1);border-color:rgba(255,96,85,0.3);}
+.dash-tile.st-accent{border-top-color:var(--accent);}
+.dash-tile.st-accent .dash-tile-count{color:var(--accent);}
+.dash-tile.st-accent.active{background:var(--accent-dim);}
+.dash-tile-status{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-dim);word-break:break-word;line-height:1.3;}
+.dash-tile-count{font-family:var(--mono);font-size:38px;font-weight:600;color:var(--text);line-height:1;}
+.dash-tile-sub{font-family:var(--mono);font-size:9px;color:var(--text-muted);}
+.dash-detail{border-top:1px solid var(--border);padding-top:20px;}
+.dash-detail-hdr{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.dash-detail-title{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);}
+.dash-detail-status{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text);}
+.dash-detail-count{font-family:var(--mono);font-size:9px;color:var(--text-muted);}
+.dash-detail-close{margin-left:auto;background:none;border:1px solid var(--border);color:var(--text-dim);font-family:var(--mono);font-size:10px;padding:3px 9px;cursor:pointer;border-radius:2px;transition:color 0.1s,border-color 0.1s;white-space:nowrap;}
+.dash-detail-close:hover{color:var(--text);border-color:var(--text-dim);}
+.dash-film-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:8px;}
+.dash-film-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border2);padding:12px 14px;display:flex;flex-direction:column;gap:7px;}
+.dash-film-top{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;}
+.dash-film-title{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text);}
+.dash-film-code{font-family:var(--mono);font-size:10px;color:var(--text-muted);}
+.dash-sess-list{display:flex;flex-wrap:wrap;gap:5px;align-items:center;}
+.dash-sess-label{font-family:var(--mono);font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);}
+.dash-sess-link{font-family:var(--mono);font-size:9px;padding:2px 7px;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;cursor:pointer;transition:all 0.12s;white-space:nowrap;background:none;display:inline-flex;align-items:center;gap:5px;}
+.dash-sess-link:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.dash-sess-cinema{font-size:8px;color:var(--text-muted);opacity:0.75;}
+
 /* CINEMAS */
 #cinemas-container{padding:24px 32px 48px;max-width:1200px;margin:0 auto;}
 .cinemas-complexo{margin-bottom:32px;}
@@ -601,6 +639,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <button class="nav-tab" id="tabBusca" disabled onclick="switchMode('busca')"><span class="tab-icon">🔍</span> Busca</button>
     <button class="nav-tab" id="tabIngest" disabled onclick="switchMode('ingest')"><span class="tab-icon">📥</span> Ingest</button>
     <button class="nav-tab" id="tabCinemas" disabled onclick="switchMode('cinemas')"><span class="tab-icon">🎭</span> Cinemas</button>
+    <button class="nav-tab" id="tabDash" disabled onclick="switchMode('dash')"><span class="tab-icon">◉</span> Dashboard</button>
   </nav>
   <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar esquema de cores">
     <span class="theme-toggle-icon" id="themeIcon">☀</span>
@@ -682,6 +721,11 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <option value="">Todos os complexos</option>
   </select>
 </div>
+<div class="mode-bar hidden" id="barDash">
+  <div class="day-tabs" id="dashDayTabs"></div>
+  <select id="dashCinemaSelect" style="min-width:180px;margin-left:8px;" onchange="dashCinemaFilter=this.value;renderDash();"><option value="">Todos os cinemas</option></select>
+  <div class="event-filters" id="dashEventFilters" style="margin-left:4px;"></div>
+</div>
 
 <div id="landing">
   <div class="landing-badge">sistema de gestão de exibição</div>
@@ -692,7 +736,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <div class="drop-label">Carregar sistema_olga.xlsx</div>
     <div class="drop-sub">clique ou arraste o arquivo aqui</div>
   </div>
-  <div class="landing-modules" style="grid-template-columns:repeat(5,1fr);max-width:1060px;">
+  <div class="landing-modules" style="grid-template-columns:repeat(6,1fr);max-width:1260px;">
     <div class="module-card disabled" id="modCardFicha" onclick="moduleCardClick('ficha')">
       <div class="module-icon">🎬</div>
       <div class="module-name">Ficha</div>
@@ -717,6 +761,11 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       <div class="module-icon">🎭</div>
       <div class="module-name">Cinemas</div>
       <div class="module-desc">Fichas técnicas das salas e equipamentos</div>
+    </div>
+    <div class="module-card disabled" id="modCardDash" onclick="moduleCardClick('dash')">
+      <div class="module-icon">◉</div>
+      <div class="module-name">Dashboard</div>
+      <div class="module-desc">Visão geral de filmes por status com drill-down</div>
     </div>
   </div>
 </div>
@@ -770,6 +819,13 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     </div>
     <div id="cinemas-container" style="display:none;"></div>
     <div id="cinemaDetailWrap" style="display:none;"></div>
+  </div>
+  <div class="mode-panel" id="dash-panel">
+    <div class="empty-state" id="dashEmpty">
+      <div class="icon">◉</div>
+      <p>Nenhum filme encontrado.</p>
+    </div>
+    <div id="dash-container" style="display:none;"></div>
   </div>
 </div>
 
@@ -873,13 +929,15 @@ self.onmessage=function(e){
 <script>
 var filmesMap={},filmesArr=[],sessoesArr=[],sessoesMap={};
 var buscaReverseSessoes={},eventColors={};
-var activeEventsGrade=new Set(),activeEventsBusca=new Set(),activeEventsIngest=new Set(),activeEventsFicha=new Set(),activeEventsCinemas=new Set();
+var activeEventsGrade=new Set(),activeEventsBusca=new Set(),activeEventsIngest=new Set(),activeEventsFicha=new Set(),activeEventsCinemas=new Set(),activeEventsDash=new Set();
 var days=[],currentDay=null,buscaQuery='',dataLoaded=false,currentMode=null;
 var _browserNav=false;// flag: popstate is driving navigation — don't push new history entries
 var filteredFilmes=[];
 var cinemasArr=[];
 var cinemasComplexoFilter='',cinemasEstadoFilter='',currentCinemaDetail=null;
 var ingestDays=[],currentIngestDay=null,ingestCinemaFilter='',ingestHdFilter='',gradeCinemaFilter='';
+var dashCinemaFilter='',dashDayFilter='',dashStatusSelected=null;
+window._dashYearsOpen=null;
 var navHistory=[];// stack of {mode, label} for back navigation
 var buscaAdditiveSlots=[];// additive search snapshots
 var buscaFilters={
@@ -924,11 +982,11 @@ function applyParsedData(d,filename){
   if(d.cinemasArr)cinemasArr=d.cinemasArr;
   var events=d.events;
   eventColors={};events.forEach(function(ev,i){eventColors[ev]=PALETTE[i%PALETTE.length];});
-  activeEventsGrade=new Set(events);activeEventsBusca=new Set(events);activeEventsIngest=new Set(events);activeEventsFicha=new Set(events);activeEventsCinemas=new Set(events);
+  activeEventsGrade=new Set(events);activeEventsBusca=new Set(events);activeEventsIngest=new Set(events);activeEventsFicha=new Set(events);activeEventsCinemas=new Set(events);activeEventsDash=new Set(events);
   dataLoaded=true;
-  ['tabFicha','tabGrade','tabBusca','tabIngest','tabCinemas'].forEach(function(id){document.getElementById(id).disabled=false;});
-  ['modCardFicha','modCardGrade','modCardBusca','modCardIngest','modCardCinemas'].forEach(function(id){document.getElementById(id).classList.remove('disabled');});
-  buildGradeDays();window._gradeYearsOpen=null;buildFichaFilters();buildGradeFilters();buildBuscaFilters();buildIngestDays();buildIngestFilters();buildBuscaFilterPanel();buildCinemasFilters();
+  ['tabFicha','tabGrade','tabBusca','tabIngest','tabCinemas','tabDash'].forEach(function(id){document.getElementById(id).disabled=false;});
+  ['modCardFicha','modCardGrade','modCardBusca','modCardIngest','modCardCinemas','modCardDash'].forEach(function(id){document.getElementById(id).classList.remove('disabled');});
+  buildGradeDays();window._gradeYearsOpen=null;window._dashYearsOpen=null;buildFichaFilters();buildGradeFilters();buildBuscaFilters();buildIngestDays();buildIngestFilters();buildBuscaFilterPanel();buildCinemasFilters();buildDashFilters();
   fileNameEl.textContent=filename||'arquivo carregado';
   fileNameEl.classList.add('loaded');
   landingDrop.classList.add('loaded');
@@ -982,7 +1040,7 @@ function goHome(){
   if(currentMode){
     currentMode=null;
     navHistory=[];updateBackBtn();
-    ['ficha','grade','busca','ingest','cinemas'].forEach(function(m){
+    ['ficha','grade','busca','ingest','cinemas','dash'].forEach(function(m){
       var cap=m.charAt(0).toUpperCase()+m.slice(1);
       document.getElementById('tab'+cap).classList.remove('active');
       document.getElementById('bar'+cap).classList.add('hidden');
@@ -1008,7 +1066,7 @@ function switchMode(mode,noPush){
   if(mode!=='busca'&&_fpOpen){_fpOpen=false;document.getElementById('filterPanel').classList.remove('open');document.getElementById('filterToggleBtn').classList.remove('active');}
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='block';
-  ['ficha','grade','busca','ingest','cinemas'].forEach(function(m){
+  ['ficha','grade','busca','ingest','cinemas','dash'].forEach(function(m){
     var cap=m.charAt(0).toUpperCase()+m.slice(1);
     document.getElementById('tab'+cap).classList.toggle('active',m===mode);
     document.getElementById('bar'+cap).classList.toggle('hidden',m!==mode);
@@ -1018,6 +1076,7 @@ function switchMode(mode,noPush){
   if(mode==='grade')renderGrade();
   if(mode==='ingest')renderIngest();
   if(mode==='cinemas')renderCinemas();
+  if(mode==='dash')renderDash();
   if(mode==='busca'){
     var bl=document.getElementById('buscaLoading'),be2=document.getElementById('buscaEmpty'),br=document.getElementById('busca-results');
     bl.style.display='flex';be2.style.display='none';br.style.display='none';
@@ -1974,17 +2033,17 @@ function efv(v){return(!v||v==='-'||v==='0')?'—':v;}// expand field value
 /* EVENT FILTER SYNC */
 function syncEventFiltersFrom(src){
   var evs=Array.from(src);// snapshot BEFORE clearing (src may be one of the target sets)
-  [activeEventsGrade,activeEventsBusca,activeEventsIngest,activeEventsFicha,activeEventsCinemas].forEach(function(s){s.clear();evs.forEach(function(e){s.add(e);});});
+  [activeEventsGrade,activeEventsBusca,activeEventsIngest,activeEventsFicha,activeEventsCinemas,activeEventsDash].forEach(function(s){s.clear();evs.forEach(function(e){s.add(e);});});
 }
 function activeEventsForMode(m){
   if(m==='grade')return activeEventsGrade;if(m==='busca')return activeEventsBusca;
   if(m==='ingest')return activeEventsIngest;if(m==='ficha')return activeEventsFicha;
-  if(m==='cinemas')return activeEventsCinemas;return null;
+  if(m==='cinemas')return activeEventsCinemas;if(m==='dash')return activeEventsDash;return null;
 }
 function rebuildPillsForMode(m){
   if(m==='grade')buildGradeFilters();else if(m==='ingest')buildIngestFilters();
   else if(m==='ficha')buildFichaFilters();else if(m==='cinemas')buildCinemasFilters();
-  else if(m==='busca')buildBuscaFilters();
+  else if(m==='busca')buildBuscaFilters();else if(m==='dash')buildDashFilters();
 }
 
 /* BUSCA ADITIVA */
@@ -2521,6 +2580,184 @@ function renderBuscaResults(){
     '</div>';
   }).join('');
 }
+/* DASHBOARD */
+function dashStatusClass(v){if(!v||v==='-')return'st-none';var u=v.toUpperCase();if(u.includes('OK'))return'st-ok';if(u.includes('CANCEL'))return'st-cancel';return'st-accent';}
+
+function dashGetFilmes(){
+  // Collect film codes from sessions matching current filters
+  var codeSessions={};// code → [{nome, cinema, dia, hora}]
+  sessoesArr.forEach(function(s){
+    if(s.evento&&!activeEventsDash.has(s.evento))return;
+    if(dashCinemaFilter&&s.cinema!==dashCinemaFilter)return;
+    if(dashDayFilter){
+      if(!s.date||s.date.toISOString().slice(0,10)!==dashDayFilter)return;
+    }
+    s.filmes.forEach(function(c){
+      if(!codeSessions[c])codeSessions[c]=[];
+      codeSessions[c].push({nome:s.nome,cinema:s.cinema,dia:s.dia,hora:s.hora});
+    });
+  });
+  var result=[];
+  Object.keys(codeSessions).forEach(function(c){
+    var f=filmesMap[c];if(!f)return;
+    if(f.evento&&!activeEventsDash.has(f.evento))return;
+    result.push({f:f,sessions:codeSessions[c]});
+  });
+  return result;
+}
+
+function rebuildDashCinemaSelect(){
+  var cs=new Set();
+  sessoesArr.forEach(function(s){
+    if(s.evento&&!activeEventsDash.has(s.evento))return;
+    if(dashDayFilter&&(!s.date||s.date.toISOString().slice(0,10)!==dashDayFilter))return;
+    if(s.cinema)cs.add(s.cinema);
+  });
+  var sel=document.getElementById('dashCinemaSelect');
+  var prev=sel.value;
+  sel.innerHTML='<option value="">Todos os cinemas</option>';
+  Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  if(prev&&cs.has(prev))sel.value=prev;
+  else{sel.value='';dashCinemaFilter='';}
+}
+
+function renderDashDayTabs(){
+  var container=document.getElementById('dashDayTabs');container.innerHTML='';
+  var activeDays=days.filter(function(d){
+    return sessoesArr.some(function(s){
+      return s.date&&s.date.toISOString().slice(0,10)===d.key&&
+             (!s.evento||activeEventsDash.has(s.evento))&&
+             (!dashCinemaFilter||s.cinema===dashCinemaFilter);
+    });
+  });
+  // Inject synthetic "Todos os dias" tab at front
+  var allBtn=document.createElement('button');
+  allBtn.className='day-tab'+(dashDayFilter===''?' active':'');
+  allBtn.textContent='Todos';
+  allBtn.addEventListener('click',function(){dashDayFilter='';dashStatusSelected=null;window._dashYearsOpen=null;renderDash();});
+  container.appendChild(allBtn);
+
+  var validKeys=activeDays.map(function(d){return d.key;});
+  if(dashDayFilter&&validKeys.indexOf(dashDayFilter)===-1){dashDayFilter='';}
+  var byYear={},yearOrder=[];
+  activeDays.forEach(function(d){var y=d.date.getFullYear();if(!byYear[y]){byYear[y]=[];yearOrder.push(y);}byYear[y].push(d);});
+  if(!window._dashYearsOpen){
+    window._dashYearsOpen=new Set();
+    if(yearOrder.length)window._dashYearsOpen.add(yearOrder[yearOrder.length-1]);
+  }
+  yearOrder.forEach(function(y){
+    var isOpen=window._dashYearsOpen.has(y);
+    var yBtn=document.createElement('button');yBtn.className='year-tab'+(isOpen?' open':'');
+    yBtn.innerHTML=String(y)+'<span class="year-arrow">'+(isOpen?'▾':'▸')+'</span>';
+    yBtn.addEventListener('click',function(){if(window._dashYearsOpen.has(y))window._dashYearsOpen.delete(y);else window._dashYearsOpen.add(y);renderDashDayTabs();});
+    container.appendChild(yBtn);
+    if(isOpen){
+      activeDays.filter(function(d){return d.date.getFullYear()===y;}).forEach(function(d){
+        var btn=document.createElement('button');btn.className='day-tab'+(d.key===dashDayFilter?' active':'');
+        btn.textContent=d.date.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+        btn.addEventListener('click',function(){dashDayFilter=d.key;dashStatusSelected=null;rebuildDashCinemaSelect();renderDash();});
+        container.appendChild(btn);
+      });
+    }
+  });
+}
+
+function buildDashFilters(){
+  buildPills(document.getElementById('dashEventFilters'),eventColors,activeEventsDash,function(){
+    dashDayFilter='';dashStatusSelected=null;window._dashYearsOpen=null;
+    rebuildDashCinemaSelect();renderDash();
+  });
+  rebuildDashCinemaSelect();
+}
+
+function renderDash(){
+  renderDashDayTabs();
+  rebuildDashCinemaSelect();
+  var de=document.getElementById('dashEmpty'),dc=document.getElementById('dash-container');
+  var items=dashGetFilmes();
+  if(!items.length){dc.style.display='none';de.style.display='flex';de.querySelector('p').textContent='Nenhum filme para os filtros selecionados.';return;}
+  de.style.display='none';dc.style.display='block';
+
+  // group by status
+  var byStatus={},statusOrder=[];
+  items.forEach(function(item){
+    var st=(item.f.status||'').toString().trim();if(!st||st==='-')st='';
+    if(!byStatus[st]){byStatus[st]=[];statusOrder.push(st);}
+    byStatus[st].push(item);
+  });
+  // sort: ok first, then alpha, empty last
+  statusOrder.sort(function(a,b){
+    if(!a&&b)return 1;if(a&&!b)return -1;
+    var ua=a.toUpperCase(),ub=b.toUpperCase();
+    var aOk=ua.includes('OK'),bOk=ub.includes('OK');
+    if(aOk&&!bOk)return -1;if(!aOk&&bOk)return 1;
+    var aCan=ua.includes('CANCEL'),bCan=ub.includes('CANCEL');
+    if(aCan&&!bCan)return 1;if(!aCan&&bCan)return -1;
+    return a.localeCompare(b,'pt-BR');
+  });
+
+  var totalFilmes=items.length;
+  var html='<div class="dash-total-bar">Filmes únicos no filtro: <strong>'+totalFilmes+'</strong></div>';
+
+  // tiles
+  html+='<div class="dash-tiles">';
+  statusOrder.forEach(function(st){
+    var count=byStatus[st].length;
+    var cls=dashStatusClass(st);
+    var isActive=dashStatusSelected===st;
+    html+='<button class="dash-tile '+cls+(isActive?' active':'')+'" onclick="selectDashStatus(\''+st.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">'+
+      '<div class="dash-tile-count">'+count+'</div>'+
+      '<div class="dash-tile-status">'+(st||'sem status')+'</div>'+
+      '<div class="dash-tile-sub">filme'+(count!==1?'s':'')+'</div>'+
+    '</button>';
+  });
+  html+='</div>';
+
+  // detail panel
+  if(dashStatusSelected!==null&&byStatus[dashStatusSelected]!==undefined){
+    var detItems=byStatus[dashStatusSelected];
+    var stLabel=dashStatusSelected||'sem status';
+    var stCls=dashStatusClass(dashStatusSelected);
+    html+='<div class="dash-detail">';
+    html+='<div class="dash-detail-hdr">'+
+      '<span class="dash-detail-title">Status</span>'+
+      '<span class="dash-detail-status '+stCls+'" style="color:'+(stCls==='st-ok'?'var(--ok)':stCls==='st-cancel'?'var(--warn)':'var(--accent)')+'">'+stLabel+'</span>'+
+      '<span class="dash-detail-count">'+detItems.length+' filme'+(detItems.length!==1?'s':'')+'</span>'+
+      '<button class="dash-detail-close" onclick="selectDashStatus(null)">✕ Fechar</button>'+
+    '</div>';
+    html+='<div class="dash-film-list">';
+    detItems.forEach(function(item){
+      var f=item.f;
+      var col=f.evento&&eventColors[f.evento]?eventColors[f.evento]:null;
+      var evBadge=f.evento&&col?'<span class="card-evento" style="background:'+col.bg+';color:'+col.text+'">'+f.evento+'</span>':'';
+      var titulo=clean(f.titulo)||f.codigo;
+      var sessLinks=item.sessions.map(function(s){
+        var safe=s.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        return'<button class="dash-sess-link" onclick="goToFicha(\''+safe+'\')">'+
+          '<span class="dash-sess-cinema">'+s.cinema+'</span>'+
+          s.nome+
+        '</button>';
+      }).join('');
+      html+='<div class="dash-film-card" style="border-left-color:'+(col?col.bg:'var(--border2)')+'">'+
+        '<div class="dash-film-top">'+
+          '<span class="dash-film-title">'+titulo+'</span>'+
+          '<span class="dash-film-code">'+f.codigo+'</span>'+
+          evBadge+
+        '</div>'+
+        (sessLinks?'<div class="dash-sess-list"><span class="dash-sess-label">Sessões</span>'+sessLinks+'</div>':'')+
+      '</div>';
+    });
+    html+='</div></div>';
+  }
+
+  dc.innerHTML=html;
+}
+
+function selectDashStatus(st){
+  dashStatusSelected=(st===dashStatusSelected||st===null)?null:st;
+  renderDash();
+}
+
 /* ZOOM */
 var ZOOM_STEPS=[70,80,90,100,110,120,130,150,170,200];
 var zoomIdx=ZOOM_STEPS.indexOf(100);
