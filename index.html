@@ -371,9 +371,20 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .dash-tile.st-cancel{border-top-color:var(--warn);}
 .dash-tile.st-cancel .dash-tile-count{color:var(--warn);}
 .dash-tile.st-cancel.active{background:rgba(255,96,85,0.1);border-color:rgba(255,96,85,0.3);}
+.dash-tile.st-error{border-top-color:var(--warn);}
+.dash-tile.st-error .dash-tile-count{color:var(--warn);}
+.dash-tile.st-error .dash-tile-status{color:var(--warn);opacity:0.8;}
+.dash-tile.st-error.active{background:rgba(255,96,85,0.1);border-color:rgba(255,96,85,0.3);}
 .dash-tile.st-accent{border-top-color:var(--accent);}
 .dash-tile.st-accent .dash-tile-count{color:var(--accent);}
 .dash-tile.st-accent.active{background:var(--accent-dim);}
+.dash-sala-chip.sala-st-error{border-color:rgba(255,96,85,0.5);background:rgba(255,96,85,0.08);color:var(--warn);}
+.dash-sala-chip.sala-st-error .dash-sala-count{background:rgba(255,96,85,0.1);border-color:rgba(255,96,85,0.25);color:var(--warn);}
+.dash-sala-chip.sala-st-warn{border-color:rgba(232,160,32,0.45);background:rgba(232,160,32,0.07);color:var(--accent);}
+.dash-sala-chip.sala-st-warn .dash-sala-count{background:rgba(232,160,32,0.1);border-color:rgba(232,160,32,0.25);color:var(--accent);}
+.dash-footer{font-family:var(--mono);font-size:9px;color:var(--text-muted);border-top:1px solid var(--border);padding:14px 0 0;margin-top:32px;display:flex;gap:20px;flex-wrap:wrap;letter-spacing:0.06em;}
+.dash-footer span{display:inline-flex;align-items:center;gap:5px;}
+.dash-footer strong{color:var(--text-dim);font-weight:500;}
 .dash-tile-status{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-dim);word-break:break-word;line-height:1.3;}
 .dash-tile-count{font-family:var(--mono);font-size:38px;font-weight:600;color:var(--text);line-height:1;}
 .dash-tile-sub{font-family:var(--mono);font-size:9px;color:var(--text-muted);}
@@ -947,6 +958,7 @@ var cinemasComplexoFilter='',cinemasEstadoFilter='',currentCinemaDetail=null;
 var ingestDays=[],currentIngestDay=null,ingestCinemaFilter='',ingestHdFilter='',gradeCinemaFilter='';
 var dashCinemaFilter='',dashDayFilter='',dashStatusSelected=null;
 window._dashYearsOpen=null;
+var fileLastModified=null;
 var navHistory=[];// stack of {mode, label} for back navigation
 var buscaAdditiveSlots=[];// additive search snapshots
 var buscaFilters={
@@ -973,6 +985,7 @@ landingDrop.addEventListener('dragleave',function(){landingDrop.classList.remove
 landingDrop.addEventListener('drop',function(e){e.preventDefault();landingDrop.classList.remove('drag-over');var f=e.dataTransfer.files[0];if(f)loadFile(f);});
 
 function loadFile(file){
+  fileLastModified=file.lastModified?new Date(file.lastModified):null;
   fileNameEl.textContent=file.name;
   landingDrop.innerHTML='<div class="drop-icon" style="opacity:1;animation:spin 1s linear infinite;display:inline-block">⟳</div><div class="drop-label" style="color:var(--accent)">Processando…</div><div class="drop-sub">'+file.name+'</div>';
   var reader=new FileReader();
@@ -2604,7 +2617,14 @@ function renderBuscaResults(){
   }).join('');
 }
 /* DASHBOARD */
-function dashStatusClass(v){if(!v||v==='-')return'st-none';var u=v.toUpperCase();if(u.includes('OK'))return'st-ok';if(u.includes('CANCEL'))return'st-cancel';return'st-accent';}
+function dashStatusClass(v){
+  if(!v||v==='-')return'st-error';
+  var u=v.toUpperCase();
+  if(u.includes('OK'))return'st-ok';
+  if(u.includes('ERRO'))return'st-error';
+  if(u.includes('CANCEL'))return'st-cancel';
+  return'st-accent';
+}
 
 function dashGetFilmes(){
   // Collect film codes from sessions matching current filters
@@ -2708,14 +2728,18 @@ function renderDash(){
     if(!byStatus[st]){byStatus[st]=[];statusOrder.push(st);}
     byStatus[st].push(item);
   });
-  // sort: ok first, then alpha, empty last
+  // sort: ok first → others alpha → cancel → erro → sem status last
   statusOrder.sort(function(a,b){
-    if(!a&&b)return 1;if(a&&!b)return -1;
-    var ua=a.toUpperCase(),ub=b.toUpperCase();
-    var aOk=ua.includes('OK'),bOk=ub.includes('OK');
-    if(aOk&&!bOk)return -1;if(!aOk&&bOk)return 1;
-    var aCan=ua.includes('CANCEL'),bCan=ub.includes('CANCEL');
-    if(aCan&&!bCan)return 1;if(!aCan&&bCan)return -1;
+    function rank(s){
+      if(!s)return 5;
+      var u=s.toUpperCase();
+      if(u.includes('OK'))return 0;
+      if(u.includes('ERRO'))return 4;
+      if(u.includes('CANCEL'))return 3;
+      return 1;
+    }
+    var ra=rank(a),rb=rank(b);
+    if(ra!==rb)return ra-rb;
     return a.localeCompare(b,'pt-BR');
   });
 
@@ -2725,23 +2749,34 @@ function renderDash(){
   // salas ativas: cinemas with sessions this week (today → +6 days) matching event filter
   var today=new Date();today.setHours(0,0,0,0);
   var weekEnd=new Date(today);weekEnd.setDate(weekEnd.getDate()+6);
-  var salaFilmes={};// cinema → Set of film codes
+  var salaData={};// cinema → {filmes:Set, sessoes:count}
   sessoesArr.forEach(function(s){
     if(s.evento&&!activeEventsDash.has(s.evento))return;
     if(!s.date||s.date<today||s.date>weekEnd)return;
-    if(!salaFilmes[s.cinema])salaFilmes[s.cinema]=new Set();
-    s.filmes.forEach(function(c){salaFilmes[s.cinema].add(c);});
+    if(!salaData[s.cinema])salaData[s.cinema]={filmes:new Set(),sessoes:0};
+    s.filmes.forEach(function(c){salaData[s.cinema].filmes.add(c);});
+    salaData[s.cinema].sessoes++;
   });
-  var salasWeek=Object.keys(salaFilmes).sort();
+  var salasWeek=Object.keys(salaData).sort();
   if(salasWeek.length){
     html+='<div class="dash-salas-section"><div class="dash-salas-label">Salas ativas esta semana</div><div class="dash-salas-chips">';
-    // "Todas" chip
-    html+='<button class="dash-sala-chip'+(dashCinemaFilter===''?' active':'')+'" onclick="dashCinemaFilter=\'\';renderDash()">Todas</button>';
     salasWeek.forEach(function(sala){
-      var cnt=salaFilmes[sala].size;
+      var d=salaData[sala];
+      var nf=d.filmes.size,ns=d.sessoes;
+      // determine color state from film statuses
+      var hasError=false,hasNonOk=false;
+      d.filmes.forEach(function(c){
+        var f=filmesMap[c];if(!f)return;
+        var st=(f.status||'').toString().trim();
+        var u=st.toUpperCase();
+        if(!st||st==='-'||u.includes('ERRO')){hasError=true;}
+        else if(!u.includes('OK')){hasNonOk=true;}
+      });
+      var chipCls=hasError?' sala-st-error':hasNonOk?' sala-st-warn':'';
       var safeSala=sala.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      html+='<button class="dash-sala-chip'+(dashCinemaFilter===sala?' active':'')+'" onclick="dashCinemaFilter=\''+safeSala+'\';renderDash()">'+
-        sala+'<span class="dash-sala-count">'+cnt+'</span>'+
+      html+='<button class="dash-sala-chip'+chipCls+'" onclick="goToCinemaFromDash(\''+safeSala+'\')">'+
+        sala+
+        '<span class="dash-sala-count">'+nf+' filme'+(nf!==1?'s':'')+' · '+ns+' sessão'+(ns!==1?'ões':'')+'</span>'+
       '</button>';
     });
     html+='</div></div>';
@@ -2769,7 +2804,7 @@ function renderDash(){
     html+='<div class="dash-detail">';
     html+='<div class="dash-detail-hdr">'+
       '<span class="dash-detail-title">Status</span>'+
-      '<span class="dash-detail-status '+stCls+'" style="color:'+(stCls==='st-ok'?'var(--ok)':stCls==='st-cancel'?'var(--warn)':'var(--accent)')+'">'+stLabel+'</span>'+
+      '<span class="dash-detail-status '+stCls+'" style="color:'+(stCls==='st-ok'?'var(--ok)':(stCls==='st-cancel'||stCls==='st-error')?'var(--warn)':'var(--accent)')+'">'+stLabel+'</span>'+
       '<span class="dash-detail-count">'+detItems.length+' filme'+(detItems.length!==1?'s':'')+'</span>'+
       '<button class="dash-detail-close" onclick="selectDashStatus(null)">✕ Fechar</button>'+
     '</div>';
@@ -2798,12 +2833,37 @@ function renderDash(){
     html+='</div></div>';
   }
 
+  // footer
+  var sysUpdate='última atualização do sistema · 14/04/2026 às 17:00';
+  var fileModStr=fileLastModified?fileLastModified.toLocaleString('pt-BR'):'—';
+  html+='<div class="dash-footer">'+
+    '<span>◉ '+sysUpdate+'</span>'+
+    '<span>📄 última modificação da planilha · <strong>'+fileModStr+'</strong></span>'+
+  '</div>';
+
   dc.innerHTML=html;
 }
 
 function selectDashStatus(st){
   dashStatusSelected=(st===dashStatusSelected||st===null)?null:st;
   renderDash();
+}
+
+function goToCinemaFromDash(sala){
+  syncEventFiltersFrom(activeEventsDash);
+  navHistory.push({mode:'dash',label:'Dashboard'});
+  if(!_browserNav)history.pushState({olga:'cinemas'},'');
+  currentMode='cinemas';
+  document.getElementById('landing').style.display='none';
+  document.getElementById('app').style.display='block';
+  ['ficha','grade','busca','ingest','cinemas','dash'].forEach(function(m){
+    var cap=m.charAt(0).toUpperCase()+m.slice(1);
+    document.getElementById('tab'+cap).classList.toggle('active',m==='cinemas');
+    document.getElementById('bar'+cap).classList.toggle('hidden',m!=='cinemas');
+    document.getElementById(m+'-panel').classList.toggle('active',m==='cinemas');
+  });
+  rebuildPillsForMode('cinemas');
+  openCinemaDetail(sala);
 }
 
 /* ZOOM */
@@ -2868,5 +2928,5 @@ window.addEventListener('popstate',function(e){
   _browserNav=false;
 });
 </script>
-<div id="page-footer"><span>última atualização · 13/04/2026 às 21:00</span></div>
+<div id="page-footer"><span>última atualização · 14/04/2026 às 17:00</span></div>
 </html>
