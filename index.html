@@ -395,6 +395,15 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .dash-sess-link:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
 .dash-sess-cinema{font-size:8px;color:var(--text-muted);opacity:0.75;}
 
+.dash-salas-section{margin-bottom:22px;}
+.dash-salas-label{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.dash-salas-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.dash-sala-chip{font-family:var(--mono);font-size:10px;font-weight:600;padding:5px 12px;border:1px solid var(--border);background:var(--surface2);color:var(--text-dim);cursor:pointer;border-radius:2px;transition:all 0.15s;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;}
+.dash-sala-chip:hover{border-color:var(--text-dim);color:var(--text);}
+.dash-sala-chip.active{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
+.dash-sala-count{font-size:9px;background:var(--surface);border:1px solid var(--border);padding:0 5px;border-radius:10px;color:var(--text-muted);font-weight:400;}
+.dash-sala-chip.active .dash-sala-count{background:rgba(232,160,32,0.15);border-color:rgba(232,160,32,0.3);color:var(--accent);}
+
 /* CINEMAS */
 #cinemas-container{padding:24px 32px 48px;max-width:1200px;margin:0 auto;}
 .cinemas-complexo{margin-bottom:32px;}
@@ -975,6 +984,18 @@ function loadFile(file){
   reader.readAsArrayBuffer(file);
 }
 
+function currentEventsFromDates(sessoesArr){
+  // Events that have at least one session within today ± 14 days
+  var today=new Date();today.setHours(0,0,0,0);
+  var past=new Date(today);past.setDate(past.getDate()-7);
+  var future=new Date(today);future.setDate(future.getDate()+14);
+  var active=new Set();
+  sessoesArr.forEach(function(s){
+    if(s.evento&&s.date&&s.date>=past&&s.date<=future)active.add(s.evento);
+  });
+  return active;
+}
+
 function applyParsedData(d,filename){
   filmesMap=d.filmesMap;filmesArr=d.filmesArr;
   sessoesArr=d.sessoesArr;sessoesMap=d.sessoesMap;
@@ -982,7 +1003,9 @@ function applyParsedData(d,filename){
   if(d.cinemasArr)cinemasArr=d.cinemasArr;
   var events=d.events;
   eventColors={};events.forEach(function(ev,i){eventColors[ev]=PALETTE[i%PALETTE.length];});
-  activeEventsGrade=new Set(events);activeEventsBusca=new Set(events);activeEventsIngest=new Set(events);activeEventsFicha=new Set(events);activeEventsCinemas=new Set(events);activeEventsDash=new Set(events);
+  var currentEvs=currentEventsFromDates(d.sessoesArr);
+  var initEvs=currentEvs.size>0?currentEvs:new Set(events);
+  activeEventsGrade=new Set(initEvs);activeEventsBusca=new Set(initEvs);activeEventsIngest=new Set(initEvs);activeEventsFicha=new Set(initEvs);activeEventsCinemas=new Set(initEvs);activeEventsDash=new Set(initEvs);
   dataLoaded=true;
   ['tabFicha','tabGrade','tabBusca','tabIngest','tabCinemas','tabDash'].forEach(function(id){document.getElementById(id).disabled=false;});
   ['modCardFicha','modCardGrade','modCardBusca','modCardIngest','modCardCinemas','modCardDash'].forEach(function(id){document.getElementById(id).classList.remove('disabled');});
@@ -2698,6 +2721,31 @@ function renderDash(){
 
   var totalFilmes=items.length;
   var html='<div class="dash-total-bar">Filmes únicos no filtro: <strong>'+totalFilmes+'</strong></div>';
+
+  // salas ativas: cinemas with sessions this week (today → +6 days) matching event filter
+  var today=new Date();today.setHours(0,0,0,0);
+  var weekEnd=new Date(today);weekEnd.setDate(weekEnd.getDate()+6);
+  var salaFilmes={};// cinema → Set of film codes
+  sessoesArr.forEach(function(s){
+    if(s.evento&&!activeEventsDash.has(s.evento))return;
+    if(!s.date||s.date<today||s.date>weekEnd)return;
+    if(!salaFilmes[s.cinema])salaFilmes[s.cinema]=new Set();
+    s.filmes.forEach(function(c){salaFilmes[s.cinema].add(c);});
+  });
+  var salasWeek=Object.keys(salaFilmes).sort();
+  if(salasWeek.length){
+    html+='<div class="dash-salas-section"><div class="dash-salas-label">Salas ativas esta semana</div><div class="dash-salas-chips">';
+    // "Todas" chip
+    html+='<button class="dash-sala-chip'+(dashCinemaFilter===''?' active':'')+'" onclick="dashCinemaFilter=\'\';renderDash()">Todas</button>';
+    salasWeek.forEach(function(sala){
+      var cnt=salaFilmes[sala].size;
+      var safeSala=sala.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      html+='<button class="dash-sala-chip'+(dashCinemaFilter===sala?' active':'')+'" onclick="dashCinemaFilter=\''+safeSala+'\';renderDash()">'+
+        sala+'<span class="dash-sala-count">'+cnt+'</span>'+
+      '</button>';
+    });
+    html+='</div></div>';
+  }
 
   // tiles
   html+='<div class="dash-tiles">';
