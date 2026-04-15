@@ -2840,7 +2840,7 @@ function renderDash(){
   var fileModStr=fileLastModified?fileLastModified.toLocaleString('pt-BR'):'—';
   html+='<div class="dash-footer">'+
     '<span>◉ '+sysUpdate+'</span>'+
-    '<span>📄 última modificação da planilha · <strong>'+fileModStr+'</strong></span>'+
+    '<span>📄 última modificação da planilha · '+fileModStr+'</span>'+
   '</div>';
 
   dc.innerHTML=html;
@@ -2929,17 +2929,22 @@ function applyTheme(theme){
   }catch(e){}
 })();
 
-/* BROWSER BACK BUTTON — intercept popstate so the user never leaves the page accidentally */
+/* BROWSER BACK BUTTON — use browser state as source of truth */
 history.replaceState({olga:'landing'},'');
 window.addEventListener('popstate',function(e){
   _browserNav=true;
-  if(navHistory.length>0){
-    goBack();
-    // re-insert a state so further back presses still work
-    history.pushState({olga:currentMode||'landing'},'');
-  }else if(currentMode){
+  var target=e.state&&e.state.olga;
+  if(!target||target==='landing'){
     goHome();
-    // don't push here — next back press should leave the page normally
+  }else if(target==='_cinemaDetail'){
+    // re-open cinema detail if we have it
+    if(e.state.sala&&currentMode==='cinemas'){
+      openCinemaDetail(e.state.sala);
+    }else{
+      switchMode('cinemas',true);
+    }
+  }else{
+    switchMode(target,true);
   }
   _browserNav=false;
 });
