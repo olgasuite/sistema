@@ -378,7 +378,6 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .dash-tile.st-accent{border-top-color:var(--accent);}
 .dash-tile.st-accent .dash-tile-count{color:var(--accent);}
 .dash-tile.st-accent.active{background:var(--accent-dim);}
-.dash-footer{display:none;}/* placeholder — real definition below */
 .dash-tile-status{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-dim);word-break:break-word;line-height:1.3;}
 .dash-tile-count{font-family:var(--mono);font-size:38px;font-weight:600;color:var(--text);line-height:1;}
 .dash-tile-sub{font-family:var(--mono);font-size:9px;color:var(--text-muted);}
@@ -2768,7 +2767,8 @@ function renderDash(){
       // determine color state from film statuses
       var hasError=false,hasNonOk=false;
       d.filmes.forEach(function(c){
-        var f=filmesMap[c];if(!f)return;
+        var f=filmesMap[c];
+        if(!f){hasError=true;return;}// code in session but not in filmes sheet = unregistered = flag red
         var st=(f.status||'').toString().trim();
         var u=st.toUpperCase();
         if(!st||st==='-'||u.includes('ERRO')){hasError=true;}
@@ -2853,7 +2853,9 @@ function selectDashStatus(st){
 
 function goToCinemaFromDash(sala){
   syncEventFiltersFrom(activeEventsDash);
+  // push dash to history — we do NOT want openCinemaDetail to push _cinemaList on top
   navHistory.push({mode:'dash',label:'Dashboard'});
+  updateBackBtn();
   if(!_browserNav)history.pushState({olga:'cinemas'},'');
   currentMode='cinemas';
   document.getElementById('landing').style.display='none';
@@ -2865,7 +2867,19 @@ function goToCinemaFromDash(sala){
     document.getElementById(m+'-panel').classList.toggle('active',m==='cinemas');
   });
   rebuildPillsForMode('cinemas');
+  // Open the detail directly without letting openCinemaDetail push _cinemaList
+  currentCinemaDetail=sala;
+  var all=getAllCinemas();
+  var c=all.map[sala]||{complexo:sala,sala:sala,servidor:'',serial:'',projetor:'',assentos:'',proporcao:'',som:'',obs:'',cineassista:'',evento:''};
+  document.getElementById('cinemasEmpty').style.display='none';
+  document.getElementById('cinemas-container').style.display='none';
+  document.getElementById('cinemaDetailWrap').style.display='block';
+  // reuse openCinemaDetail rendering but restore navHistory length so it doesn't add extra entry
+  var savedLen=navHistory.length;
   openCinemaDetail(sala);
+  // openCinemaDetail pushed _cinemaList — remove it, we already have dash in the stack
+  while(navHistory.length>savedLen)navHistory.pop();
+  updateBackBtn();
 }
 
 /* ZOOM */
