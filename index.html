@@ -482,6 +482,10 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 /* rows inside detail */
 .dsd-sess-row{display:flex;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:10px;flex-wrap:wrap;}
 .dsd-sess-row:last-child{border-bottom:none;}
+.dsd-sess-alert{background:rgba(255,96,85,0.07);border-left:3px solid var(--warn);padding-left:9px;}
+.dsd-sess-alert:hover{background:rgba(255,96,85,0.13)!important;}
+.dsd-sess-alert .dsd-name{color:var(--warn);}
+[data-theme="light"] .dsd-sess-alert{background:rgba(196,43,43,0.06);}
 .dsd-date{color:var(--text-muted);white-space:nowrap;min-width:70px;}
 .dsd-time{color:var(--text-dim);font-weight:600;white-space:nowrap;min-width:44px;}
 .dsd-name{color:var(--accent);flex:1;font-size:11px;font-weight:600;min-width:140px;}
@@ -550,6 +554,12 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .cinema-past-toggle:hover{color:var(--text-dim);}
 .cinema-past-section{border-top:1px solid var(--border2);}
 .cinema-cineassista-sim{color:#ff8060;font-weight:600;}
+.cinema-sess-alert{background:rgba(255,96,85,0.07)!important;border-left:3px solid var(--warn);}
+.cinema-sess-alert:hover{background:rgba(255,96,85,0.13)!important;}
+.cinema-sess-alert .cinema-sess-name{color:var(--warn);}
+.cinema-sess-alert-icon{font-size:12px;color:var(--warn);flex-shrink:0;margin-left:4px;}
+[data-theme="light"] .cinema-sess-alert{background:rgba(196,43,43,0.06)!important;border-left-color:var(--warn);}
+[data-theme="light"] .cinema-sess-alert:hover{background:rgba(196,43,43,0.11)!important;}
 
 /* BORDERÔ */
 .bordero-btn{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:3px 10px;background:transparent;color:var(--accent);border:1px solid rgba(232,160,32,0.4);cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;}
@@ -2473,7 +2483,16 @@ function openCinemaDetail(sala){
     var totalMins=0;
     s.filmes.forEach(function(c){var f=filmesMap[c];if(!f)return;var d=f.duracao||'';if(/^\d{1,2}:\d{2}/.test(d)){var p=d.split(':').map(Number);totalMins+=p[0]*60+p[1];}});
     var durStr=totalMins>0?Math.floor(totalMins/60)+'h'+String(totalMins%60).padStart(2,'0'):'';
-    var html='<div class="cinema-sess-row" onclick="goToFicha(\''+safe+'\')">';
+    // status check: flag if any film has error status or no status
+    var hasAlert=s.filmes.some(function(c){
+      var f=filmesMap[c];
+      if(!f)return true;// not in filmes sheet = unregistered
+      var st=(f.status||'').toString().trim();
+      if(!st||st==='-')return true;// sem status
+      if(st.toUpperCase().includes('ERRO'))return true;
+      return false;
+    });
+    var html='<div class="cinema-sess-row'+(hasAlert?' cinema-sess-alert':'')+'" onclick="goToFicha(\''+safe+'\')">';
     html+='<span class="cinema-sess-date">'+s.dia+'</span>';
     html+='<span class="cinema-sess-time">'+s.hora+'</span>';
     html+='<div class="cinema-sess-body">';
@@ -2482,6 +2501,7 @@ function openCinemaDetail(sala){
     html+='</div>';
     if(evBadge)html+=evBadge;
     if(durStr)html+='<span class="cinema-sess-dur">'+durStr+'</span>';
+    if(hasAlert)html+='<span class="cinema-sess-alert-icon" title="Filme com status de erro ou sem status">⚠</span>';
     html+='</div>';
     return html;
   }
@@ -3080,10 +3100,16 @@ function renderDayTabs(){
 
 function goToFicha(nomeSessao){
   if(!_browserNav)history.pushState({olga:'ficha',session:nomeSessao},'');
+  switchMode('ficha',true);
+  // ensure the session's event is active so rebuildSessionSelect doesn't clear it
+  var sess=sessoesMap[nomeSessao];
+  if(sess&&sess.evento&&!activeEventsFicha.has(sess.evento)){
+    activeEventsFicha.add(sess.evento);
+    buildFichaFilters();
+  }
   var sel=document.getElementById('sessionSelect');
   sel.value=nomeSessao;
   var ev=document.createEvent('Event');ev.initEvent('change',true,true);sel.dispatchEvent(ev);
-  switchMode('ficha',true); // true = no push
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -4261,18 +4287,23 @@ function renderDash(){
       sorted.forEach(function(s){
         var safe=s.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         var filmTitles=s.filmes.map(function(c){var f=filmesMap[c];return f&&f.titulo?clean(f.titulo):c;}).filter(Boolean).join(' · ');
-        // extra fields inline
+        var hasAlert=s.filmes.some(function(c){
+          var f=filmesMap[c];if(!f)return true;
+          var st=(f.status||'').toString().trim();
+          return(!st||st==='-'||st.toUpperCase().includes('ERRO'));
+        });
         var extras=[];
         if(s.convidados)extras.push('Convidados: '+s.convidados);
         if(s.apresentacao&&s.apresentacao.toUpperCase()==='SIM')extras.push('Apresentação ✓');
         if(s.leg_eletronica&&s.leg_eletronica.toUpperCase()==='SIM')extras.push('Leg. elet. ✓');
         if(s.col_ag&&s.col_ag.toUpperCase()==='SIM')extras.push('Debate ✓');
         if(s.acessibilidades)extras.push('♿ '+s.acessibilidades);
-        bodyHtml+='<div class="dsd-sess-row" style="cursor:pointer" onclick="goToFicha(\''+safe+'\')">'+
+        bodyHtml+='<div class="dsd-sess-row'+(hasAlert?' dsd-sess-alert':'')+'" style="cursor:pointer" onclick="goToFicha(\''+safe+'\')">'+
           '<span class="dsd-date">'+s.dia+'</span>'+
           '<span class="dsd-time">'+s.hora+'</span>'+
           '<span class="dsd-name">'+s.nome+'</span>'+
           '<span class="dsd-cinema">'+s.cinema+'</span>'+
+          (hasAlert?'<span style="color:var(--warn);font-size:11px;flex-shrink:0;" title="Filme com status de erro ou sem status">⚠</span>':'')+
           (filmTitles?'<span class="dsd-extra" style="font-family:var(--sans);width:100%;">'+filmTitles+'</span>':'')+
           (extras.length?'<span class="dsd-extra" style="width:100%;color:var(--text-dim);">'+extras.join(' · ')+'</span>':'')+
         '</div>';
