@@ -5,6 +5,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OLGA Suite</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
@@ -1311,6 +1313,7 @@ var sessoesCinemaFilter='',_sessoesHidePast=true;
 var vinhetasCinemaFilter='',vinhetasDayFilter='';
 var dashCinemaFilter='',dashDayFilter=new Set(),dashStatusSelected=null,dashStatSelected=null;
 var _dashBlocksOpen={global:false,days:false,controle:false};
+var _dashGlobalEvFilter='';
 var dashBlockOpen={nums:true,days:true,control:true};
 var _dashBlockOpen={numeros:true,dias:true,controle:true};
 window._dashYearsOpen=null;
@@ -2635,7 +2638,6 @@ function openBordero(cx){
 
 function openBorderoDashSessoes(scope){
   function parsePub(v){var n=parseInt((v||'').toString().replace(/\D/g,''));return isNaN(n)?0:n;}
-  // gather sessions according to scope
   var sessoes;
   if(scope==='days'){
     sessoes=sessoesArr.filter(function(s){
@@ -2643,7 +2645,11 @@ function openBorderoDashSessoes(scope){
              s.date&&dashDayFilter.has(s.date.toISOString().slice(0,10));
     });
   }else{
-    sessoes=sessoesArr.filter(function(s){return!s.evento||activeEventsDash.has(s.evento);});
+    sessoes=sessoesArr.filter(function(s){
+      if(s.evento&&!activeEventsDash.has(s.evento))return false;
+      if(_dashGlobalEvFilter&&s.evento!==_dashGlobalEvFilter)return false;
+      return true;
+    });
   }
   var totalPub=sessoes.reduce(function(acc,s){return acc+parsePub(s.publico);},0);
   var hasPubData=sessoes.some(function(s){return s.publico&&s.publico.toString().trim()!=='';});
@@ -2656,7 +2662,6 @@ function openBorderoDashSessoes(scope){
       '<button class="bordero-print-btn" onclick="printBordero()">⎙ Imprimir</button>'+
       '<button class="bordero-close" onclick="closeBordero()">✕ Fechar</button>'+
     '</div></div>';
-
   html+='<div class="bordero-total-bar">'+
     '<span class="bordero-total-label">Total</span>'+
     '<span class="bordero-total-num">'+(hasPubData?totalPub.toLocaleString('pt-BR'):'—')+'</span>'+
@@ -2671,110 +2676,111 @@ function openBorderoDashSessoes(scope){
     return;
   }
 
-  if(scope==='global'){
-    // Tabela: Dias (colunas) × Salas (linhas), células = nome + ingressos
-    var dayMap={};
-    sessoes.forEach(function(s){if(s.date&&!dayMap[s.dia])dayMap[s.dia]=s.date;});
-    var dias=Object.keys(dayMap).sort(function(a,b){return dayMap[a]-dayMap[b];});
-    var salaSet={};sessoes.forEach(function(s){if(s.cinema)salaSet[s.cinema]=true;});
-    var salas=Object.keys(salaSet).sort(function(a,b){return a.localeCompare(b,'pt-BR',{sensitivity:'base'});});
-    // index: sala → dia → [sessions]
-    var idx={};
-    sessoes.forEach(function(s){
-      if(!idx[s.cinema])idx[s.cinema]={};
-      if(!idx[s.cinema][s.dia])idx[s.cinema][s.dia]=[];
-      idx[s.cinema][s.dia].push(s);
-    });
-    html+='<div class="bordero-table-wrap"><table class="bordero-table bordero-table-sala">';
-    html+='<thead><tr><th class="bts-th-hora">Sala</th>';
-    dias.forEach(function(d){html+='<th>'+d+'</th>';});
-    html+='<th class="bordero-th-total">Total</th></tr></thead><tbody>';
-    salas.forEach(function(sala){
-      var salaTotal=sessoes.filter(function(s){return s.cinema===sala;}).reduce(function(acc,s){return acc+parsePub(s.publico);},0);
-      html+='<tr><td class="bts-hora" style="font-size:10px;">'+sala+'</td>';
-      dias.forEach(function(d){
-        var cell=(idx[sala]&&idx[sala][d])||[];
-        if(!cell.length){html+='<td class="bts-empty"></td>';}
-        else{
-          var cellHtml=cell.map(function(s){
-            var pub=parsePub(s.publico);var hasPub=s.publico!==''&&s.publico!==null&&s.publico!==undefined;
-            var safe=s.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-            return'<div class="bts-cell-entry" style="cursor:pointer" onclick="closeBordero();goToFicha(\''+safe+'\')">'+
-              '<span class="bts-cell-nome">'+s.nome+'</span>'+
-              '<span class="bts-cell-pub">'+(hasPub?pub.toLocaleString('pt-BR'):'—')+'</span>'+
-            '</div>';
-          }).join('');
-          html+='<td class="bts-cell">'+cellHtml+'</td>';
-        }
-      });
-      html+='<td class="bordero-num bordero-row-total">'+(hasPubData?salaTotal.toLocaleString('pt-BR'):'—')+'</td>';
-      html+='</tr>';
-    });
-    // totais por dia
-    html+='<tr class="bordero-total-row"><td class="bts-hora" style="font-weight:600;color:var(--text-dim);">Total</td>';
-    dias.forEach(function(d){
-      var dt=sessoes.filter(function(s){return s.dia===d;}).reduce(function(acc,s){return acc+parsePub(s.publico);},0);
-      html+='<td class="bordero-num bordero-col-total">'+(hasPubData?dt.toLocaleString('pt-BR'):'—')+'</td>';
-    });
-    html+='<td class="bordero-num bordero-corner">'+(hasPubData?totalPub.toLocaleString('pt-BR'):'—')+'</td></tr>';
-    html+='</tbody></table></div>';
+  // group by event
+  var evOrder=[],evMap={};
+  sessoes.forEach(function(s){var k=s.evento||'';if(!evMap[k]){evMap[k]=[];evOrder.push(k);}evMap[k].push(s);});
 
-  }else{
-    // scope==='days': Tabela Horários (colunas) × Salas (linhas), células com nome + ingressos + badge evento
-    var horaValMap2={};
-    sessoes.forEach(function(s){
-      var hk=s.time?String(s.time.h).padStart(2,'0')+':'+String(s.time.m).padStart(2,'0'):s.hora||'';
-      horaValMap2[hk]=s.time?s.time.h*60+s.time.m:(parseInt(hk)||0);
-    });
-    var horas=Object.keys(horaValMap2).sort(function(a,b){return horaValMap2[a]-horaValMap2[b];});
-    var salaSet2={};sessoes.forEach(function(s){if(s.cinema)salaSet2[s.cinema]=true;});
-    var salas2=Object.keys(salaSet2).sort(function(a,b){return a.localeCompare(b,'pt-BR',{sensitivity:'base'});});
-    var idx2={};
-    sessoes.forEach(function(s){
-      var hk=s.time?String(s.time.h).padStart(2,'0')+':'+String(s.time.m).padStart(2,'0'):s.hora||'';
-      if(!idx2[s.cinema])idx2[s.cinema]={};
-      if(!idx2[s.cinema][hk])idx2[s.cinema][hk]=[];
-      idx2[s.cinema][hk].push(s);
-    });
-    html+='<div class="bordero-table-wrap"><table class="bordero-table bordero-table-sala">';
-    html+='<thead><tr><th class="bts-th-hora">Sala</th>';
-    horas.forEach(function(hk){html+='<th>'+hk+'</th>';});
-    html+='<th class="bordero-th-total">Total</th></tr></thead><tbody>';
-    salas2.forEach(function(sala){
-      var salaTotal=sessoes.filter(function(s){return s.cinema===sala;}).reduce(function(acc,s){return acc+parsePub(s.publico);},0);
-      html+='<tr><td class="bts-hora" style="font-size:10px;">'+sala+'</td>';
-      horas.forEach(function(hk){
-        var cell=(idx2[sala]&&idx2[sala][hk])||[];
-        if(!cell.length){html+='<td class="bts-empty"></td>';}
-        else{
-          var cellHtml=cell.map(function(s){
-            var pub=parsePub(s.publico);var hasPub=s.publico!==''&&s.publico!==null&&s.publico!==undefined;
-            var safe=s.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-            var evCol=s.evento&&eventColors[s.evento]?eventColors[s.evento]:null;
-            var evBadge=s.evento?'<span style="font-family:var(--mono);font-size:8px;font-weight:600;padding:0 4px;border-radius:2px;background:'+(evCol?evCol.bg:'var(--surface2)')+';color:'+(evCol?evCol.text:'var(--text-dim)')+'">'+s.evento+'</span>':'';
-            return'<div class="bts-cell-entry" style="cursor:pointer" onclick="closeBordero();goToFicha(\''+safe+'\')">'+
-              '<span class="bts-cell-nome">'+s.nome+'</span>'+
-              '<span class="bts-cell-pub">'+(hasPub?pub.toLocaleString('pt-BR'):'—')+'</span>'+
-              (evBadge?'<span style="display:block;margin-top:2px;">'+evBadge+'</span>':'')+
-            '</div>';
-          }).join('');
-          html+='<td class="bts-cell">'+cellHtml+'</td>';
-        }
+  function buildTable(evSessoes,isGlobal){
+    var evHasPub=evSessoes.some(function(s){return s.publico&&s.publico.toString().trim()!=='';});
+    var tableHtml='';
+    if(isGlobal){
+      // Salas (linhas) × Dias (colunas)
+      var dayMap={};
+      evSessoes.forEach(function(s){if(s.date&&!dayMap[s.dia])dayMap[s.dia]=s.date;});
+      var dias=Object.keys(dayMap).sort(function(a,b){return dayMap[a]-dayMap[b];});
+      var salaSet={};evSessoes.forEach(function(s){if(s.cinema)salaSet[s.cinema]=true;});
+      var salas=Object.keys(salaSet).sort(function(a,b){return a.localeCompare(b,'pt-BR',{sensitivity:'base'});});
+      var idx={};
+      evSessoes.forEach(function(s){if(!idx[s.cinema])idx[s.cinema]={};if(!idx[s.cinema][s.dia])idx[s.cinema][s.dia]=[];idx[s.cinema][s.dia].push(s);});
+      tableHtml+='<div class="bordero-table-wrap"><table class="bordero-table bordero-table-sala">';
+      tableHtml+='<thead><tr><th class="bts-th-hora">Sala</th>';
+      dias.forEach(function(d){tableHtml+='<th>'+d+'</th>';});
+      tableHtml+='<th class="bordero-th-total">Total</th></tr></thead><tbody>';
+      salas.forEach(function(sala){
+        var salaTotal=evSessoes.filter(function(s){return s.cinema===sala;}).reduce(function(acc,s){return acc+parsePub(s.publico);},0);
+        tableHtml+='<tr><td class="bts-hora" style="font-size:10px;">'+sala+'</td>';
+        dias.forEach(function(d){
+          var cell=(idx[sala]&&idx[sala][d])||[];
+          if(!cell.length){tableHtml+='<td class="bts-empty"></td>';}
+          else{
+            tableHtml+='<td class="bts-cell">'+cell.map(function(s){
+              var pub=parsePub(s.publico);var hasPub=s.publico!==''&&s.publico!==null&&s.publico!==undefined;
+              var safe=s.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+              return'<div class="bts-cell-entry" style="cursor:pointer" onclick="closeBordero();goToFicha(\''+safe+'\')">'+
+                '<span class="bts-cell-nome">'+s.nome+'</span>'+
+                '<span class="bts-cell-pub">'+(hasPub?pub.toLocaleString('pt-BR'):'—')+'</span>'+
+              '</div>';
+            }).join('')+'</td>';
+          }
+        });
+        tableHtml+='<td class="bordero-num bordero-row-total">'+(evHasPub?salaTotal.toLocaleString('pt-BR'):'—')+'</td></tr>';
       });
-      html+='<td class="bordero-num bordero-row-total">'+(hasPubData?salaTotal.toLocaleString('pt-BR'):'—')+'</td>';
-      html+='</tr>';
-    });
-    html+='<tr class="bordero-total-row"><td class="bts-hora" style="font-weight:600;color:var(--text-dim);">Total</td>';
-    horas.forEach(function(hk){
-      var ht=sessoes.filter(function(s){
-        var k=s.time?String(s.time.h).padStart(2,'0')+':'+String(s.time.m).padStart(2,'0'):s.hora||'';
-        return k===hk;
-      }).reduce(function(acc,s){return acc+parsePub(s.publico);},0);
-      html+='<td class="bordero-num bordero-col-total">'+(hasPubData?ht.toLocaleString('pt-BR'):'—')+'</td>';
-    });
-    html+='<td class="bordero-num bordero-corner">'+(hasPubData?totalPub.toLocaleString('pt-BR'):'—')+'</td></tr>';
-    html+='</tbody></table></div>';
+      tableHtml+='<tr class="bordero-total-row"><td class="bts-hora" style="font-weight:600;color:var(--text-dim);">Total</td>';
+      dias.forEach(function(d){
+        var dt=evSessoes.filter(function(s){return s.dia===d;}).reduce(function(acc,s){return acc+parsePub(s.publico);},0);
+        tableHtml+='<td class="bordero-num bordero-col-total">'+(evHasPub?dt.toLocaleString('pt-BR'):'—')+'</td>';
+      });
+      var evTot=evSessoes.reduce(function(acc,s){return acc+parsePub(s.publico);},0);
+      tableHtml+='<td class="bordero-num bordero-corner">'+(evHasPub?evTot.toLocaleString('pt-BR'):'—')+'</td></tr>';
+      tableHtml+='</tbody></table></div>';
+    }else{
+      // Salas (linhas) × Horários (colunas)
+      var horaValMap2={};
+      evSessoes.forEach(function(s){var hk=s.time?String(s.time.h).padStart(2,'0')+':'+String(s.time.m).padStart(2,'0'):s.hora||'';horaValMap2[hk]=s.time?s.time.h*60+s.time.m:(parseInt(hk)||0);});
+      var horas=Object.keys(horaValMap2).sort(function(a,b){return horaValMap2[a]-horaValMap2[b];});
+      var salaSet2={};evSessoes.forEach(function(s){if(s.cinema)salaSet2[s.cinema]=true;});
+      var salas2=Object.keys(salaSet2).sort(function(a,b){return a.localeCompare(b,'pt-BR',{sensitivity:'base'});});
+      var idx2={};
+      evSessoes.forEach(function(s){var hk=s.time?String(s.time.h).padStart(2,'0')+':'+String(s.time.m).padStart(2,'0'):s.hora||'';if(!idx2[s.cinema])idx2[s.cinema]={};if(!idx2[s.cinema][hk])idx2[s.cinema][hk]=[];idx2[s.cinema][hk].push(s);});
+      tableHtml+='<div class="bordero-table-wrap"><table class="bordero-table bordero-table-sala">';
+      tableHtml+='<thead><tr><th class="bts-th-hora">Sala</th>';
+      horas.forEach(function(hk){tableHtml+='<th>'+hk+'</th>';});
+      tableHtml+='<th class="bordero-th-total">Total</th></tr></thead><tbody>';
+      salas2.forEach(function(sala){
+        var salaTotal=evSessoes.filter(function(s){return s.cinema===sala;}).reduce(function(acc,s){return acc+parsePub(s.publico);},0);
+        tableHtml+='<tr><td class="bts-hora" style="font-size:10px;">'+sala+'</td>';
+        horas.forEach(function(hk){
+          var cell=(idx2[sala]&&idx2[sala][hk])||[];
+          if(!cell.length){tableHtml+='<td class="bts-empty"></td>';}
+          else{
+            tableHtml+='<td class="bts-cell">'+cell.map(function(s){
+              var pub=parsePub(s.publico);var hasPub=s.publico!==''&&s.publico!==null&&s.publico!==undefined;
+              var safe=s.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+              return'<div class="bts-cell-entry" style="cursor:pointer" onclick="closeBordero();goToFicha(\''+safe+'\')">'+
+                '<span class="bts-cell-nome">'+s.nome+'</span>'+
+                '<span class="bts-cell-pub">'+(hasPub?pub.toLocaleString('pt-BR'):'—')+'</span>'+
+              '</div>';
+            }).join('')+'</td>';
+          }
+        });
+        tableHtml+='<td class="bordero-num bordero-row-total">'+(evHasPub?salaTotal.toLocaleString('pt-BR'):'—')+'</td></tr>';
+      });
+      tableHtml+='<tr class="bordero-total-row"><td class="bts-hora" style="font-weight:600;color:var(--text-dim);">Total</td>';
+      horas.forEach(function(hk){
+        var ht=evSessoes.filter(function(s){var k=s.time?String(s.time.h).padStart(2,'0')+':'+String(s.time.m).padStart(2,'0'):s.hora||'';return k===hk;}).reduce(function(acc,s){return acc+parsePub(s.publico);},0);
+        tableHtml+='<td class="bordero-num bordero-col-total">'+(evHasPub?ht.toLocaleString('pt-BR'):'—')+'</td>';
+      });
+      var evTot2=evSessoes.reduce(function(acc,s){return acc+parsePub(s.publico);},0);
+      tableHtml+='<td class="bordero-num bordero-corner">'+(evHasPub?evTot2.toLocaleString('pt-BR'):'—')+'</td></tr>';
+      tableHtml+='</tbody></table></div>';
+    }
+    return tableHtml;
   }
+
+  evOrder.forEach(function(ev){
+    var evSessoes=evMap[ev];
+    var evTotal=evSessoes.reduce(function(acc,s){return acc+parsePub(s.publico);},0);
+    var evHasPub=evSessoes.some(function(s){return s.publico&&s.publico.toString().trim()!=='';});
+    var evCol=ev&&eventColors[ev]?eventColors[ev]:{bg:'var(--surface2)',text:'var(--text-dim)'};
+    html+='<div class="bordero-ev-section">';
+    html+='<div class="bordero-ev-header">'+
+      '<span class="bordero-ev-pill" style="background:'+evCol.bg+';color:'+evCol.text+'">'+(ev||'Sem evento')+'</span>'+
+      '<span class="bordero-ev-total">'+(evHasPub?evTotal.toLocaleString('pt-BR')+' ingressos':'—')+'</span>'+
+      '<span class="bordero-ev-meta">'+evSessoes.length+' sess'+(evSessoes.length===1?'ão':'ões')+'</span>'+
+    '</div>';
+    html+=buildTable(evSessoes,scope==='global');
+    html+='</div>';
+  });
 
   document.getElementById('borderoContent').innerHTML=html;
   document.getElementById('borderoModal').classList.add('open');
@@ -4250,16 +4256,25 @@ function renderDash(){
     }else if(key==='sessoes'){
       title='Sessões ('+sessoes.length+')';
       var sorted=sessoes.slice().sort(function(a,b){return a.date&&b.date?a.date-b.date||(a.time&&b.time?a.time.h*60+a.time.m-(b.time.h*60+b.time.m):0):0;});
-      // Borderô button — scope global = dias×salas, scope days = horários×salas
       var borderoBtn='<button class="bordero-btn" style="margin-left:8px;font-size:9px;padding:3px 10px;" onclick="openBorderoDashSessoes(\''+scope+'\')">⊞ Borderô</button>';
       bodyHtml='';
       sorted.forEach(function(s){
         var safe=s.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        var filmTitles=s.filmes.map(function(c){var f=filmesMap[c];return f&&f.titulo?clean(f.titulo):c;}).filter(Boolean).join(' · ');
+        // extra fields inline
+        var extras=[];
+        if(s.convidados)extras.push('Convidados: '+s.convidados);
+        if(s.apresentacao&&s.apresentacao.toUpperCase()==='SIM')extras.push('Apresentação ✓');
+        if(s.leg_eletronica&&s.leg_eletronica.toUpperCase()==='SIM')extras.push('Leg. elet. ✓');
+        if(s.col_ag&&s.col_ag.toUpperCase()==='SIM')extras.push('Debate ✓');
+        if(s.acessibilidades)extras.push('♿ '+s.acessibilidades);
         bodyHtml+='<div class="dsd-sess-row" style="cursor:pointer" onclick="goToFicha(\''+safe+'\')">'+
           '<span class="dsd-date">'+s.dia+'</span>'+
           '<span class="dsd-time">'+s.hora+'</span>'+
           '<span class="dsd-name">'+s.nome+'</span>'+
           '<span class="dsd-cinema">'+s.cinema+'</span>'+
+          (filmTitles?'<span class="dsd-extra" style="font-family:var(--sans);width:100%;">'+filmTitles+'</span>':'')+
+          (extras.length?'<span class="dsd-extra" style="width:100%;color:var(--text-dim);">'+extras.join(' · ')+'</span>':'')+
         '</div>';
       });
 
@@ -4292,12 +4307,14 @@ function renderDash(){
         sorted2.forEach(function(s){
           var pub=parsePubDash(s.publico);
           var safe=s.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+          var filmTitles=s.filmes.map(function(c){var f=filmesMap[c];return f&&f.titulo?clean(f.titulo):c;}).filter(Boolean).join(' · ');
           bodyHtml+='<div class="dsd-sess-row" style="cursor:pointer" onclick="goToFicha(\''+safe+'\')">'+
             '<span class="dsd-date">'+s.dia+'</span>'+
             '<span class="dsd-time">'+s.hora+'</span>'+
             '<span class="dsd-name">'+s.nome+'</span>'+
             '<span class="dsd-cinema">'+s.cinema+'</span>'+
             '<span class="dsd-pub">'+pub.toLocaleString('pt-BR')+'</span>'+
+            (filmTitles?'<span class="dsd-extra" style="font-family:var(--sans);width:100%;">'+filmTitles+'</span>':'')+
           '</div>';
         });
       }
@@ -4356,9 +4373,26 @@ function renderDash(){
   }
 
   // ── BLOCO: Números do evento ─────────────────────────────────────
-  var allEvSessoes=sessoesArr.filter(function(s){return!s.evento||activeEventsDash.has(s.evento);});
+  // validate filter
+  if(_dashGlobalEvFilter&&!activeEventsDash.has(_dashGlobalEvFilter))_dashGlobalEvFilter='';
+  var allEvSessoes=sessoesArr.filter(function(s){
+    if(s.evento&&!activeEventsDash.has(s.evento))return false;
+    if(_dashGlobalEvFilter&&s.evento!==_dashGlobalEvFilter)return false;
+    return true;
+  });
   var gs=calcStats(allEvSessoes);
-  var globalBody='<div class="dash-stats-grid">';
+
+  // event dropdown
+  var evOpts='<option value="">Todos os eventos</option>';
+  Array.from(activeEventsDash).forEach(function(ev){
+    evOpts+='<option value="'+ev+'"'+(ev===_dashGlobalEvFilter?' selected':'')+'>'+ev+'</option>';
+  });
+  var globalEvFilter='<div class="dash-ctrl-filter" style="margin-bottom:12px;">'+
+    '<span class="dash-ctrl-filter-label">Evento</span>'+
+    '<select style="min-width:160px;" onchange="_dashGlobalEvFilter=this.value;dashStatSelected=null;renderDash();">'+evOpts+'</select>'+
+  '</div>';
+
+  var globalBody=globalEvFilter+'<div class="dash-stats-grid">';
   globalBody+=statTile('filmes','global','🎬',statsNum(gs.filmes),'filmes exibidos','títulos únicos nas sessões','dash-stat-accent');
   globalBody+=statTile('sessoes','global','🎟',statsNum(gs.sessoes),'sessões','programadas no evento');
   globalBody+=statTile('salas','global','🎭',statsNum(gs.salas),'salas','com sessões nos eventos ativos');
