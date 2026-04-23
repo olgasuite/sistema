@@ -8,6 +8,7 @@
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
 :root {
@@ -38,7 +39,7 @@ header{position:sticky;top:0;z-index:200;background:rgba(10,10,10,0.97);backdrop
 .nav-tab:hover:not(:disabled){color:var(--text-dim);}
 .nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 .nav-tab:disabled{opacity:0.22;cursor:not-allowed;}
-.tab-icon{font-size:13px;opacity:0.7;}
+.tab-icon{display:inline-flex;align-items:center;vertical-align:middle;opacity:0.7;margin-right:2px;}.tab-icon svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none;vertical-align:middle;}
 
 /* MODE BARS */
 .mode-bar{border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-height:48px;background:var(--surface);}
@@ -87,7 +88,10 @@ select:disabled{opacity:0.35;cursor:not-allowed;}
 .module-card+.module-card{border-left:1px solid var(--border);}
 .module-card:hover:not(.disabled){background:var(--surface2);}
 .module-card.disabled{opacity:0.3;cursor:not-allowed;}
-.module-icon{font-size:18px;margin-bottom:4px;opacity:0.6;}
+.module-icon{width:28px;height:28px;margin-bottom:4px;opacity:0.75;color:var(--accent);display:flex;align-items:center;}.module-icon svg{width:28px;height:28px;stroke:currentColor;stroke-width:1.5;fill:none;}
+[data-theme="light"] .module-icon{color:var(--accent);opacity:0.85;}
+[data-theme="gray"] .module-icon{color:#333333;opacity:0.7;}
+[data-theme="terminal"] .module-icon{color:var(--accent);opacity:0.85;}
 .module-name{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-dim);}
 .module-desc{font-family:var(--sans);font-size:11px;color:var(--text-muted);line-height:1.5;}
 
@@ -203,7 +207,7 @@ td.cpl-cell{background:var(--cpl-bg);border-left:3px solid var(--cpl-border);pad
 .block-hint{font-family:var(--mono);font-size:8px;color:rgba(0,0,0,0.3);margin-top:4px;opacity:0;transition:opacity 0.15s;}
 .session-block:hover .block-hint{opacity:1;}
 .block-acess{font-size:9px;color:rgba(0,0,0,0.55);margin-top:2px;line-height:1;}
-.sess-acess-icon{font-size:11px;opacity:0.75;flex-shrink:0;cursor:default;}
+.sess-acess-icon{display:inline-flex;align-items:center;opacity:0.75;flex-shrink:0;cursor:default;color:var(--ok);}.sess-acess-icon svg{width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;}
 #tooltip{position:fixed;z-index:9999;background:#1c1c1c;border:1px solid #333;padding:14px 16px;min-width:280px;max-width:380px;pointer-events:none;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.6);}
 .tt-name{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);margin-bottom:6px;}
 .tt-row{font-family:var(--mono);font-size:10px;color:var(--text-dim);line-height:1.8;}
@@ -714,6 +718,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 [data-theme="light"] .tt-film span{color:#333;}
 [data-theme="light"] tbody tr:hover{background:rgba(0,0,0,0.03);}
 [data-theme="light"] .gb-val{color:#555;}
+[data-theme="gray"] .gb-val{color:#333!important;}
 [data-theme="light"] .card-expand{background:rgba(0,0,0,0.018);}
 [data-theme="light"] mark{background:rgba(176,104,0,0.18);color:var(--accent);}
 /* badges */
@@ -726,6 +731,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 [data-theme="light"] .badge-kdm-sim{background:rgba(160,30,20,0.10);color:#b52020;border-color:rgba(160,30,20,0.28);}
 [data-theme="light"] .badge-kdm{background:rgba(160,30,20,0.10);color:#b52020;border-color:rgba(160,30,20,0.28);}
 [data-theme="light"] .film-hd{color:#1a5090;border-color:rgba(26,80,144,0.3);}
+[data-theme="gray"] .film-hd{color:#555!important;border-color:rgba(0,0,0,0.2)!important;background:none!important;}
 [data-theme="light"] .leg-vf-label{color:#2a7030;}
 [data-theme="light"] .obs-text{color:rgba(176,104,0,0.9);}
 [data-theme="light"] .card-obs{color:rgba(176,104,0,0.9);border-left-color:rgba(176,104,0,0.4);background:rgba(176,104,0,0.04);}
@@ -785,6 +791,15 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 [data-theme="gray"] .dsd-sala-ev .event-pill,[data-theme="gray"] .dsd-sala-ev .card-evento{filter:grayscale(1)!important;background:rgba(0,0,0,0.07)!important;color:#444!important;}
 [data-theme="gray"] .cinema-card-events .cinema-ev-tag{background:rgba(0,0,0,0.07)!important;color:#444!important;border-color:#bbb!important;}
 [data-theme="gray"] .cpl-text{color:#222!important;}
+[data-theme="gray"] .cpl-value{color:#222!important;}
+[data-theme="gray"] .cpl-label{color:#555!important;}
+[data-theme="gray"] .cpl-sub{color:#666!important;}
+[data-theme="gray"] .cpl-ov-label{color:#555!important;}
+[data-theme="gray"] .cpl-ov-value{color:#444!important;}
+[data-theme="gray"] .fps-val{color:#333!important;}
+[data-theme="gray"] .gb-val{color:#333!important;}
+[data-theme="gray"] .ingest-cpl-line,[data-theme="gray"] .ingest-cplov-line{color:#222!important;}
+[data-theme="gray"] .ingest-cpl-label{color:#555!important;}
 [data-theme="gray"] .cpl-ov-ficha{color:#555!important;}
 [data-theme="gray"] .upload-btn{background:#333;color:#fff;}
 [data-theme="gray"] .day-tab.active{background:#333;color:#fff;border-color:#333;}
@@ -795,6 +810,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 [data-theme="gray"] .landing-badge{border-color:rgba(0,0,0,0.2);}
 [data-theme="gray"] .leg-vf-label{color:#555!important;}
 [data-theme="gray"] .obs-text{color:#666!important;}
+[data-theme="gray"] .card-obs{color:#555!important;border-left-color:#bbb!important;background:rgba(0,0,0,0.04)!important;}
 [data-theme="gray"] .expand-value.accent{color:#333!important;}
 [data-theme="gray"] .expand-value.warn{color:#777!important;}
 [data-theme="gray"] .status-ok{background:rgba(0,0,0,0.06);color:#444;border-color:#bbb;}
@@ -802,19 +818,22 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 [data-theme="gray"] .status-other{background:rgba(0,0,0,0.04);color:#888;border-color:#ccc;}
 [data-theme="gray"] .bordero-btn{color:#555;border-color:#bbb;}
 [data-theme="gray"] .bordero-ev-pill{filter:grayscale(1);}
+[data-theme="gray"] .sess-ev-tag{filter:grayscale(1)!important;background:rgba(0,0,0,0.07)!important;color:#444!important;border-color:#bbb!important;}
 [data-theme="gray"] .cinema-sess-alert{background:rgba(0,0,0,0.06)!important;border-left-color:#777;}
 [data-theme="gray"] .cinema-sess-alert .cinema-sess-name{color:#555!important;}
 [data-theme="gray"] .dsd-sess-alert{background:rgba(0,0,0,0.05);border-left-color:#888;}
 [data-theme="gray"] .dsd-sess-alert .dsd-name{color:#666!important;}
 [data-theme="gray"] .dash-stat-tile.dash-stat-accent .dash-stat-num{color:#222!important;}
 [data-theme="gray"] .dash-stat-tile.dash-stat-ok .dash-stat-num{color:#444!important;}
+[data-theme="gray"] .sess-acess-icon{color:#555!important;}
+[data-theme="gray"] .block-acess svg{color:#555!important;stroke:#555!important;}
 
 /* TERMINAL THEME */
 [data-theme="terminal"]{
   --bg:#000000; --surface:#0c0c0c; --surface2:#141414;
   --border:#1e1e1e; --border2:#2a2a2a;
   --accent:#00e533; --accent-dim:rgba(0,229,51,0.10); --accent-glow:rgba(0,229,51,0.04);
-  --text:#e0e0e0; --text-dim:#bbbbbb; --text-muted:#888888;
+  --text:#e0e0e0; --text-dim:#cccccc; --text-muted:#aaaaaa;
   --ok:#00e533; --warn:#ff3333;
   --cpl-bg:rgba(0,229,51,0.08); --cpl-color:#00e533; --cpl-border:rgba(0,229,51,0.3);
   --mono:'Courier New',Courier,monospace; --sans:'Courier New',Courier,monospace;
@@ -876,6 +895,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 [data-theme="terminal"] .card-evento{background:transparent!important;color:var(--accent)!important;border-color:rgba(0,229,51,0.35)!important;border-radius:0!important;}
 [data-theme="terminal"] .cinema-ev-tag{background:transparent!important;color:var(--accent)!important;border:1px solid rgba(0,229,51,0.3)!important;border-radius:0!important;}
 [data-theme="terminal"] .bordero-ev-pill{background:transparent!important;color:var(--accent)!important;border-color:rgba(0,229,51,0.35)!important;border-radius:0!important;}
+[data-theme="terminal"] .sess-ev-tag{background:transparent!important;color:var(--accent)!important;border:1px solid rgba(0,229,51,0.3)!important;border-radius:0!important;}
 /* textos cinza quase invisíveis — forçar legibilidade */
 [data-theme="terminal"] .text-muted,[data-theme="terminal"] .fe-label,
 [data-theme="terminal"] .meta-label,[data-theme="terminal"] .ficha-vinhetas-label,
@@ -884,7 +904,19 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 [data-theme="terminal"] .film-code,[data-theme="terminal"] .idioma-text{color:var(--text-dim)!important;}
 [data-theme="terminal"] .film-num,[data-theme="terminal"] .col-session-count,
 [data-theme="terminal"] .time-label,[data-theme="terminal"] .block-films,
-[data-theme="terminal"] .sessions-label,[data-theme="terminal"] .additive-bar-label{color:var(--text-muted)!important;}
+[data-theme="terminal"] .sessions-label,[data-theme="terminal"] .additive-bar-label{color:var(--text-dim)!important;}
+/* terminal: cobrir demais textos cinza sem override específico */
+[data-theme="terminal"] .sess-day-count,
+[data-theme="terminal"] .sess-cinema,[data-theme="terminal"] .sess-films,
+[data-theme="terminal"] .sess-dur,[data-theme="terminal"] .sess-time,
+[data-theme="terminal"] .footer-total,[data-theme="terminal"] .result-count,
+[data-theme="terminal"] .meta-tag,[data-theme="terminal"] .card-codigo,
+[data-theme="terminal"] .film-sub,[data-theme="terminal"] .dur-text,
+[data-theme="terminal"] .fps-val,[data-theme="terminal"] .gb-val,
+[data-theme="terminal"] .vinheta-card-code,[data-theme="terminal"] .vinheta-count-label,
+[data-theme="terminal"] .vinheta-cinema-chip,[data-theme="terminal"] .dash-stat-label,
+[data-theme="terminal"] .ingest-sess-meta,[data-theme="terminal"] .ingest-film-code,
+[data-theme="terminal"] .cinema-sess-date,[data-theme="terminal"] .cinema-sess-film-list{color:var(--text-dim)!important;}
 @media print {
   #main-content{zoom:1!important;}
   @page{margin:14mm 11mm;size:A4 landscape;}
@@ -988,7 +1020,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .proj-card+.proj-card{border-left:1px solid var(--border);}
 .proj-cards .proj-card:nth-child(3),.proj-cards .proj-card:nth-child(4){border-top:1px solid var(--border);}
 .proj-cards .proj-card:nth-child(3){border-left:none;}
-.proj-card-icon{font-size:24px;opacity:0.55;margin-bottom:4px;}
+.proj-card-icon{width:26px;height:26px;opacity:0.7;margin-bottom:4px;color:var(--accent);display:flex;align-items:center;}.proj-card-icon svg{width:26px;height:26px;stroke:currentColor;stroke-width:1.5;fill:none;}
 .proj-card-name{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);}
 .proj-card-desc{font-family:var(--sans);font-size:12px;color:var(--text-muted);line-height:1.6;}
 .proj-card-detail{font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:2px;}
@@ -1005,7 +1037,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .recep-card+.recep-card{border-left:1px solid var(--border);}
 .recep-cards .recep-card:nth-child(3),.recep-cards .recep-card:nth-child(4){border-top:1px solid var(--border);}
 .recep-cards .recep-card:nth-child(3){border-left:none;}
-.recep-card-icon{font-size:24px;opacity:0.55;margin-bottom:4px;}
+.recep-card-icon{width:26px;height:26px;opacity:0.7;margin-bottom:4px;color:var(--accent);display:flex;align-items:center;}.recep-card-icon svg{width:26px;height:26px;stroke:currentColor;stroke-width:1.5;fill:none;}
 .recep-card-name{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);}
 .recep-card-desc{font-family:var(--sans);font-size:12px;color:var(--text-muted);line-height:1.6;}
 .recep-card-arrow{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:auto;padding-top:12px;}
@@ -1098,17 +1130,17 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <span class="file-name" id="fileName">nenhum arquivo</span>
   </div>
   <nav class="nav-tabs">
-    <button class="nav-tab" id="tabProjecao" disabled onclick="switchMode('projecao')"><span class="tab-icon">🎥</span> Projeção</button>
+    <button class="nav-tab" id="tabProjecao" disabled onclick="switchMode('projecao')"><span class="tab-icon"><i data-lucide="projector"></i></span> Projeção</button>
     <button class="nav-tab" id="tabFicha" disabled onclick="switchMode('ficha')" style="display:none"></button>
-    <button class="nav-tab" id="tabGrade" disabled onclick="switchMode('grade')"><span class="tab-icon">📅</span> Grade</button>
+    <button class="nav-tab" id="tabGrade" disabled onclick="switchMode('grade')"><span class="tab-icon"><i data-lucide="layout-dashboard"></i></span> Grade</button>
     <button class="nav-tab" id="tabGrade2" disabled onclick="switchMode('grade2')" style="display:none"></button>
-    <button class="nav-tab" id="tabSessoes" disabled onclick="switchMode('sessoes')"><span class="tab-icon">🗓</span> Sessões</button>
-    <button class="nav-tab" id="tabBusca" disabled onclick="switchMode('busca')"><span class="tab-icon">🔍</span> Acervo</button>
-    <button class="nav-tab" id="tabVinhetas" disabled onclick="switchMode('vinhetas')"><span class="tab-icon">🎞</span> Vinhetas</button>
+    <button class="nav-tab" id="tabSessoes" disabled onclick="switchMode('sessoes')"><span class="tab-icon"><i data-lucide="calendar-clock"></i></span> Sessões</button>
+    <button class="nav-tab" id="tabBusca" disabled onclick="switchMode('busca')"><span class="tab-icon"><i data-lucide="search"></i></span> Acervo</button>
+    <button class="nav-tab" id="tabVinhetas" disabled onclick="switchMode('vinhetas')"><span class="tab-icon"><i data-lucide="film"></i></span> Vinhetas</button>
     <button class="nav-tab" id="tabIngest" disabled onclick="switchMode('ingest')" style="display:none"></button>
-    <button class="nav-tab" id="tabCinemas" disabled onclick="switchMode('cinemas')"><span class="tab-icon">🎭</span> Cinemas</button>
-    <button class="nav-tab" id="tabDash" disabled onclick="switchMode('dash')"><span class="tab-icon">◉</span> Dashboard</button>
-    <button class="nav-tab" id="tabReceptivo" disabled onclick="switchMode('receptivo')"><span class="tab-icon">🤝</span> Receptivo</button>
+    <button class="nav-tab" id="tabCinemas" disabled onclick="switchMode('cinemas')"><span class="tab-icon"><i data-lucide="clapperboard"></i></span> Cinemas</button>
+    <button class="nav-tab" id="tabDash" disabled onclick="switchMode('dash')"><span class="tab-icon"><i data-lucide="bar-chart-2"></i></span> Dashboard</button>
+    <button class="nav-tab" id="tabReceptivo" disabled onclick="switchMode('receptivo')"><span class="tab-icon"><i data-lucide="users"></i></span> Receptivo</button>
   </nav>
   <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar esquema de cores">
     <span class="theme-toggle-icon" id="themeIcon">☀</span>
@@ -1233,42 +1265,42 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   </div>
   <div class="landing-modules" style="grid-template-columns:repeat(8,1fr);max-width:1600px;">
     <div class="module-card disabled" id="modCardProjecao" onclick="moduleCardClick('projecao')">
-      <div class="module-icon">🎥</div>
+      <div class="module-icon"><i data-lucide="projector"></i></div>
       <div class="module-name">Projeção</div>
       <div class="module-desc">Ficha, Ingest, Grade de Projeção e Cinemas</div>
     </div>
     <div class="module-card disabled" id="modCardGrade" onclick="moduleCardClick('grade')">
-      <div class="module-icon">📅</div>
+      <div class="module-icon"><i data-lucide="layout-dashboard"></i></div>
       <div class="module-name">Grade</div>
       <div class="module-desc">Grade visual de programação por dia e sala</div>
     </div>
     <div class="module-card disabled" id="modCardSessoes" onclick="moduleCardClick('sessoes')">
-      <div class="module-icon">🗓</div>
+      <div class="module-icon"><i data-lucide="calendar-clock"></i></div>
       <div class="module-name">Sessões</div>
       <div class="module-desc">Lista de sessões por dia com filtro por sala</div>
     </div>
     <div class="module-card disabled" id="modCardBusca" onclick="moduleCardClick('busca')">
-      <div class="module-icon">🔍</div>
+      <div class="module-icon"><i data-lucide="search"></i></div>
       <div class="module-name">Acervo</div>
       <div class="module-desc">Busca e filtragem de filmes na base de dados</div>
     </div>
     <div class="module-card disabled" id="modCardVinhetas" onclick="moduleCardClick('vinhetas')">
-      <div class="module-icon">🎞</div>
+      <div class="module-icon"><i data-lucide="film"></i></div>
       <div class="module-name">Vinhetas</div>
       <div class="module-desc">Propaganda e divulgação por sessão e cinema</div>
     </div>
     <div class="module-card disabled" id="modCardCinemas" onclick="moduleCardClick('cinemas')">
-      <div class="module-icon">🎭</div>
+      <div class="module-icon"><i data-lucide="clapperboard"></i></div>
       <div class="module-name">Cinemas</div>
       <div class="module-desc">Fichas técnicas das salas, equipamentos e Borderô</div>
     </div>
     <div class="module-card disabled" id="modCardDash" onclick="moduleCardClick('dash')">
-      <div class="module-icon">◉</div>
+      <div class="module-icon"><i data-lucide="bar-chart-2"></i></div>
       <div class="module-name">Dashboard</div>
       <div class="module-desc">Monitoramento de filmes por situação no sistema e dados gerais do evento</div>
     </div>
     <div class="module-card disabled" id="modCardReceptivo" onclick="moduleCardClick('receptivo')">
-      <div class="module-icon">🤝</div>
+      <div class="module-icon"><i data-lucide="users"></i></div>
       <div class="module-name">Receptivo</div>
       <div class="module-desc">Convidados, hotéis, vôos e transporte</div>
     </div>
@@ -1721,7 +1753,7 @@ function renderFicha(nome,s){
   var rows=films.map(function(f,idx){
     var titulo=clean(f.titulo)||f.codigo,hd=clean(f.hd),lente=clean(f.lente),som=clean(f.som),legenda=clean(f.legenda),vf=clean(f.vf),kdm=f.kdm||'não',cpl=clean(f.cpl),obs=clean(f.obs),dur=clean(f.duracao),res=clean(f.resolucao),fps=clean(f.fps),gb=clean(f.gb),acessF=clean(f.acessibilidade);
     var hdTag=hd?'<span class="film-hd">'+hd+'</span>':'';
-    var acessTag=acessF?'<span class="film-hd" style="background:rgba(61,186,110,0.13);color:#5ddc8a;border-color:rgba(61,186,110,0.3);" title="'+acessF+'">♿</span>':'';
+    var acessTag=acessF?'<span class="film-hd" style="background:rgba(61,186,110,0.13);color:#5ddc8a;border-color:rgba(61,186,110,0.3);" title="'+acessF+'"><svg width="14" height="14" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="4" r="1"/><path d="m11 9 2 7h5l-1.5 3"/><path d="M9 9H7l1 7"/><path d="M13.5 19a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z"/></svg></span>':'';
     var legParts=[];
     if(vf)legParts.push('<span class="leg-text leg-vf-entry"><span class="leg-vf-label">VF</span> '+vf+'</span>');
     else if(legenda)legParts.push('<span class="leg-text">'+legenda+'</span>');
@@ -2283,7 +2315,7 @@ function renderSessoes(){
     s.filmes.forEach(function(c){var f=filmesMap[c];if(!f)return;var d=f.duracao||'';var m3=d.match(/^(\d{1,3}):(\d{2}):\d{2}/);if(m3){totalMins+=parseInt(m3[1])*60+parseInt(m3[2]);}else if(/^\d+:\d{2}$/.test(d)){var p=d.split(':').map(Number);totalMins+=p[0]*60+p[1];}});
     var durStr=totalMins>0?Math.floor(totalMins/60)+'h'+String(totalMins%60).padStart(2,'0'):'';
     var safe=s.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    var acessIcon=s.acessibilidades&&s.acessibilidades.trim()?'<span class="sess-acess-icon" title="'+s.acessibilidades+'">♿</span>':'';
+    var acessIcon=s.acessibilidades&&s.acessibilidades.trim()?'<span class="sess-acess-icon" title="'+s.acessibilidades+'"><svg width="14" height="14" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="4" r="1"/><path d="m11 9 2 7h5l-1.5 3"/><path d="M9 9H7l1 7"/><path d="M13.5 19a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z"/></svg></span>':'';
     return '<div class="sess-row" onclick="goToFicha(\''+safe+'\')">'+
       '<span class="sess-time">'+(s.time?s.time.str:'—')+'</span>'+
       '<span class="sess-name">'+s.nome+'</span>'+
@@ -2390,6 +2422,27 @@ function renderGrade2DayTabs(){
   });
 }
 
+
+function getThemeBlockColor(evColor){
+  var theme=document.documentElement.getAttribute('data-theme')||'dark';
+  if(theme==="gray"){
+    var grayBgs=['#d0d0d0','#b8b8b8','#c8c8c8','#d8d8d8','#c0c0c0','#e0e0e0','#cccccc','#b0b0b0'];
+    var idx=-1;for(var k=0;k<PALETTE.length;k++){if(PALETTE[k]===evColor){idx=k;break;}}
+    var bg=grayBgs[idx>=0?idx%grayBgs.length:0];
+    return {bg:bg,text:'#111'};
+  }
+  if(theme==="terminal"){
+    // Alto contraste: cada evento mantém cor distinta, saturada e vívida sobre fundo escuro
+    var hiPalette=[
+      {bg:'#ff6600',text:'#000'},{bg:'#00ff88',text:'#000'},{bg:'#00aaff',text:'#000'},
+      {bg:'#ee00ff',text:'#000'},{bg:'#ff2244',text:'#000'},{bg:'#ffee00',text:'#000'},
+      {bg:'#00ffee',text:'#000'},{bg:'#ff9900',text:'#000'}
+    ];
+    var idx=-1;for(var k=0;k<PALETTE.length;k++){if(PALETTE[k]===evColor){idx=k;break;}}
+    return hiPalette[idx>=0?idx%hiPalette.length:0];
+  }
+  return evColor;
+}
 function renderGrade2(){
   renderGrade2DayTabs();
   var ge=document.getElementById('grade2Empty'),gw=document.getElementById('grade2Wrap');
@@ -2421,10 +2474,10 @@ function renderGrade2(){
       s.filmes.forEach(function(c){var f=filmesMap[c];if(!f)return;var d=f.duracao||'';if(/^\d{1,2}:\d{2}/.test(d)){var p=d.split(':').map(Number);totalMinsS+=p[0]*60+p[1];}});
       var dur2=totalMinsS>0?totalMinsS:Math.max(60,s.filmes.length*25);
       var tm=(s.time.h-minH)*60+s.time.m;
-      var c2=eventColors[s.evento]||{bg:'#555',text:'#fff'};
+      var c2raw=eventColors[s.evento]||{bg:'#555',text:'#fff'};var c2=getThemeBlockColor(c2raw);
       var blk=document.createElement('div');blk.className='session-block';
       blk.style.top=(tm*PPM)+'px';blk.style.height=Math.max(32,dur2*PPM)+'px';blk.style.background=c2.bg;blk.style.color=c2.text;
-      blk.innerHTML='<div class="block-time">'+s.time.str+'</div><div class="block-name">'+s.nome+'</div>'+(s.filmes.length?'<div class="block-films">'+s.filmes.length+' filme'+(s.filmes.length!==1?'s':'')+'</div>':'')+(s.evento?'<div class="block-event">'+s.evento+'</div>':'')+(s.acessibilidades&&s.acessibilidades.trim()?'<div class="block-acess">♿</div>':'')+'<div class="block-hint">↗ ficha</div>';
+      blk.innerHTML='<div class="block-time">'+s.time.str+'</div><div class="block-name">'+s.nome+'</div>'+(s.filmes.length?'<div class="block-films">'+s.filmes.length+' filme'+(s.filmes.length!==1?'s':'')+'</div>':'')+(s.evento?'<div class="block-event">'+s.evento+'</div>':'')+(s.acessibilidades&&s.acessibilidades.trim()?'<div class="block-acess"><svg width="14" height="14" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="4" r="1"/><path d="m11 9 2 7h5l-1.5 3"/><path d="M9 9H7l1 7"/><path d="M13.5 19a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z"/></svg></div>':'')+'<div class="block-hint">↗ ficha</div>';
       blk.addEventListener('mouseenter',function(ev){showTooltip(ev,s);});
       blk.addEventListener('mousemove',function(ev){moveTooltip(ev);});
       blk.addEventListener('mouseleave',function(){tip.style.display='none';});
@@ -3294,25 +3347,25 @@ function renderReceptivo(){
     '<div class="recep-hub-desc">Gestão de convidados, hospedagem, deslocamentos e logística de transporte para os eventos.</div>'+
     '<div class="recep-cards">'+
       '<button class="recep-card" onclick="showWip(\'Convidados\')">'+
-        '<div class="recep-card-icon">🎟</div>'+
+        '<div class="recep-card-icon"><svg width="26" height="26" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg></div>'+
         '<div class="recep-card-name">Convidados</div>'+
         '<div class="recep-card-desc">Cadastro e gestão de convidados, acreditações e participações nos eventos</div>'+
         '<div class="recep-card-arrow">Abrir Convidados →</div>'+
       '</button>'+
       '<button class="recep-card" onclick="showWip(\'Hotéis\')">'+
-        '<div class="recep-card-icon">🏨</div>'+
+        '<div class="recep-card-icon"><svg width="26" height="26" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></div>'+
         '<div class="recep-card-name">Hotéis</div>'+
         '<div class="recep-card-desc">Controle de hospedagem, quartos e estadias por convidado e período</div>'+
         '<div class="recep-card-arrow">Abrir Hotéis →</div>'+
       '</button>'+
       '<button class="recep-card" onclick="showWip(\'Vôos\')">'+
-        '<div class="recep-card-icon">✈</div>'+
+        '<div class="recep-card-icon"><svg width="26" height="26" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></div>'+
         '<div class="recep-card-name">Vôos</div>'+
         '<div class="recep-card-desc">Registro de chegadas e partidas, companhias e horários de voo</div>'+
         '<div class="recep-card-arrow">Abrir Vôos →</div>'+
       '</button>'+
       '<button class="recep-card" onclick="showWip(\'Transporte\')">'+
-        '<div class="recep-card-icon">🚐</div>'+
+        '<div class="recep-card-icon"><svg width="26" height="26" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></svg></div>'+
         '<div class="recep-card-name">Transporte</div>'+
         '<div class="recep-card-desc">Roteamento e agendamento de transfers, rotas e veículos</div>'+
         '<div class="recep-card-arrow">Abrir Transporte →</div>'+
@@ -3361,28 +3414,28 @@ function renderProjecao(){
     '<div class="proj-hub-title">Projeção · atalhos rápidos</div>'+
     '<div class="proj-cards">'+
       '<button class="proj-card" onclick="switchMode(\'ficha\')">'+
-        '<div class="proj-card-icon">🎬</div>'+
+        '<div class="proj-card-icon"><svg width="26" height="26" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>'+
         '<div class="proj-card-name">Ficha</div>'+
         '<div class="proj-card-desc">Ficha técnica de sessão para projeção e impressão</div>'+
         '<div class="proj-card-detail">'+detail(fichaCount,'sessão disponível','sessões disponíveis')+'</div>'+
         '<div class="proj-card-arrow">Abrir Ficha →</div>'+
       '</button>'+
       '<button class="proj-card" onclick="switchMode(\'ingest\')">'+
-        '<div class="proj-card-icon">📥</div>'+
+        '<div class="proj-card-icon"><svg width="26" height="26" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><polyline points="12 2 12 13"/><path d="m8 9 4 4 4-4"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><path d="M6 18h.01M10 18h.01"/></svg></div>'+
         '<div class="proj-card-name">Ingest</div>'+
         '<div class="proj-card-desc">Cronograma de ingest por sala, com CPL e tamanhos</div>'+
         '<div class="proj-card-detail">'+detail(ingestCount,'sessão no acervo','sessões no acervo')+'</div>'+
         '<div class="proj-card-arrow">Abrir Ingest →</div>'+
       '</button>'+
       '<button class="proj-card" onclick="switchMode(\'grade2\')">'+
-        '<div class="proj-card-icon">📅</div>'+
+        '<div class="proj-card-icon"><svg width="26" height="26" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>'+
         '<div class="proj-card-name">Grade de Projeção</div>'+
         '<div class="proj-card-desc">Grade visual de programação, com atalhos para as fichas de cabine</div>'+
         '<div class="proj-card-detail">'+detail(grade2Count,'sessão disponível','sessões disponíveis')+'</div>'+
         '<div class="proj-card-arrow">Abrir Grade de Projeção →</div>'+
       '</button>'+
       '<button class="proj-card" onclick="switchMode(\'cinemas\')">'+
-        '<div class="proj-card-icon">🎭</div>'+
+        '<div class="proj-card-icon"><svg width="26" height="26" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1-.3 2.1.3 2.4 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 3.9"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></div>'+
         '<div class="proj-card-name">Cinemas</div>'+
         '<div class="proj-card-desc">Fichas técnicas das salas e equipamentos</div>'+
         '<div class="proj-card-detail">'+detail(cinemasCount,'sala cadastrada','salas cadastradas')+'</div>'+
@@ -3637,10 +3690,10 @@ function renderGrade(){
       s.filmes.forEach(function(c){var f=filmesMap[c];if(!f)return;var d=f.duracao||'';if(/^\d{1,2}:\d{2}/.test(d)){var p=d.split(':').map(Number);totalMinsS+=p[0]*60+p[1];}});
       var dur2=totalMinsS>0?totalMinsS:Math.max(60,s.filmes.length*25);
       var tm=(s.time.h-minH)*60+s.time.m;
-      var c2=eventColors[s.evento]||{bg:'#555',text:'#fff'};
+      var c2raw=eventColors[s.evento]||{bg:'#555',text:'#fff'};var c2=getThemeBlockColor(c2raw);
       var blk=document.createElement('div');blk.className='session-block';
       blk.style.top=(tm*PPM)+'px';blk.style.height=Math.max(32,dur2*PPM)+'px';blk.style.background=c2.bg;blk.style.color=c2.text;
-      blk.innerHTML='<div class="block-time">'+s.time.str+'</div><div class="block-name">'+s.nome+'</div>'+(s.filmes.length?'<div class="block-films">'+s.filmes.length+' filme'+(s.filmes.length!==1?'s':'')+'</div>':'')+(s.evento?'<div class="block-event">'+s.evento+'</div>':'')+(s.acessibilidades&&s.acessibilidades.trim()?'<div class="block-acess">♿</div>':'')+'<div class="block-hint">↗ ficha</div>';
+      blk.innerHTML='<div class="block-time">'+s.time.str+'</div><div class="block-name">'+s.nome+'</div>'+(s.filmes.length?'<div class="block-films">'+s.filmes.length+' filme'+(s.filmes.length!==1?'s':'')+'</div>':'')+(s.evento?'<div class="block-event">'+s.evento+'</div>':'')+(s.acessibilidades&&s.acessibilidades.trim()?'<div class="block-acess"><svg width="14" height="14" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="4" r="1"/><path d="m11 9 2 7h5l-1.5 3"/><path d="M9 9H7l1 7"/><path d="M13.5 19a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z"/></svg></div>':'')+'<div class="block-hint">↗ ficha</div>';
       blk.addEventListener('mouseenter',function(ev){showTooltip(ev,s);});
       blk.addEventListener('mousemove',function(ev){moveTooltip(ev);});
       blk.addEventListener('mouseleave',function(){tip.style.display='none';});
@@ -4516,7 +4569,7 @@ function renderDash(){
         if(s.apresentacao&&s.apresentacao.toUpperCase()==='SIM')extras.push('Apresentação ✓');
         if(s.leg_eletronica&&s.leg_eletronica.toUpperCase()==='SIM')extras.push('Leg. elet. ✓');
         if(s.col_ag&&s.col_ag.toUpperCase()==='SIM')extras.push('Debate ✓');
-        if(s.acessibilidades)extras.push('♿ '+s.acessibilidades);
+        if(s.acessibilidades)extras.push('<svg width="14" height="14" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="4" r="1"/><path d="m11 9 2 7h5l-1.5 3"/><path d="M9 9H7l1 7"/><path d="M13.5 19a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z"/></svg> '+s.acessibilidades);
         bodyHtml+='<div class="dsd-sess-row'+(hasAlert?' dsd-sess-alert':'')+'" style="cursor:pointer" onclick="goToFicha(\''+safe+'\')">'+
           '<span class="dsd-date">'+s.dia+'</span>'+
           '<span class="dsd-time">'+s.hora+'</span>'+
@@ -4583,7 +4636,7 @@ function renderDash(){
           '<span class="dsd-name">'+s.nome+'</span>'+
           '<span class="dsd-cinema">'+s.cinema+'</span>'+
           (filmTitles?'<span class="dsd-extra" style="font-family:var(--sans);">'+filmTitles+'</span>':'')+
-          '<span class="dsd-extra">♿ '+s.acessibilidades+'</span>'+
+          '<span class="dsd-extra"><svg width="14" height="14" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="4" r="1"/><path d="m11 9 2 7h5l-1.5 3"/><path d="M9 9H7l1 7"/><path d="M13.5 19a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z"/></svg> '+s.acessibilidades+'</span>'+
         '</div>';
       });
 
@@ -4647,7 +4700,7 @@ function renderDash(){
   globalBody+=statTile('sessoes','global','🎟',statsNum(gs.sessoes),'sessões','programadas no evento');
   globalBody+=statTile('salas','global','🎭',statsNum(gs.salas),'salas','com sessões nos eventos ativos');
   globalBody+=statTile('publico','global','👥',gs.hasPubData?statsNum(gs.pub):'—','público total',gs.hasPubData?'ingressos registrados':'aguardando dados','dash-stat-ok');
-  globalBody+=statTile('acess','global','♿',statsNum(gs.acessSess),'sessões acessíveis',statsNum(gs.acessFilmes)+' filme'+(gs.acessFilmes!==1?'s':'')+' com acessibilidade');
+  globalBody+=statTile('acess','global','<svg width="14" height="14" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="4" r="1"/><path d="m11 9 2 7h5l-1.5 3"/><path d="M9 9H7l1 7"/><path d="M13.5 19a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z"/></svg>',statsNum(gs.acessSess),'sessões acessíveis',statsNum(gs.acessFilmes)+' filme'+(gs.acessFilmes!==1?'s':'')+' com acessibilidade');
   if(gs.legSess>0)globalBody+=statTile('legelet','global','📝',statsNum(gs.legSess),'Leg. Eletrônica','filmes com legendagem simultânea no cinema');
   globalBody+='</div>';
   if(dashStatSelected&&dashStatSelected.scope==='global'){
@@ -4673,7 +4726,7 @@ function renderDash(){
     daysBody+=statTile('sessoes','days','🎟',statsNum(ds.sessoes),'sessões','nesses dias');
     daysBody+=statTile('salas','days','🎭',statsNum(ds.salas),'salas','ativas nesses dias');
     daysBody+=statTile('publico','days','👥',ds.hasPubData?statsNum(ds.pub):'—','público',ds.hasPubData?'ingressos nos dias selecionados':'aguardando dados','dash-stat-ok');
-    if(ds.acessSess>0)daysBody+=statTile('acess','days','♿',statsNum(ds.acessSess),'sessões acessíveis',statsNum(ds.acessFilmes)+' filme'+(ds.acessFilmes!==1?'s':'')+' com acessibilidade');
+    if(ds.acessSess>0)daysBody+=statTile('acess','days','<svg width="14" height="14" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="4" r="1"/><path d="m11 9 2 7h5l-1.5 3"/><path d="M9 9H7l1 7"/><path d="M13.5 19a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z"/></svg>',statsNum(ds.acessSess),'sessões acessíveis',statsNum(ds.acessFilmes)+' filme'+(ds.acessFilmes!==1?'s':'')+' com acessibilidade');
     if(ds.legSess>0)daysBody+=statTile('legelet','days','📝',statsNum(ds.legSess),'Leg. Eletrônica','filmes com legendagem simultânea no cinema');
     daysBody+='</div>';
     if(dashStatSelected&&dashStatSelected.scope==='days'){
@@ -4869,11 +4922,14 @@ function applyTheme(theme){
     icon.textContent='◐';label.textContent='Cinza';
   }else if(theme==='gray'){
     html.setAttribute('data-theme','gray');
-    icon.textContent='▮';label.textContent='Terminal';
+    icon.textContent='▮';label.textContent='Alto Contraste';
   }else if(theme==='terminal'){
     html.setAttribute('data-theme','terminal');
     icon.textContent='☀';label.textContent='Claro';
   }
+  // re-render grades so block colors follow the new theme
+  if(typeof renderGrade==='function'&&document.getElementById('gradeWrap')&&dataLoaded)renderGrade();
+  if(typeof renderGrade2==='function'&&document.getElementById('grade2Wrap')&&dataLoaded)renderGrade2();
 }
 (function(){
   try{
@@ -4918,5 +4974,8 @@ window.addEventListener('popstate',function(e){
 <div id="borderoModal" onclick="if(event.target===this)closeBordero()">
   <div id="borderoContent"></div>
 </div>
+<script>
+  if(typeof lucide !== 'undefined') lucide.createIcons();
+</script>
 <div id="page-footer"><span>última atualização · 17/04/2026 às 23:00</span></div>
 </html>
