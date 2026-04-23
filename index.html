@@ -747,7 +747,144 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 [data-theme="light"] .search-wrap input{background:var(--surface2);color:var(--text);border-color:var(--border2);}
 [data-theme="light"] .search-wrap input::placeholder{color:var(--text-muted);}
 
-/* PRINT */
+/* GRAY THEME */
+[data-theme="gray"]{
+  --bg:#ffffff; --surface:#f7f7f7; --surface2:#eeeeee;
+  --border:#cccccc; --border2:#bbbbbb;
+  --accent:#333333; --accent-dim:rgba(0,0,0,0.08); --accent-glow:rgba(0,0,0,0.03);
+  --text:#111111; --text-dim:#555555; --text-muted:#aaaaaa;
+  --ok:#444444; --warn:#777777;
+  --cpl-bg:rgba(0,0,0,0.05); --cpl-color:#333333; --cpl-border:rgba(0,0,0,0.2);
+  --mono:'IBM Plex Mono',monospace; --sans:'IBM Plex Sans',sans-serif;
+}
+[data-theme="gray"] header{background:rgba(255,255,255,0.97);}
+[data-theme="gray"] .col-header-row,[data-theme="gray"] .time-gutter-header,[data-theme="gray"] .col-header{background:var(--bg);}
+[data-theme="gray"] #tooltip{background:#fff;border:1px solid #ccc;box-shadow:0 8px 24px rgba(0,0,0,0.10);}
+[data-theme="gray"] .tt-name{color:#111;}
+[data-theme="gray"] .logo{color:#333;}
+[data-theme="gray"] .nav-tab.active{color:#111;border-bottom-color:#111;}
+[data-theme="gray"] thead tr{background:#eeeeee!important;border-bottom:1.5px solid #bbb!important;}
+[data-theme="gray"] th{color:#333!important;}
+[data-theme="gray"] .ficha-session-name{color:#111!important;}
+[data-theme="gray"] .meta-value.highlight{color:#111!important;}
+[data-theme="gray"] .ficha-header{border-bottom:2px solid #333!important;}
+[data-theme="gray"] select{background:#f0f0f0;color:#111;border-color:#ccc;}
+[data-theme="gray"] .search-wrap input{background:#f0f0f0;color:#111;border-color:#ccc;}
+[data-theme="gray"] .search-wrap input::placeholder{color:#aaa;}
+[data-theme="gray"] mark{background:rgba(0,0,0,0.12);color:#111;border-radius:2px;}
+/* strip color from event pills & badges in gray mode */
+[data-theme="gray"] .event-pill{filter:grayscale(1)!important;opacity:0.55;}
+[data-theme="gray"] .event-pill.active{filter:grayscale(1)!important;opacity:1;}
+[data-theme="gray"] .badge{background:rgba(0,0,0,0.07)!important;color:#444!important;border-color:#bbb!important;}
+[data-theme="gray"] .badge-kdm-sim{background:rgba(0,0,0,0.12)!important;color:#111!important;border-color:#888!important;}
+[data-theme="gray"] .session-block{filter:grayscale(1);}
+[data-theme="gray"] .cinema-ev-tag{filter:grayscale(1);}
+[data-theme="gray"] .card-evento{filter:grayscale(1)!important;background:rgba(0,0,0,0.07)!important;color:#444!important;border-color:#bbb!important;}
+[data-theme="gray"] .ficha-evento-badge{filter:grayscale(1)!important;background:rgba(0,0,0,0.07)!important;color:#444!important;}
+[data-theme="gray"] .bordero-ev-pill{filter:grayscale(1)!important;background:rgba(0,0,0,0.07)!important;color:#444!important;border-color:#bbb!important;}
+[data-theme="gray"] .dsd-sala-ev .event-pill,[data-theme="gray"] .dsd-sala-ev .card-evento{filter:grayscale(1)!important;background:rgba(0,0,0,0.07)!important;color:#444!important;}
+[data-theme="gray"] .cinema-card-events .cinema-ev-tag{background:rgba(0,0,0,0.07)!important;color:#444!important;border-color:#bbb!important;}
+[data-theme="gray"] .cpl-text{color:#222!important;}
+[data-theme="gray"] .cpl-ov-ficha{color:#555!important;}
+[data-theme="gray"] .upload-btn{background:#333;color:#fff;}
+[data-theme="gray"] .day-tab.active{background:#333;color:#fff;border-color:#333;}
+[data-theme="gray"] .year-tab.open{color:#333;border-color:#999;}
+[data-theme="gray"] .day-tab:hover{border-color:#888;color:#111;}
+[data-theme="gray"] .landing-drop{border-color:rgba(0,0,0,0.25);}
+[data-theme="gray"] .landing-drop:hover:not(.loaded){border-color:rgba(0,0,0,0.55);}
+[data-theme="gray"] .landing-badge{border-color:rgba(0,0,0,0.2);}
+[data-theme="gray"] .leg-vf-label{color:#555!important;}
+[data-theme="gray"] .obs-text{color:#666!important;}
+[data-theme="gray"] .expand-value.accent{color:#333!important;}
+[data-theme="gray"] .expand-value.warn{color:#777!important;}
+[data-theme="gray"] .status-ok{background:rgba(0,0,0,0.06);color:#444;border-color:#bbb;}
+[data-theme="gray"] .status-cancel{background:rgba(0,0,0,0.06);color:#666;border-color:#bbb;}
+[data-theme="gray"] .status-other{background:rgba(0,0,0,0.04);color:#888;border-color:#ccc;}
+[data-theme="gray"] .bordero-btn{color:#555;border-color:#bbb;}
+[data-theme="gray"] .bordero-ev-pill{filter:grayscale(1);}
+[data-theme="gray"] .cinema-sess-alert{background:rgba(0,0,0,0.06)!important;border-left-color:#777;}
+[data-theme="gray"] .cinema-sess-alert .cinema-sess-name{color:#555!important;}
+[data-theme="gray"] .dsd-sess-alert{background:rgba(0,0,0,0.05);border-left-color:#888;}
+[data-theme="gray"] .dsd-sess-alert .dsd-name{color:#666!important;}
+[data-theme="gray"] .dash-stat-tile.dash-stat-accent .dash-stat-num{color:#222!important;}
+[data-theme="gray"] .dash-stat-tile.dash-stat-ok .dash-stat-num{color:#444!important;}
+
+/* TERMINAL THEME */
+[data-theme="terminal"]{
+  --bg:#000000; --surface:#0c0c0c; --surface2:#141414;
+  --border:#1e1e1e; --border2:#2a2a2a;
+  --accent:#00e533; --accent-dim:rgba(0,229,51,0.10); --accent-glow:rgba(0,229,51,0.04);
+  --text:#e0e0e0; --text-dim:#bbbbbb; --text-muted:#888888;
+  --ok:#00e533; --warn:#ff3333;
+  --cpl-bg:rgba(0,229,51,0.08); --cpl-color:#00e533; --cpl-border:rgba(0,229,51,0.3);
+  --mono:'Courier New',Courier,monospace; --sans:'Courier New',Courier,monospace;
+}
+[data-theme="terminal"] body{font-family:'Courier New',Courier,monospace;}
+[data-theme="terminal"] header{background:rgba(0,0,0,0.98);border-bottom-color:#1e1e1e;}
+[data-theme="terminal"] .logo{color:var(--accent);letter-spacing:0.3em;}
+[data-theme="terminal"] .col-header-row,[data-theme="terminal"] .time-gutter-header,[data-theme="terminal"] .col-header{background:var(--bg);}
+[data-theme="terminal"] #tooltip{background:#0a0a0a;border:1px solid #2a2a2a;box-shadow:0 4px 18px rgba(0,229,51,0.08);}
+[data-theme="terminal"] .tt-name{color:var(--accent);}
+[data-theme="terminal"] .nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+[data-theme="terminal"] select{background:#0a0a0a;color:var(--text);border-color:#2a2a2a;font-family:'Courier New',Courier,monospace;}
+[data-theme="terminal"] select:focus{border-color:var(--accent);}
+[data-theme="terminal"] .search-wrap input{background:#0a0a0a;color:var(--text);border-color:#2a2a2a;font-family:'Courier New',Courier,monospace;}
+[data-theme="terminal"] .search-wrap input:focus{border-color:var(--accent);}
+[data-theme="terminal"] .search-wrap input::placeholder{color:#2a2a2a;}
+[data-theme="terminal"] mark{background:rgba(0,229,51,0.2);color:var(--accent);}
+[data-theme="terminal"] .event-pill.active{border-radius:0!important;}
+[data-theme="terminal"] .session-block{filter:grayscale(0.6);}
+[data-theme="terminal"] .upload-btn{background:var(--accent);color:#000;border-radius:0;}
+[data-theme="terminal"] .day-tab.active{background:var(--accent);color:#000;border-color:var(--accent);border-radius:0;}
+[data-theme="terminal"] .landing-drop{border-color:rgba(0,229,51,0.3);}
+[data-theme="terminal"] .landing-drop:hover:not(.loaded){border-color:var(--accent);}
+[data-theme="terminal"] .landing-badge{border-color:rgba(0,229,51,0.3);}
+[data-theme="terminal"] thead tr{background:rgba(0,229,51,0.07)!important;border-bottom:1px solid rgba(0,229,51,0.3)!important;}
+[data-theme="terminal"] th{color:var(--accent)!important;letter-spacing:0.1em;}
+[data-theme="terminal"] tbody tr:hover{background:rgba(0,229,51,0.04)!important;}
+[data-theme="terminal"] .ficha-session-name{color:var(--accent)!important;}
+[data-theme="terminal"] .meta-value.highlight{color:var(--accent)!important;}
+[data-theme="terminal"] .ficha-header{border-bottom:2px solid var(--accent)!important;}
+[data-theme="terminal"] .cpl-text{color:var(--accent)!important;}
+[data-theme="terminal"] .cpl-label{color:rgba(0,229,51,0.5)!important;}
+[data-theme="terminal"] .cpl-sub{color:rgba(0,229,51,0.4)!important;}
+[data-theme="terminal"] .cpl-ov-ficha{color:rgba(0,229,51,0.5)!important;border-top-color:rgba(0,229,51,0.18)!important;}
+[data-theme="terminal"] .badge{background:transparent!important;color:var(--text-dim)!important;border-color:#2a2a2a!important;border-radius:0!important;}
+[data-theme="terminal"] .badge-kdm-sim{color:var(--warn)!important;border-color:var(--warn)!important;font-weight:700!important;}
+[data-theme="terminal"] .film-hd{color:var(--accent)!important;border-color:rgba(0,229,51,0.3)!important;}
+[data-theme="terminal"] .obs-text{color:rgba(0,229,51,0.7)!important;}
+[data-theme="terminal"] .card-obs{color:rgba(0,229,51,0.8)!important;border-left-color:rgba(0,229,51,0.3)!important;}
+[data-theme="terminal"] .status-ok{background:rgba(0,229,51,0.10);color:var(--ok);border-color:rgba(0,229,51,0.3);}
+[data-theme="terminal"] .status-cancel{background:rgba(255,51,51,0.10);color:var(--warn);border-color:rgba(255,51,51,0.3);}
+[data-theme="terminal"] .expand-value.accent{color:var(--accent)!important;}
+[data-theme="terminal"] .cinema-sess-alert{background:rgba(255,51,51,0.08)!important;border-left-color:var(--warn);}
+[data-theme="terminal"] .cinema-sess-alert .cinema-sess-name{color:var(--warn)!important;}
+[data-theme="terminal"] .dsd-sess-alert{background:rgba(255,51,51,0.07);border-left-color:var(--warn);}
+[data-theme="terminal"] .dsd-sess-alert .dsd-name{color:var(--warn)!important;}
+[data-theme="terminal"] .film-card{border-radius:0;}
+[data-theme="terminal"] .sess-row:hover,.cinema-sess-row:hover{background:rgba(0,229,51,0.04)!important;}
+[data-theme="terminal"] .card-expand{background:rgba(0,229,51,0.02)!important;}
+[data-theme="terminal"] .landing-modules .module-card:hover:not(.disabled){background:rgba(0,229,51,0.04);}
+[data-theme="terminal"] .bordero-btn{color:var(--accent);border-color:rgba(0,229,51,0.35);}
+[data-theme="terminal"] .bordero-btn:hover{background:var(--accent);color:#000;}
+[data-theme="terminal"] .dash-stat-tile.dash-stat-accent .dash-stat-num{color:var(--accent)!important;}
+[data-theme="terminal"] .dash-stat-tile.dash-stat-ok .dash-stat-num{color:var(--ok)!important;}
+/* event pills & badges — terminal: tudo verde ou branco, sem cores */
+[data-theme="terminal"] .event-pill{background:transparent!important;color:var(--text-muted)!important;border-color:#2a2a2a!important;border-radius:0!important;opacity:0.7;}
+[data-theme="terminal"] .event-pill.active{background:var(--accent-dim)!important;color:var(--accent)!important;border-color:rgba(0,229,51,0.4)!important;opacity:1;}
+[data-theme="terminal"] .ficha-evento-badge{background:var(--accent-dim)!important;color:var(--accent)!important;border-radius:0!important;}
+[data-theme="terminal"] .card-evento{background:transparent!important;color:var(--accent)!important;border-color:rgba(0,229,51,0.35)!important;border-radius:0!important;}
+[data-theme="terminal"] .cinema-ev-tag{background:transparent!important;color:var(--accent)!important;border:1px solid rgba(0,229,51,0.3)!important;border-radius:0!important;}
+[data-theme="terminal"] .bordero-ev-pill{background:transparent!important;color:var(--accent)!important;border-color:rgba(0,229,51,0.35)!important;border-radius:0!important;}
+/* textos cinza quase invisíveis — forçar legibilidade */
+[data-theme="terminal"] .text-muted,[data-theme="terminal"] .fe-label,
+[data-theme="terminal"] .meta-label,[data-theme="terminal"] .ficha-vinhetas-label,
+[data-theme="terminal"] .ficha-vinhetas-obs,[data-theme="terminal"] .footer-stamp,
+[data-theme="terminal"] .fe-value,[data-theme="terminal"] .leg-text,
+[data-theme="terminal"] .film-code,[data-theme="terminal"] .idioma-text{color:var(--text-dim)!important;}
+[data-theme="terminal"] .film-num,[data-theme="terminal"] .col-session-count,
+[data-theme="terminal"] .time-label,[data-theme="terminal"] .block-films,
+[data-theme="terminal"] .sessions-label,[data-theme="terminal"] .additive-bar-label{color:var(--text-muted)!important;}
 @media print {
   #main-content{zoom:1!important;}
   @page{margin:14mm 11mm;size:A4 landscape;}
@@ -857,6 +994,30 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .proj-card-detail{font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:2px;}
 .proj-card-arrow{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:auto;padding-top:12px;}
 .proj-card:hover:not(:disabled) .proj-card-arrow{color:var(--accent);}
+/* RECEPTIVO */
+#receptivo-panel{padding:48px 40px;}
+.recep-hub{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:32px;}
+.recep-hub-title{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:var(--text-muted);}
+.recep-hub-desc{font-family:var(--sans);font-size:13px;color:var(--text-muted);line-height:1.6;max-width:500px;}
+.recep-cards{display:grid;grid-template-columns:1fr 1fr;gap:1px;border:1px solid var(--border);}
+.recep-card{background:var(--surface);padding:28px 28px 24px;cursor:pointer;transition:background 0.15s;display:flex;flex-direction:column;gap:8px;border:none;text-align:left;}
+.recep-card:hover{background:var(--surface2);}
+.recep-card+.recep-card{border-left:1px solid var(--border);}
+.recep-cards .recep-card:nth-child(3),.recep-cards .recep-card:nth-child(4){border-top:1px solid var(--border);}
+.recep-cards .recep-card:nth-child(3){border-left:none;}
+.recep-card-icon{font-size:24px;opacity:0.55;margin-bottom:4px;}
+.recep-card-name{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);}
+.recep-card-desc{font-family:var(--sans);font-size:12px;color:var(--text-muted);line-height:1.6;}
+.recep-card-arrow{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:auto;padding-top:12px;}
+.recep-card:hover .recep-card-arrow{color:var(--accent);}
+/* Em construção */
+.wip-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:22px;padding:60px 40px;}
+.wip-sign{font-size:64px;line-height:1;}
+.wip-title{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:var(--text-dim);}
+.wip-sub{font-family:var(--sans);font-size:13px;color:var(--text-muted);line-height:1.7;text-align:center;max-width:360px;}
+.wip-back{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:7px 18px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;transition:all 0.15s;margin-top:8px;}
+.wip-back:hover{border-color:var(--accent);color:var(--accent);}
+.wip-badge{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);border:1px solid var(--border);padding:3px 12px;border-radius:2px;}
 /* SESSÕES */
 #sessoes-container{padding:0 0 60px;}
 .sess-past-toggle{display:flex;align-items:center;gap:8px;width:100%;padding:9px 24px;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);background:var(--surface2);border:none;border-bottom:1px solid var(--border);cursor:pointer;transition:color 0.15s;}
@@ -947,6 +1108,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <button class="nav-tab" id="tabIngest" disabled onclick="switchMode('ingest')" style="display:none"></button>
     <button class="nav-tab" id="tabCinemas" disabled onclick="switchMode('cinemas')"><span class="tab-icon">🎭</span> Cinemas</button>
     <button class="nav-tab" id="tabDash" disabled onclick="switchMode('dash')"><span class="tab-icon">◉</span> Dashboard</button>
+    <button class="nav-tab" id="tabReceptivo" disabled onclick="switchMode('receptivo')"><span class="tab-icon">🤝</span> Receptivo</button>
   </nav>
   <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar esquema de cores">
     <span class="theme-toggle-icon" id="themeIcon">☀</span>
@@ -1048,6 +1210,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   <div class="day-tabs" id="dashDayTabs"></div>
   <div class="event-filters" id="dashEventFilters" style="margin-left:4px;"></div>
 </div>
+<div class="mode-bar hidden" id="barReceptivo"></div>
 <div class="mode-bar hidden" id="barVinhetas">
   <div class="event-filters" id="vinhetasEventFilters"></div>
   <select id="vinhetasCinemaSelect" style="min-width:180px;margin-left:8px;" onchange="vinhetasCinemaFilter=this.value;rebuildVinhetasDaySelect();renderVinhetas();">
@@ -1068,7 +1231,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <div class="drop-label">Carregar sistema_olga.xlsx</div>
     <div class="drop-sub">clique ou arraste o arquivo aqui</div>
   </div>
-  <div class="landing-modules" style="grid-template-columns:repeat(7,1fr);max-width:1440px;">
+  <div class="landing-modules" style="grid-template-columns:repeat(8,1fr);max-width:1600px;">
     <div class="module-card disabled" id="modCardProjecao" onclick="moduleCardClick('projecao')">
       <div class="module-icon">🎥</div>
       <div class="module-name">Projeção</div>
@@ -1103,6 +1266,11 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       <div class="module-icon">◉</div>
       <div class="module-name">Dashboard</div>
       <div class="module-desc">Monitoramento de filmes por situação no sistema e dados gerais do evento</div>
+    </div>
+    <div class="module-card disabled" id="modCardReceptivo" onclick="moduleCardClick('receptivo')">
+      <div class="module-icon">🤝</div>
+      <div class="module-name">Receptivo</div>
+      <div class="module-desc">Convidados, hotéis, vôos e transporte</div>
     </div>
   </div>
 </div>
@@ -1193,6 +1361,9 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     </div>
     <div id="vinhetas-container" style="display:none"></div>
     <div id="vinhetaDetailWrap" style="display:none"></div>
+  </div>
+  <div class="mode-panel" id="receptivo-panel">
+    <div id="receptivo-container"></div>
   </div>
 </div>
 
@@ -1404,8 +1575,8 @@ function applyParsedData(d,filename){
   var initEvs=currentEvs.size>0?currentEvs:new Set(events);
   activeEventsGrade=new Set(initEvs);activeEventsBusca=new Set(initEvs);activeEventsIngest=new Set(initEvs);activeEventsFicha=new Set(initEvs);activeEventsCinemas=new Set(initEvs);activeEventsDash=new Set(initEvs);activeEventsGrade2=new Set(initEvs);activeEventsSessoes=new Set(initEvs);activeEventsProjecao=new Set(initEvs);activeEventsVinhetas=new Set(initEvs);
   dataLoaded=true;
-  ['tabProjecao','tabFicha','tabGrade','tabGrade2','tabSessoes','tabBusca','tabVinhetas','tabIngest','tabCinemas','tabDash'].forEach(function(id){document.getElementById(id).disabled=false;});
-  ['modCardProjecao','modCardGrade','modCardSessoes','modCardBusca','modCardVinhetas','modCardCinemas','modCardDash'].forEach(function(id){document.getElementById(id).classList.remove('disabled');});
+  ['tabProjecao','tabFicha','tabGrade','tabGrade2','tabSessoes','tabBusca','tabVinhetas','tabIngest','tabCinemas','tabDash','tabReceptivo'].forEach(function(id){document.getElementById(id).disabled=false;});
+  ['modCardProjecao','modCardGrade','modCardSessoes','modCardBusca','modCardVinhetas','modCardCinemas','modCardDash','modCardReceptivo'].forEach(function(id){document.getElementById(id).classList.remove('disabled');});
   buildGradeDays();window._gradeYearsOpen=null;window._grade2YearsOpen=null;window._dashYearsOpen=null;buildFichaFilters();buildGradeFilters();buildGrade2Filters();buildSessoesFilters();buildProjecaoFilters();buildVinhetasFilters();buildBuscaFilters();buildIngestDays();buildIngestFilters();buildBuscaFilterPanel();buildCinemasFilters();buildDashFilters();
   fileNameEl.textContent=filename||'arquivo carregado';
   fileNameEl.classList.add('loaded');
@@ -1473,7 +1644,7 @@ function parseWorkbook(data,filename){
 function goHome(){
   if(currentMode){
     currentMode=null;
-    ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash'].forEach(function(m){
+    ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo'].forEach(function(m){
       var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
       document.getElementById('tab'+cap).classList.remove('active');
       document.getElementById('bar'+cap).classList.add('hidden');
@@ -1498,7 +1669,7 @@ function switchMode(mode,noPush){
   if(mode!=='busca'&&_fpOpen){_fpOpen=false;document.getElementById('filterPanel').classList.remove('open');document.getElementById('filterToggleBtn').classList.remove('active');}
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='block';
-  ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash'].forEach(function(m){
+  ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo'].forEach(function(m){
     var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
     document.getElementById('tab'+cap).classList.toggle('active',m===mode);
     document.getElementById('bar'+cap).classList.toggle('hidden',m!==mode);
@@ -1513,6 +1684,7 @@ function switchMode(mode,noPush){
   if(mode==='ingest')renderIngest();
   if(mode==='cinemas')renderCinemas();
   if(mode==='dash')renderDash();
+  if(mode==='receptivo')renderReceptivo();
   if(mode==='busca'){
     var bl=document.getElementById('buscaLoading'),be2=document.getElementById('buscaEmpty'),br=document.getElementById('busca-results');
     bl.style.display='flex';be2.style.display='none';br.style.display='none';
@@ -3114,6 +3286,53 @@ function goToFicha(nomeSessao){
 }
 
 /* PROJEÇÃO HUB */
+function renderReceptivo(){
+  var container=document.getElementById('receptivo-container');
+  container.innerHTML=
+    '<div class="recep-hub">'+
+    '<div class="recep-hub-title">Receptivo · áreas</div>'+
+    '<div class="recep-hub-desc">Gestão de convidados, hospedagem, deslocamentos e logística de transporte para os eventos.</div>'+
+    '<div class="recep-cards">'+
+      '<button class="recep-card" onclick="showWip(\'Convidados\')">'+
+        '<div class="recep-card-icon">🎟</div>'+
+        '<div class="recep-card-name">Convidados</div>'+
+        '<div class="recep-card-desc">Cadastro e gestão de convidados, acreditações e participações nos eventos</div>'+
+        '<div class="recep-card-arrow">Abrir Convidados →</div>'+
+      '</button>'+
+      '<button class="recep-card" onclick="showWip(\'Hotéis\')">'+
+        '<div class="recep-card-icon">🏨</div>'+
+        '<div class="recep-card-name">Hotéis</div>'+
+        '<div class="recep-card-desc">Controle de hospedagem, quartos e estadias por convidado e período</div>'+
+        '<div class="recep-card-arrow">Abrir Hotéis →</div>'+
+      '</button>'+
+      '<button class="recep-card" onclick="showWip(\'Vôos\')">'+
+        '<div class="recep-card-icon">✈</div>'+
+        '<div class="recep-card-name">Vôos</div>'+
+        '<div class="recep-card-desc">Registro de chegadas e partidas, companhias e horários de voo</div>'+
+        '<div class="recep-card-arrow">Abrir Vôos →</div>'+
+      '</button>'+
+      '<button class="recep-card" onclick="showWip(\'Transporte\')">'+
+        '<div class="recep-card-icon">🚐</div>'+
+        '<div class="recep-card-name">Transporte</div>'+
+        '<div class="recep-card-desc">Roteamento e agendamento de transfers, rotas e veículos</div>'+
+        '<div class="recep-card-arrow">Abrir Transporte →</div>'+
+      '</button>'+
+    '</div>'+
+    '</div>';
+}
+
+function showWip(nome){
+  var container=document.getElementById('receptivo-container');
+  container.innerHTML=
+    '<div class="wip-screen">'+
+      '<div class="wip-sign">🚧</div>'+
+      '<div class="wip-badge">Em construção</div>'+
+      '<div class="wip-title">'+nome+'</div>'+
+      '<div class="wip-sub">Este módulo está em desenvolvimento e estará disponível em breve. Fique de olho nas atualizações do sistema.</div>'+
+      '<button class="wip-back" onclick="renderReceptivo()">← Voltar ao Receptivo</button>'+
+    '</div>';
+}
+
 function buildProjecaoFilters(){
   buildPills(document.getElementById('projecaoEventFilters'),eventColors,activeEventsProjecao,function(){
     renderProjecao();
@@ -4596,7 +4815,7 @@ function goToCinemaFromDash(sala){
   currentMode='cinemas';
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='block';
-  ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash'].forEach(function(m){
+  ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo'].forEach(function(m){
     var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
     document.getElementById('tab'+cap).classList.toggle('active',m==='cinemas');
     document.getElementById('bar'+cap).classList.toggle('hidden',m!=='cinemas');
@@ -4629,10 +4848,12 @@ function resetZoom(){applyZoom(ZOOM_STEPS.indexOf(100));}
   }catch(e){}
 })();
 /* THEME TOGGLE */
+var _THEMES=['light','dark','gray','terminal'];
 function toggleTheme(){
   var html=document.documentElement;
-  var isLight=html.getAttribute('data-theme')==='light';
-  var next=isLight?'dark':'light';
+  var current=html.getAttribute('data-theme')||'dark';
+  var idx=_THEMES.indexOf(current);
+  var next=_THEMES[(idx+1)%_THEMES.length];
   applyTheme(next);
   try{localStorage.setItem('olga-theme',next);}catch(e){}
 }
@@ -4642,18 +4863,23 @@ function applyTheme(theme){
   var label=document.getElementById('themeLabel');
   if(theme==='light'){
     html.setAttribute('data-theme','light');
-    icon.textContent='●';
-    label.textContent='Escuro';
-  }else{
-    html.removeAttribute('data-theme');
-    icon.textContent='☀';
-    label.textContent='Claro';
+    icon.textContent='●';label.textContent='Escuro';
+  }else if(theme==='dark'){
+    html.setAttribute('data-theme','dark');
+    icon.textContent='◐';label.textContent='Cinza';
+  }else if(theme==='gray'){
+    html.setAttribute('data-theme','gray');
+    icon.textContent='▮';label.textContent='Terminal';
+  }else if(theme==='terminal'){
+    html.setAttribute('data-theme','terminal');
+    icon.textContent='☀';label.textContent='Claro';
   }
 }
 (function(){
   try{
     var t=localStorage.getItem('olga-theme');
-    if(t==='light')applyTheme('light');
+    if(t&&t!=='dark')applyTheme(t);
+    else document.documentElement.setAttribute('data-theme','dark');
   }catch(e){}
 })();
 
@@ -4669,7 +4895,7 @@ window.addEventListener('popstate',function(e){
       // ensure we're in cinemas mode first, then open detail
       if(currentMode!=='cinemas'){
         currentMode='cinemas';
-        ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash'].forEach(function(m){
+        ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo'].forEach(function(m){
           var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
           document.getElementById('tab'+cap).classList.toggle('active',m==='cinemas');
           document.getElementById('bar'+cap).classList.toggle('hidden',m!=='cinemas');
