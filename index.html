@@ -100,7 +100,7 @@ select:disabled{opacity:0.35;cursor:not-allowed;}
 .mode-panel{display:none;}
 .mode-panel.active{display:block;}
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--text-muted);padding:80px 40px;min-height:55vh;}
-.empty-state .icon{font-size:38px;opacity:0.22;}
+.empty-state .icon{width:42px;height:42px;opacity:0.22;display:flex;align-items:center;justify-content:center;}.empty-state .icon svg{width:42px;height:42px;stroke:currentColor;stroke-width:1.2;fill:none;}.empty-state .icon.spin svg{animation:spin 1.2s linear infinite;}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .empty-state p{font-size:12px;text-align:center;line-height:1.9;font-family:var(--mono);}
 
@@ -208,12 +208,12 @@ td.cpl-cell{background:var(--cpl-bg);border-left:3px solid var(--cpl-border);pad
 .session-block:hover .block-hint{opacity:1;}
 .block-acess{font-size:9px;color:rgba(0,0,0,0.55);margin-top:2px;line-height:1;}
 .sess-acess-icon{display:inline-flex;align-items:center;opacity:0.75;flex-shrink:0;cursor:default;color:var(--ok);}.sess-acess-icon svg{width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;}
-#tooltip{position:fixed;z-index:9999;background:#1c1c1c;border:1px solid #333;padding:14px 16px;min-width:280px;max-width:380px;pointer-events:none;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.6);}
-.tt-name{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);margin-bottom:6px;}
-.tt-row{font-family:var(--mono);font-size:10px;color:var(--text-dim);line-height:1.8;}
+#tooltip{position:fixed;z-index:9999;background:#1c1c1c;border:1px solid #333;padding:20px 22px;min-width:420px;max-width:560px;pointer-events:none;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.6);}
+.tt-name{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--accent);margin-bottom:10px;}
+.tt-row{font-family:var(--mono);font-size:13px;color:var(--text-dim);line-height:1.9;}
 .tt-row span{color:var(--text);}
-.tt-films{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
-.tt-film{font-family:var(--mono);font-size:9px;color:var(--text-dim);line-height:1.7;}
+.tt-films{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+.tt-film{font-family:var(--mono);font-size:12px;color:var(--text-dim);line-height:1.8;}
 .tt-film span{color:#c8c8c8;}
 
 /* GRADE PRINT TABLE */
@@ -1314,7 +1314,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   <div class="mode-panel" id="ficha-panel">
     <div id="ficha-container">
       <div class="empty-state" id="fichaEmpty">
-        <div class="icon">🎬</div>
+        <div class="icon"><i data-lucide="film"></i></div>
         <p>Selecione uma sessão acima<br>para gerar a ficha.</p>
       </div>
       <div id="fichaWrap" style="display:none"></div>
@@ -1323,7 +1323,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   <div class="mode-panel" id="grade-panel">
     <div id="grade-container">
       <div class="empty-state" id="gradeEmpty">
-        <div class="icon">📅</div>
+        <div class="icon"><i data-lucide="layout-dashboard"></i></div>
         <p>Nenhuma sessão para este dia.</p>
       </div>
       <div class="grade-wrap" id="gradeWrap" style="display:none">
@@ -1335,7 +1335,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   <div class="mode-panel" id="grade2-panel">
     <div id="grade2-container">
       <div class="empty-state" id="grade2Empty">
-        <div class="icon">📅</div>
+        <div class="icon"><i data-lucide="layout-dashboard"></i></div>
         <p>Nenhuma sessão para este dia.</p>
       </div>
       <div class="grade-wrap" id="grade2Wrap" style="display:none">
@@ -1346,7 +1346,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   </div>
   <div class="mode-panel" id="sessoes-panel">
     <div class="empty-state" id="sessoesEmpty" style="display:none">
-      <div class="icon">🗓</div>
+      <div class="icon"><i data-lucide="calendar-clock"></i></div>
       <p>Nenhuma sessão encontrada.</p>
     </div>
     <div id="sessoes-container"></div>
@@ -1355,25 +1355,25 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <div class="busca-print-header" id="buscaPrintHeader" style="display:none;padding:18px 24px 0;"></div>
     <div id="buscaAdditiveBar"></div>
     <div class="empty-state" id="buscaEmpty">
-      <div class="icon">🔍</div>
+      <div class="icon"><i data-lucide="search"></i></div>
       <p>Digite para buscar filmes.</p>
     </div>
     <div class="empty-state" id="buscaLoading" style="display:none">
-      <div class="icon" style="animation:spin 1s linear infinite;display:inline-block">⟳</div>
+      <div class="icon spin"><i data-lucide="loader-2"></i></div>
       <p>Carregando filmes…</p>
     </div>
     <div id="busca-results" style="display:none"></div>
   </div>
   <div class="mode-panel" id="ingest-panel">
     <div class="empty-state" id="ingestEmpty">
-      <div class="icon">📥</div>
+      <div class="icon"><i data-lucide="hard-drive-download"></i></div>
       <p>Nenhuma sessão encontrada.</p>
     </div>
     <div id="ingest-container" style="display:none"></div>
   </div>
   <div class="mode-panel" id="cinemas-panel">
     <div class="empty-state" id="cinemasEmpty">
-      <div class="icon">🎭</div>
+      <div class="icon"><i data-lucide="clapperboard"></i></div>
       <p>Nenhum cinema encontrado.</p>
     </div>
     <div id="cinemas-container" style="display:none;"></div>
@@ -1381,14 +1381,14 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   </div>
   <div class="mode-panel" id="dash-panel">
     <div class="empty-state" id="dashEmpty">
-      <div class="icon">◉</div>
+      <div class="icon"><i data-lucide="bar-chart-2"></i></div>
       <p>Nenhum filme encontrado.</p>
     </div>
     <div id="dash-container" style="display:none;"></div>
   </div>
   <div class="mode-panel" id="vinhetas-panel">
     <div class="empty-state" id="vinhetasEmpty" style="display:none">
-      <div class="icon">🎞</div>
+      <div class="icon"><i data-lucide="film"></i></div>
       <p>Nenhuma vinheta encontrada.</p>
     </div>
     <div id="vinhetas-container" style="display:none"></div>
@@ -1459,44 +1459,46 @@ self.onmessage=function(e){
   var filmesMap={},filmesArr=[];
   var wsF=wb.Sheets['filmes'];
   if(wsF){
-    var rows=XLSX.utils.sheet_to_json(wsF,{header:1,raw:false,dateNF:'dd/mm/yyyy'});
-    for(var i=1;i<rows.length;i++){
-      var r=rows[i];var codigo=(r[1]||'').toString().trim();
+    var rows=XLSX.utils.sheet_to_json(wsF,{raw:false,dateNF:'dd/mm/yyyy'});
+    for(var i=0;i<rows.length;i++){
+      var r=rows[i];var codigo=(r['festival_code']||'').toString().trim();
       if(!codigo||codigo==='-'||codigo==='0')continue;
-      var f={evento:r[0]||'',codigo:codigo,hd:r[2]||'',titulo:r[3]||'',idioma:r[4]||'',legenda:r[5]||'',col_g:r[6]||'',vf:r[7]||'',lente:r[8]||'',som:r[9]||'',col_k:r[10]||'',kdm:r[11]||'',status:r[12]||'',col_n:r[13]||'',obs:r[14]||'',cpl:r[15]||'',resolucao:r[16]||'',duracao:r[19]||'',gb:r[21]||'',fps:r[23]||'',cplOV:r[24]||'',acessibilidade:(r[22]||'').toString().trim()};
+      var f={evento:r['event_name']||'',codigo:codigo,hd:r['storage_location']||'',titulo:r['title']||'',idioma:r['original_language']||'',legenda:r['dcp_subtitle_code']||'',col_g:r['program_section']||'',vf:r['vf_subtitle_code']||'',lente:r['projection_lens']||'',som:r['audio_format']||'',col_k:r['dcp_creator']||'',kdm:r['has_kdm']||'',status:r['status']||'',col_n:r['subtitle_status']||'',obs:r['notes']||'',cpl:r['cpl_id']||'',resolucao:r['dcp_resolution']||'',duracao:r['dcp_duration']||'',gb:r['dcp_size']||'',fps:r['dcp_fps']||'',cplOV:r['ov_cpl_id']||'',acessibilidade:(r['accessibility_features']||'').toString().trim()};
       filmesMap[codigo]=f;filmesArr.push(f);
     }
   }
   var sessoesArr=[],sessoesMap={},buscaReverseSessoes={};
-  var wsS=wb.Sheets['sessões']||wb.Sheets['sessoes'];
+  var wsS=wb.Sheets['sessoes']||wb.Sheets['sessões'];
   if(wsS){
-    var rows2=XLSX.utils.sheet_to_json(wsS,{header:1,raw:false,dateNF:'dd/mm/yyyy'});
-    for(var i=1;i<rows2.length;i++){
-      var r=rows2[i];var nome=(r[0]||'').toString().trim();if(!nome)continue;
-      var codes=[];for(var f2=4;f2<=13;f2++){var c=(r[f2]||'').toString().trim();if(c&&c!=='-'&&!/^=/.test(c))codes.push(c);}
-      var evento=(r[15]||'').toString().trim();
+    var rows2=XLSX.utils.sheet_to_json(wsS,{raw:false,dateNF:'dd/mm/yyyy'});
+    for(var i=0;i<rows2.length;i++){
+      var r=rows2[i];var nome=(r['session_id']||'').toString().trim();if(!nome)continue;
+      var codes=[];for(var fi2=1;fi2<=10;fi2++){var c=(r['film_'+fi2]||'').toString().trim();if(c&&c!=='-'&&!/^=/.test(c))codes.push(c);}
+      var evento=(r['event_name']||'').toString().trim();
       if(!evento){for(var fi=0;fi<codes.length;fi++){if(filmesMap[codes[fi]]&&filmesMap[codes[fi]].evento){evento=filmesMap[codes[fi]].evento;break;}}}
-      var vinhetas=[];for(var v2=16;v2<=25;v2++){var vc=(r[v2]||'').toString().trim();if(vc&&vc!=='-'&&!/^=/.test(vc))vinhetas.push(vc);}
-      var s={nome:nome,cinema:r[1]||'',dia:fmtDateStr(r[2]),hora:fmtTimeStr(r[3]),filmes:codes,date:parseDate(r[2]),time:parseTime(r[3]),evento:evento,vinhetas:vinhetas,convidados:(r[26]||'').toString().trim(),apresentacao:(r[27]||'').toString().trim(),publico:(r[28]||'').toString().trim(),ingressos:(r[29]||'').toString().trim(),leg_eletronica:(r[30]||'').toString().trim(),acessibilidades:(r[31]||'').toString().trim(),col_ag:(r[32]||'').toString().trim()};
+      var vinhetas=[];for(var vi=1;vi<=10;vi++){var vc=(r['bumper_'+vi]||'').toString().trim();if(vc&&vc!=='-'&&!/^=/.test(vc))vinhetas.push(vc);}
+      var s={nome:nome,cinema:r['venue_name']||'',dia:fmtDateStr(r['date']),hora:fmtTimeStr(r['time']),filmes:codes,date:parseDate(r['date']),time:parseTime(r['time']),evento:evento,vinhetas:vinhetas,convidados:(r['guests']||'').toString().trim(),apresentacao:(r['has_introduction']||'').toString().trim(),publico:(r['total_audience']||'').toString().trim(),ingressos:(r['reserved_tickets']||'').toString().trim(),leg_eletronica:(r['has_electronic_subtitles']||'').toString().trim(),acessibilidades:(r['available_accessibility']||'').toString().trim(),col_ag:(r['has_debate']||'').toString().trim()};
       sessoesArr.push(s);sessoesMap[nome]=s;
       codes.forEach(function(c){if(!buscaReverseSessoes[c])buscaReverseSessoes[c]=[];buscaReverseSessoes[c].push(nome);});
     }
   }
   var cinemasArr=[];
-    var rowsC=XLSX.utils.sheet_to_json(wsC,{header:1,raw:false});
-    for(var i=1;i<rowsC.length;i++){
-      var r=rowsC[i];var sala=(r[1]||'').toString().trim();if(!sala)continue;
-      cinemasArr.push({complexo:r[0]||'',sala:sala,servidor:r[2]||'',serial:(r[3]||'').toString().trim(),projetor:r[4]||'',assentos:r[5]||'',proporcao:(r[6]||'').toString().trim(),som:r[7]||'',obs:r[8]||'',cineassista:r[9]||'',evento:(r[10]||'').toString().trim(),estado:(r[11]||'').toString().trim()});
+  var wsC=wb.Sheets['cinemas'];
+  if(wsC){
+    var rowsC=XLSX.utils.sheet_to_json(wsC,{raw:false});
+    for(var i=0;i<rowsC.length;i++){
+      var r=rowsC[i];var sala=(r['venue_name']||'').toString().trim();if(!sala)continue;
+      cinemasArr.push({complexo:r['complex_name']||'',sala:sala,servidor:r['server_model']||'',serial:(r['server_serial']||'').toString().trim(),projetor:r['projector_model']||'',assentos:r['seat_count']||'',proporcao:(r['screen_aspect_ratio']||'').toString().trim(),som:r['sound_system']||'',obs:r['notes']||'',cineassista:r['cineassist_system']||'',evento:(r['event_name']||'').toString().trim(),estado:(r['state']||'').toString().trim()});
     }
   }
   var vinhetasArr=[];
-  var wsV=wb.Sheets['vinhetas']||wb.Sheets['Vinhetas'];
+  var wsV=wb.Sheets['Vinhetas']||wb.Sheets['vinhetas'];
   if(wsV){
-    var rowsV=XLSX.utils.sheet_to_json(wsV,{header:1,raw:false});
-    for(var i=1;i<rowsV.length;i++){
-      var r=rowsV[i];var codigo=(r[1]||'').toString().trim();
+    var rowsV=XLSX.utils.sheet_to_json(wsV,{raw:false});
+    for(var i=0;i<rowsV.length;i++){
+      var r=rowsV[i];var codigo=(r['bumper_code']||'').toString().trim();
       if(!codigo||codigo==='-')continue;
-      vinhetasArr.push({evento:r[0]||'',codigo:codigo,nome:r[2]||'',lente:r[3]||'',som:r[4]||'',obs:r[5]||'',cpl:r[6]||'',link:r[7]||'',duracao:r[8]||''});
+      vinhetasArr.push({evento:r['event_name']||'',codigo:codigo,nome:r['title']||'',lente:r['projection_lens']||'',som:r['audio_format']||'',obs:r['notes']||'',cpl:r['cpl_id']||'',link:r['file_link']||'',duracao:r['duration']||''});
     }
   }
   var vinhetaReverseSessoes={};
@@ -1622,25 +1624,25 @@ function parseWorkbook(data,filename){
   filmesMap={};filmesArr=[];
   var wsF=wb.Sheets['filmes'];
   if(wsF){
-    var rows=XLSX.utils.sheet_to_json(wsF,{header:1,raw:false,dateNF:'dd/mm/yyyy'});
-    for(var i=1;i<rows.length;i++){
-      var r=rows[i];var codigo=(r[1]||'').toString().trim();
+    var rows=XLSX.utils.sheet_to_json(wsF,{raw:false,dateNF:'dd/mm/yyyy'});
+    for(var i=0;i<rows.length;i++){
+      var r=rows[i];var codigo=(r['festival_code']||'').toString().trim();
       if(!codigo||codigo==='-'||codigo==='0')continue;
-      var f={evento:r[0]||'',codigo:codigo,hd:r[2]||'',titulo:r[3]||'',idioma:r[4]||'',legenda:r[5]||'',col_g:r[6]||'',vf:r[7]||'',lente:r[8]||'',som:r[9]||'',col_k:r[10]||'',kdm:r[11]||'',status:r[12]||'',col_n:r[13]||'',obs:r[14]||'',cpl:r[15]||'',resolucao:r[16]||'',duracao:r[19]||'',gb:r[21]||'',fps:r[23]||'',cplOV:r[24]||'',acessibilidade:(r[22]||'').toString().trim()};
+      var f={evento:r['event_name']||'',codigo:codigo,hd:r['storage_location']||'',titulo:r['title']||'',idioma:r['original_language']||'',legenda:r['dcp_subtitle_code']||'',col_g:r['program_section']||'',vf:r['vf_subtitle_code']||'',lente:r['projection_lens']||'',som:r['audio_format']||'',col_k:r['dcp_creator']||'',kdm:r['has_kdm']||'',status:r['status']||'',col_n:r['subtitle_status']||'',obs:r['notes']||'',cpl:r['cpl_id']||'',resolucao:r['dcp_resolution']||'',duracao:r['dcp_duration']||'',gb:r['dcp_size']||'',fps:r['dcp_fps']||'',cplOV:r['ov_cpl_id']||'',acessibilidade:(r['accessibility_features']||'').toString().trim()};
       filmesMap[codigo]=f;filmesArr.push(f);
     }
   }
   sessoesArr=[];sessoesMap={};buscaReverseSessoes={};
-  var wsS=wb.Sheets['sessões']||wb.Sheets['sessoes'];
+  var wsS=wb.Sheets['sessoes']||wb.Sheets['sessões'];
   if(wsS){
-    var rows2=XLSX.utils.sheet_to_json(wsS,{header:1,raw:false,dateNF:'dd/mm/yyyy'});
-    for(var i=1;i<rows2.length;i++){
-      var r=rows2[i];var nome=(r[0]||'').toString().trim();if(!nome)continue;
-      var codes=[];for(var f2=4;f2<=13;f2++){var c=(r[f2]||'').toString().trim();if(c&&c!=='-'&&!/^=/.test(c))codes.push(c);}
-      var evento=(r[15]||'').toString().trim();
+    var rows2=XLSX.utils.sheet_to_json(wsS,{raw:false,dateNF:'dd/mm/yyyy'});
+    for(var i=0;i<rows2.length;i++){
+      var r=rows2[i];var nome=(r['session_id']||'').toString().trim();if(!nome)continue;
+      var codes=[];for(var fi2=1;fi2<=10;fi2++){var c=(r['film_'+fi2]||'').toString().trim();if(c&&c!=='-'&&!/^=/.test(c))codes.push(c);}
+      var evento=(r['event_name']||'').toString().trim();
       if(!evento){for(var fi=0;fi<codes.length;fi++){if(filmesMap[codes[fi]]&&filmesMap[codes[fi]].evento){evento=filmesMap[codes[fi]].evento;break;}}}
-      var vinhetas2=[];for(var v3=16;v3<=25;v3++){var vc2=(r[v3]||'').toString().trim();if(vc2&&vc2!=='-'&&!/^=/.test(vc2))vinhetas2.push(vc2);}
-      var s={nome:nome,cinema:r[1]||'',dia:fmtDateStr(r[2]),hora:fmtTimeStr(r[3]),filmes:codes,date:parseDate(r[2]),time:parseTime(r[3]),evento:evento,vinhetas:vinhetas2,convidados:(r[26]||'').toString().trim(),apresentacao:(r[27]||'').toString().trim(),publico:(r[28]||'').toString().trim(),ingressos:(r[29]||'').toString().trim(),leg_eletronica:(r[30]||'').toString().trim(),acessibilidades:(r[31]||'').toString().trim(),col_ag:(r[32]||'').toString().trim()};
+      var vinhetas2=[];for(var vi=1;vi<=10;vi++){var vc2=(r['bumper_'+vi]||'').toString().trim();if(vc2&&vc2!=='-'&&!/^=/.test(vc2))vinhetas2.push(vc2);}
+      var s={nome:nome,cinema:r['venue_name']||'',dia:fmtDateStr(r['date']),hora:fmtTimeStr(r['time']),filmes:codes,date:parseDate(r['date']),time:parseTime(r['time']),evento:evento,vinhetas:vinhetas2,convidados:(r['guests']||'').toString().trim(),apresentacao:(r['has_introduction']||'').toString().trim(),publico:(r['total_audience']||'').toString().trim(),ingressos:(r['reserved_tickets']||'').toString().trim(),leg_eletronica:(r['has_electronic_subtitles']||'').toString().trim(),acessibilidades:(r['available_accessibility']||'').toString().trim(),col_ag:(r['has_debate']||'').toString().trim()};
       sessoesArr.push(s);sessoesMap[nome]=s;
       codes.forEach(function(c){if(!buscaReverseSessoes[c])buscaReverseSessoes[c]=[];buscaReverseSessoes[c].push(nome);});
     }
@@ -1649,21 +1651,21 @@ function parseWorkbook(data,filename){
   cinemasArr=[];
   var wsC=wb.Sheets['cinemas'];
   if(wsC){
-    var rowsC=XLSX.utils.sheet_to_json(wsC,{header:1,raw:false});
-    for(var i=1;i<rowsC.length;i++){
-      var r=rowsC[i];var sala=(r[1]||'').toString().trim();if(!sala)continue;
-      cinemasArr.push({complexo:r[0]||'',sala:sala,servidor:r[2]||'',serial:(r[3]||'').toString().trim(),projetor:r[4]||'',assentos:r[5]||'',proporcao:(r[6]||'').toString().trim(),som:r[7]||'',obs:r[8]||'',cineassista:r[9]||'',evento:(r[10]||'').toString().trim(),estado:(r[11]||'').toString().trim()});
+    var rowsC=XLSX.utils.sheet_to_json(wsC,{raw:false});
+    for(var i=0;i<rowsC.length;i++){
+      var r=rowsC[i];var sala=(r['venue_name']||'').toString().trim();if(!sala)continue;
+      cinemasArr.push({complexo:r['complex_name']||'',sala:sala,servidor:r['server_model']||'',serial:(r['server_serial']||'').toString().trim(),projetor:r['projector_model']||'',assentos:r['seat_count']||'',proporcao:(r['screen_aspect_ratio']||'').toString().trim(),som:r['sound_system']||'',obs:r['notes']||'',cineassista:r['cineassist_system']||'',evento:(r['event_name']||'').toString().trim(),estado:(r['state']||'').toString().trim()});
     }
   }
   cinemasArr.forEach(function(c){if(c.evento)c.evento.split(';').forEach(function(e){var t=e.trim();if(t)evSet.add(t);});});
   vinhetasArr=[];
-  var wsV=wb.Sheets['vinhetas']||wb.Sheets['Vinhetas'];
+  var wsV=wb.Sheets['Vinhetas']||wb.Sheets['vinhetas'];
   if(wsV){
-    var rowsV=XLSX.utils.sheet_to_json(wsV,{header:1,raw:false});
-    for(var i=1;i<rowsV.length;i++){
-      var r=rowsV[i];var codigo=(r[1]||'').toString().trim();
+    var rowsV=XLSX.utils.sheet_to_json(wsV,{raw:false});
+    for(var i=0;i<rowsV.length;i++){
+      var r=rowsV[i];var codigo=(r['bumper_code']||'').toString().trim();
       if(!codigo||codigo==='-')continue;
-      vinhetasArr.push({evento:r[0]||'',codigo:codigo,nome:r[2]||'',lente:r[3]||'',som:r[4]||'',obs:r[5]||'',cpl:r[6]||'',link:r[7]||'',duracao:r[8]||''});
+      vinhetasArr.push({evento:r['event_name']||'',codigo:codigo,nome:r['title']||'',lente:r['projection_lens']||'',som:r['audio_format']||'',obs:r['notes']||'',cpl:r['cpl_id']||'',link:r['file_link']||'',duracao:r['duration']||''});
     }
   }
   vinhetaReverseSessoes={};
