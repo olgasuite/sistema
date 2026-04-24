@@ -1229,10 +1229,8 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <button class="nav-tab" id="tabDash" disabled onclick="switchMode('dash')"><span class="tab-icon"><i data-lucide="bar-chart-2"></i></span> Dashboard</button>
     <button class="nav-tab" id="tabReceptivo" disabled onclick="switchMode('receptivo')"><span class="tab-icon"><i data-lucide="users"></i></span> Receptivo</button>
   </nav>
-  <div id="olga-userbar"></div>  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar esquema de cores">
-    <span class="theme-toggle-icon" id="themeIcon">☀</span>
-    <span id="themeLabel">Claro</span>
-  </button>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar esquema de cores">Tema</button>
+  <div id="olga-userbar"></div>
   <div class="zoom-controls">
     <button class="zoom-btn" onclick="changeZoom(-1)" title="Diminuir zoom">−</button>
     <span class="zoom-level" id="zoomLabel" onclick="resetZoom()" title="Clique para resetar">100%</span>
@@ -5029,20 +5027,14 @@ function toggleTheme(){
 }
 function applyTheme(theme){
   var html=document.documentElement;
-  var icon=document.getElementById('themeIcon');
-  var label=document.getElementById('themeLabel');
   if(theme==='light'){
     html.setAttribute('data-theme','light');
-    icon.textContent='●';label.textContent='Escuro';
   }else if(theme==='dark'){
     html.setAttribute('data-theme','dark');
-    icon.textContent='◐';label.textContent='Cinza';
   }else if(theme==='gray'){
     html.setAttribute('data-theme','gray');
-    icon.textContent='▮';label.textContent='Alto Contraste';
   }else if(theme==='terminal'){
     html.setAttribute('data-theme','terminal');
-    icon.textContent='☀';label.textContent='Claro';
   }
   // re-render grades so block colors follow the new theme
   if(typeof renderGrade==='function'&&document.getElementById('gradeWrap')&&dataLoaded)renderGrade();
