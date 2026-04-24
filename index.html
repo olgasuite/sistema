@@ -1122,12 +1122,90 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .vp-vinheta-list{display:flex;gap:8px;flex-wrap:wrap;font-size:9px;color:#444;}
 .vp-vinheta-item{border:1px solid #aaa;padding:1px 6px;}
 </style>
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDIBhcsqlK3QebTmbWMNqsN_rPPybREj64",
+    authDomain: "olga-suite.firebaseapp.com",
+    projectId: "olga-suite",
+    storageBucket: "olga-suite.firebasestorage.app",
+    messagingSenderId: "311816862566",
+    appId: "1:311816862566:web:1cc16ba1312f4437d7a6a7"
+  };
+
+  // Authorized users — edit locally and push to update
+  const AUTHORIZED = {
+    "lg.rchrd@gmail.com": { name: "Admin", role: "admin" }
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  window._olgaSignIn = function() {
+    signInWithPopup(auth, provider).catch(function(err) {
+      document.getElementById('auth-error').textContent = 'Erro ao fazer login: ' + err.message;
+    });
+  };
+
+  window._olgaSignOut = function() {
+    signOut(auth);
+  };
+
+  onAuthStateChanged(auth, function(user) {
+    var loginScreen = document.getElementById('olga-login');
+    var appWrap    = document.getElementById('olga-app');
+    var userBar    = document.getElementById('olga-userbar');
+
+    if (user) {
+      var email = user.email.toLowerCase();
+      var authData = AUTHORIZED[email];
+      if (authData) {
+        // Authorized
+        loginScreen.style.display = 'none';
+        appWrap.style.display = '';
+        if (userBar) {
+          userBar.innerHTML =
+            '<span class="userbar-name">' + (user.displayName || email) + '</span>' +
+            '<button class="userbar-btn" onclick="_olgaSignOut()">sair</button>';
+        }
+      } else {
+        // Logged in but not authorized
+        loginScreen.style.display = 'flex';
+        appWrap.style.display = 'none';
+        document.getElementById('auth-error').textContent =
+          'Acesso não autorizado para ' + user.email + '. Entre em contato com o administrador.';
+        signOut(auth);
+      }
+    } else {
+      // Not logged in
+      loginScreen.style.display = 'flex';
+      appWrap.style.display = 'none';
+    }
+  });
+</script>
 </head>
 <body>
 
+<div id="olga-login" style="display:flex;position:fixed;inset:0;z-index:99999;background:#0e0e0e;flex-direction:column;align-items:center;justify-content:center;gap:32px;font-family:'JetBrains Mono',monospace;">
+  <div style="text-align:center;">
+    <div style="font-size:28px;font-weight:700;letter-spacing:0.12em;color:#e8e8e8;">OLGA · Suite</div>
+    <div style="font-size:11px;color:#555;letter-spacing:0.18em;margin-top:6px;text-transform:uppercase;">Sistema de Gestão de Eventos</div>
+  </div>
+  <button onclick="_olgaSignIn()" style="display:flex;align-items:center;gap:12px;background:#1a1a1a;border:1px solid #333;color:#e8e8e8;padding:14px 28px;cursor:pointer;font-family:inherit;font-size:13px;letter-spacing:0.08em;transition:border-color 0.2s,background 0.2s;" onmouseover="this.style.borderColor='#666';this.style.background='#222'" onmouseout="this.style.borderColor='#333';this.style.background='#1a1a1a'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+    Entrar com Google
+  </button>
+  <div id="auth-error" style="font-size:11px;color:#e05555;letter-spacing:0.04em;max-width:320px;text-align:center;min-height:16px;"></div>
+  <div style="font-size:9px;color:#333;letter-spacing:0.1em;position:absolute;bottom:24px;">OLGA · Suite · olga-suite</div>
+</div>
+
+<div id="olga-app" style="display:none;">
 <header>
   <button class="logo" onclick="goHome()" title="Página inicial">OLGA · Suite</button>
-  <div class="file-zone">
+  <div id="olga-userbar"></div><div class="file-zone">
     <label class="upload-btn" for="fileInput">▲ XLSX</label>
     <input type="file" id="fileInput" accept=".xlsx,.xls">
     <span class="file-name" id="fileName">nenhum arquivo</span>
@@ -5011,4 +5089,6 @@ window.addEventListener('popstate',function(e){
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
 <div id="page-footer"><span>última atualização · 24/04/2026 às 15:00</span></div>
+
+</div>
 </html>
