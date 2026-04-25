@@ -1131,7 +1131,6 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-  import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyDIBhcsqlK3QebTmbWMNqsN_rPPybREj64",
@@ -1149,7 +1148,6 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const db = getFirestore(app);
   const provider = new GoogleAuthProvider();
 
   window._olgaSignIn = function() {
@@ -1161,224 +1159,6 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   window._olgaSignOut = function() {
     signOut(auth);
   };
-
-  // ── Firestore loader ──────────────────────────────────────────────
-  window._olgaLoadFirestore = async function() {
-    // Show loading state on the landing drop zone
-    var landingDrop = document.getElementById('landingDrop');
-    var fileNameEl  = document.getElementById('fileName');
-    if (landingDrop) {
-      landingDrop.innerHTML =
-        '<div class="drop-icon" style="opacity:1;animation:spin 1s linear infinite;display:inline-block">⟳</div>' +
-        '<div class="drop-label" style="color:var(--accent)">Carregando do Firestore…</div>' +
-        '<div class="drop-sub">aguarde</div>';
-    }
-    if (fileNameEl) fileNameEl.textContent = 'carregando…';
-
-    try {
-      // ── Fetch all 4 collections in parallel ──────────────────────
-      const [filmesSnap, sessoesSnap, cinemasSnap, vinhetasSnap] = await Promise.all([
-        getDocs(collection(db, 'filmes')),
-        getDocs(collection(db, 'sessoes')),
-        getDocs(collection(db, 'cinemas')),
-        getDocs(collection(db, 'vinhetas')),
-      ]);
-
-      // ── Build filmesMap / filmesArr ───────────────────────────────
-      var filmesMap2 = {}, filmesArr2 = [];
-      filmesSnap.forEach(function(doc) {
-        var r = doc.data();
-        var codigo = (r['festival_code'] || '').toString().trim();
-        if (!codigo || codigo === '-' || codigo === '0') return;
-        var f = {
-          evento:       r['event_name']           || '',
-          codigo:       codigo,
-          hd:           r['storage_location']     || '',
-          titulo:       r['title']                || '',
-          idioma:       r['original_language']    || '',
-          legenda:      r['dcp_subtitle_code']    || '',
-          col_g:        r['program_section']      || '',
-          vf:           r['vf_subtitle_code']     || '',
-          lente:        r['projection_lens']      || '',
-          som:          r['audio_format']         || '',
-          col_k:        r['dcp_creator']          || '',
-          kdm:          r['has_kdm']              || '',
-          status:       r['status']               || '',
-          col_n:        r['subtitle_status']      || '',
-          obs:          r['notes']                || '',
-          cpl:          r['cpl_id']               || '',
-          resolucao:    r['dcp_resolution']       || '',
-          duracao:      r['dcp_duration']         || '',
-          gb:           r['dcp_size']             || '',
-          fps:          r['dcp_fps']              || '',
-          cplOV:        r['ov_cpl_id']            || '',
-          acessibilidade: (r['accessibility_features'] || '').toString().trim()
-        };
-        filmesMap2[codigo] = f;
-        filmesArr2.push(f);
-      });
-
-      // ── Build sessoesArr / sessoesMap / buscaReverseSessoes ───────
-      var sessoesArr2 = [], sessoesMap2 = {}, buscaRev2 = {};
-      sessoesSnap.forEach(function(doc) {
-        var r = doc.data();
-        var nome = (r['session_id'] || '').toString().trim();
-        if (!nome) return;
-        var codes = [];
-        for (var fi = 1; fi <= 10; fi++) {
-          var c = (r['film_' + fi] || '').toString().trim();
-          if (c && c !== '-' && !/^=/.test(c)) codes.push(c);
-        }
-        var evento = (r['event_name'] || '').toString().trim();
-        if (!evento) {
-          for (var fi2 = 0; fi2 < codes.length; fi2++) {
-            if (filmesMap2[codes[fi2]] && filmesMap2[codes[fi2]].evento) {
-              evento = filmesMap2[codes[fi2]].evento; break;
-            }
-          }
-        }
-        var vinhetas2 = [];
-        for (var vi = 1; vi <= 10; vi++) {
-          var vc = (r['bumper_' + vi] || '').toString().trim();
-          if (vc && vc !== '-' && !/^=/.test(vc)) vinhetas2.push(vc);
-        }
-        // date & time: Firestore stores as strings "dd/MM/yyyy" and "HH:mm:ss"
-        var dateVal = r['date'] || '';
-        var timeVal = r['time'] || '';
-        var s = {
-          nome:           nome,
-          cinema:         r['venue_name']                || '',
-          dia:            (function(v){
-                            if(!v)return'—';
-                            // already dd/MM/yyyy → parse then format
-                            var m=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-                            if(m){var d=new Date(+m[3],+m[2]-1,+m[1]);return d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});}
-                            return v;
-                          })(dateVal),
-          hora:           timeVal ? timeVal.slice(0,5) : '—',
-          filmes:         codes,
-          date:           (function(v){
-                            if(!v)return null;
-                            var m=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-                            if(m)return new Date(+m[3],+m[2]-1,+m[1]);
-                            return null;
-                          })(dateVal),
-          time:           (function(v){
-                            if(!v||typeof v!=='string')return{h:0,m:0,str:'?'};
-                            var p=v.split(':').map(Number);
-                            var h=p[0]||0,m2=p[1]||0;
-                            return{h:h,m:m2,str:String(h).padStart(2,'0')+':'+String(m2).padStart(2,'0')};
-                          })(timeVal),
-          evento:         evento,
-          vinhetas:       vinhetas2,
-          convidados:     (r['guests']                  || '').toString().trim(),
-          apresentacao:   (r['has_introduction']        || '').toString().trim(),
-          publico:        (r['total_audience']          || '').toString().trim(),
-          ingressos:      (r['reserved_tickets']        || '').toString().trim(),
-          leg_eletronica: (r['has_electronic_subtitles']|| '').toString().trim(),
-          acessibilidades:(r['available_accessibility'] || '').toString().trim(),
-          col_ag:         (r['has_debate']              || '').toString().trim()
-        };
-        sessoesArr2.push(s);
-        sessoesMap2[nome] = s;
-        codes.forEach(function(c) {
-          if (!buscaRev2[c]) buscaRev2[c] = [];
-          buscaRev2[c].push(nome);
-        });
-      });
-
-      // ── Build cinemasArr ──────────────────────────────────────────
-      var cinemasArr2 = [];
-      cinemasSnap.forEach(function(doc) {
-        var r = doc.data();
-        var sala = (r['venue_name'] || '').toString().trim();
-        if (!sala) return;
-        cinemasArr2.push({
-          complexo:   r['complex_name']      || '',
-          sala:       sala,
-          servidor:   r['server_model']      || '',
-          serial:     (r['server_serial']    || '').toString().trim(),
-          projetor:   r['projector_model']   || '',
-          assentos:   r['seat_count']        || '',
-          proporcao:  (r['screen_aspect_ratio']||'').toString().trim(),
-          som:        r['sound_system']      || '',
-          obs:        r['notes']             || '',
-          cineassista:r['cineassist_system'] || '',
-          evento:     (r['event_name']       || '').toString().trim(),
-          estado:     (r['state']            || '').toString().trim()
-        });
-      });
-
-      // ── Build vinhetasArr ─────────────────────────────────────────
-      var vinhetasArr2 = [];
-      vinhetasSnap.forEach(function(doc) {
-        var r = doc.data();
-        var codigo = (r['bumper_code'] || '').toString().trim();
-        if (!codigo || codigo === '-') return;
-        vinhetasArr2.push({
-          evento:  r['event_name']      || '',
-          codigo:  codigo,
-          nome:    r['title']           || '',
-          lente:   r['projection_lens'] || '',
-          som:     r['audio_format']    || '',
-          obs:     r['notes']           || '',
-          cpl:     r['cpl_id']          || '',
-          link:    r['file_link']       || '',
-          duracao: r['duration']        || ''
-        });
-      });
-
-      // ── Build vinhetaReverseSessoes ───────────────────────────────
-      var vinhetaRev2 = {};
-      sessoesArr2.forEach(function(s) {
-        (s.vinhetas || []).forEach(function(c) {
-          if (!vinhetaRev2[c]) vinhetaRev2[c] = [];
-          vinhetaRev2[c].push(s.nome);
-        });
-      });
-
-      // ── Collect events set ────────────────────────────────────────
-      var evSet = new Set();
-      filmesArr2.forEach(function(f) { if (f.evento) evSet.add(f.evento); });
-      sessoesArr2.forEach(function(s) { if (s.evento) evSet.add(s.evento); });
-      cinemasArr2.forEach(function(c) {
-        if (c.evento) c.evento.split(';').forEach(function(e) { var t = e.trim(); if (t) evSet.add(t); });
-      });
-      vinhetasArr2.forEach(function(v) { if (v.evento) evSet.add(v.evento); });
-
-      // ── Compute load timestamp ────────────────────────────────────
-      var now = new Date();
-      var loadedLabel = 'Firestore · ' + now.toLocaleString('pt-BR');
-
-      // ── Apply to the app ──────────────────────────────────────────
-      if (typeof applyParsedData === 'function') {
-        applyParsedData({
-          filmesMap:             filmesMap2,
-          filmesArr:             filmesArr2,
-          sessoesArr:            sessoesArr2,
-          sessoesMap:            sessoesMap2,
-          buscaReverseSessoes:   buscaRev2,
-          cinemasArr:            cinemasArr2,
-          vinhetasArr:           vinhetasArr2,
-          vinhetaReverseSessoes: vinhetaRev2,
-          events:                Array.from(evSet)
-        }, loadedLabel);
-        // Update footer timestamp
-        var footer = document.getElementById('page-footer');
-        if (footer) footer.innerHTML = '<span>última atualização · ' + now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}) + ' (Firestore)</span>';
-      }
-    } catch (err) {
-      console.error('Firestore load error:', err);
-      if (landingDrop) {
-        landingDrop.innerHTML =
-          '<div class="drop-icon" style="opacity:1;color:var(--warn)">⚠</div>' +
-          '<div class="drop-label" style="color:var(--warn)">Erro ao carregar dados</div>' +
-          '<div class="drop-sub">' + err.message + '</div>';
-      }
-      if (fileNameEl) fileNameEl.textContent = 'erro ao carregar';
-    }
-  };
-  // ─────────────────────────────────────────────────────────────────
 
   onAuthStateChanged(auth, function(user) {
     var loginScreen = document.getElementById('olga-login');
@@ -1397,8 +1177,6 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
             '<span class="userbar-name">' + (user.displayName || email) + '</span>' +
             '<button class="userbar-btn" onclick="_olgaSignOut()">sair</button>';
         }
-        // Auto-load Firestore data after login
-        window._olgaLoadFirestore();
       } else {
         // Logged in but not authorized
         loginScreen.style.display = 'flex';
@@ -1434,10 +1212,9 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 <header>
   <button class="logo" onclick="goHome()" title="Página inicial">OLGA · Suite</button>
   <div class="file-zone">
-    <button class="upload-btn" onclick="if(typeof _olgaLoadFirestore==='function')_olgaLoadFirestore()" title="Recarregar do Firestore" style="margin-right:2px;">↻ Atualizar</button>
-    <label class="upload-btn" for="fileInput" style="background:transparent;color:var(--accent);border:1px solid var(--accent);">▲ XLSX</label>
+    <label class="upload-btn" for="fileInput">▲ XLSX</label>
     <input type="file" id="fileInput" accept=".xlsx,.xls">
-    <span class="file-name" id="fileName">carregando…</span>
+    <span class="file-name" id="fileName">nenhum arquivo</span>
   </div>
   <nav class="nav-tabs">
     <button class="nav-tab" id="tabProjecao" disabled onclick="switchMode('projecao')"><span class="tab-icon"><i data-lucide="projector"></i></span> Projeção</button>
@@ -1565,11 +1342,11 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 <div id="landing">
   <div class="landing-badge">sistema de gestão de exibição</div>
   <div class="landing-title">OLGA Suite</div>
-  <p class="landing-sub">Os dados são carregados automaticamente do Firestore após o login. Use o XLSX como fallback manual.</p>
-  <div class="landing-drop" id="landingDrop" style="cursor:default;">
-    <div class="drop-icon" style="animation:spin 1s linear infinite;display:inline-block">⟳</div>
-    <div class="drop-label" style="color:var(--accent)">Conectando ao Firestore…</div>
-    <div class="drop-sub">carregando dados da base</div>
+  <p class="landing-sub">Carregue o arquivo de programação para acessar os módulos abaixo.</p>
+  <div class="landing-drop" id="landingDrop">
+    <div class="drop-icon">📂</div>
+    <div class="drop-label">Carregar sistema_olga.xlsx</div>
+    <div class="drop-sub">clique ou arraste o arquivo aqui</div>
   </div>
   <div class="landing-modules" style="grid-template-columns:repeat(8,1fr);max-width:1600px;">
     <div class="module-card disabled" id="modCardProjecao" onclick="moduleCardClick('projecao')">
@@ -1860,8 +1637,7 @@ var fileNameEl=document.getElementById('fileName');
 var landingDrop=document.getElementById('landingDrop');
 
 fileInput.addEventListener('change',function(e){var f=e.target.files[0];if(f)loadFile(f);});
-// Click on drop zone always allows XLSX fallback (even after Firestore load)
-landingDrop.addEventListener('click',function(){fileInput.click();});
+landingDrop.addEventListener('click',function(){if(!dataLoaded)fileInput.click();});
 landingDrop.addEventListener('dragover',function(e){e.preventDefault();landingDrop.classList.add('drag-over');});
 landingDrop.addEventListener('dragleave',function(){landingDrop.classList.remove('drag-over');});
 landingDrop.addEventListener('drop',function(e){e.preventDefault();landingDrop.classList.remove('drag-over');var f=e.dataTransfer.files[0];if(f)loadFile(f);});
@@ -1921,12 +1697,10 @@ function applyParsedData(d,filename){
   ['tabProjecao','tabFicha','tabGrade','tabGrade2','tabSessoes','tabBusca','tabVinhetas','tabIngest','tabCinemas','tabDash','tabReceptivo'].forEach(function(id){document.getElementById(id).disabled=false;});
   ['modCardProjecao','modCardGrade','modCardSessoes','modCardBusca','modCardVinhetas','modCardCinemas','modCardDash','modCardReceptivo'].forEach(function(id){document.getElementById(id).classList.remove('disabled');});
   buildGradeDays();window._gradeYearsOpen=null;window._grade2YearsOpen=null;window._dashYearsOpen=null;buildFichaFilters();buildGradeFilters();buildGrade2Filters();buildSessoesFilters();buildProjecaoFilters();buildVinhetasFilters();buildBuscaFilters();buildIngestDays();buildIngestFilters();buildBuscaFilterPanel();buildCinemasFilters();buildDashFilters();
-  fileNameEl.textContent=filename||'dados carregados';
+  fileNameEl.textContent=filename||'arquivo carregado';
   fileNameEl.classList.add('loaded');
   landingDrop.classList.add('loaded');
-  var isFirestore=(filename||'').indexOf('Firestore')!==-1;
-  var subMsg=isFirestore?'dados carregados do Firestore — arraste um XLSX para sobrescrever':'arquivo carregado — selecione um módulo abaixo';
-  landingDrop.innerHTML='<div class="drop-icon" style="opacity:1">✓</div><div class="drop-label" style="color:var(--ok)">'+(filename||'dados carregados')+'</div><div class="drop-sub">'+subMsg+'</div>';
+  landingDrop.innerHTML='<div class="drop-icon" style="opacity:1">✓</div><div class="drop-label" style="color:var(--ok)">'+(filename||'arquivo carregado')+'</div><div class="drop-sub">arquivo carregado — selecione um módulo abaixo</div>';
 }
 
 function parseWorkbook(data,filename){
