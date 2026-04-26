@@ -1439,17 +1439,18 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 
       // ── Restrição de complexo ──────────────────────────────────────
       // Se o usuário tem complexo definido, filtra cinemas e sessões
-      var userComplexo = window._olgaUser && window._olgaUser.complexo ? window._olgaUser.complexo : null;
+      var userComplexo = window._olgaUser && window._olgaUser.complexo ? window._olgaUser.complexo.trim() : null;
       if (userComplexo) {
-        // salas pertencentes ao complexo do usuário
+        // salas pertencentes ao complexo do usuário (comparação case-insensitive e sem espaços extras)
+        var uc = userComplexo.toLowerCase();
         var salasDoComplexo = new Set(
           cinemasArr2
-            .filter(function(c){ return (c.complexo || c.sala) === userComplexo; })
+            .filter(function(c){ return (c.complexo||'').trim().toLowerCase() === uc; })
             .map(function(c){ return c.sala; })
         );
         // filtra cinemas
-        cinemasArr2 = cinemasArr2.filter(function(c){ return (c.complexo || c.sala) === userComplexo; });
-        // filtra sessões
+        cinemasArr2 = cinemasArr2.filter(function(c){ return (c.complexo||'').trim().toLowerCase() === uc; });
+        // filtra sessões (incluindo sessões cujo cinema não está no cadastro mas pertence ao complexo)
         sessoesArr2 = sessoesArr2.filter(function(s){ return salasDoComplexo.has(s.cinema); });
         // reconstrói maps e reverse após filtro de sessões
         sessoesMap2 = {};
@@ -1582,8 +1583,12 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       appWrap.style.display = '';
 
       if (userBar) {
+        var complexoBadge = perfil.complexo
+          ? ' <span style="font-size:9px;background:rgba(232,160,32,0.15);color:var(--accent);border:1px solid rgba(232,160,32,0.3);padding:2px 7px;border-radius:2px;letter-spacing:0.08em;margin-left:6px;">⊡ '+perfil.complexo+'</span>'
+          : '';
         userBar.innerHTML =
           '<span class="userbar-name">' + perfil.name + '</span>' +
+          complexoBadge +
           '<button class="userbar-btn" onclick="_olgaSignOut()">sair</button>';
       }
 
