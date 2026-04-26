@@ -1583,12 +1583,8 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       appWrap.style.display = '';
 
       if (userBar) {
-        var complexoBadge = perfil.complexo
-          ? ' <span style="font-size:9px;background:rgba(232,160,32,0.15);color:var(--accent);border:1px solid rgba(232,160,32,0.3);padding:2px 7px;border-radius:2px;letter-spacing:0.08em;margin-left:6px;">⊡ '+perfil.complexo+'</span>'
-          : '';
         userBar.innerHTML =
           '<span class="userbar-name">' + perfil.name + '</span>' +
-          complexoBadge +
           '<button class="userbar-btn" onclick="_olgaSignOut()">sair</button>';
       }
 
@@ -4083,7 +4079,10 @@ function renderVinhetas(){
     html+='<div class="vinheta-card" onclick="openVinhetaDetail(\''+cod.replace(/'/g,"\\'")+'\')">'+
       '<div class="vinheta-card-top">'+
         '<span class="vinheta-card-code">'+cod+'</span>'+
-        '<span class="vinheta-card-name">'+nome+'</span>'+
+        '<div style="flex:1;min-width:0;">'+
+          '<span class="vinheta-card-name">'+nome+'</span>'+
+          (info&&info.cpl?'<div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);margin-top:2px;letter-spacing:0.04em;">'+info.cpl+'</div>':'')+
+        '</div>'+
         (badges?'<span class="vinheta-card-badges">'+badges+'</span>':'')+
         '<div class="vinheta-card-counts">'+
           (!window._olgaHasRestricao('vinhetas.sessoes')?'<div class="vinheta-count-item"><span class="vinheta-count-num">'+sessions.length+'</span><span class="vinheta-count-label">sessões</span></div>':'')+
@@ -5386,7 +5385,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 24/04/2026 às 15:00';
+  var sysUpdate='última atualização do sistema · 26/04/2026 às 17:00';
   var fileModStr=fileLastModified?fileLastModified.toLocaleString('pt-BR'):'—';
   html+='<div class="dash-footer">'+
     '<span>◉ '+sysUpdate+'</span>'+
@@ -5784,7 +5783,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 24/04/2026 às 15:00</span></div>
+<div id="page-footer"><span>última atualização · 26/04/2026 às 17:00</span></div>
 
 </div>
 </html>
