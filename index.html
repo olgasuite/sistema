@@ -1140,7 +1140,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-  import { getFirestore, collection, doc, getDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  import { getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyDIBhcsqlK3QebTmbWMNqsN_rPPybREj64",
@@ -1155,6 +1155,22 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   const auth = getAuth(app);
   const db   = getFirestore(app);
   const provider = new GoogleAuthProvider();
+
+  // API de gestão de usuários exposta ao escopo global
+  window._olgaUsuarios = {
+    list: async function() {
+      var snap = await getDocs(collection(db, 'usuarios'));
+      var arr = [];
+      snap.forEach(function(d) { arr.push({ id: d.id, data: d.data() }); });
+      return arr;
+    },
+    save: async function(id, data) {
+      await setDoc(doc(db, 'usuarios', id), data);
+    },
+    remove: async function(id) {
+      await deleteDoc(doc(db, 'usuarios', id));
+    }
+  };
 
   // _olgaUser: perfil do usuário logado
   // {
@@ -1201,6 +1217,9 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       if (tabEl)  tabEl.style.display  = visible ? '' : 'none';
       if (cardEl) cardEl.style.display = visible ? '' : 'none';
     });
+    // aba Equipe: só para admin, independente de modulos
+    var tabEquipe = document.getElementById('tabEquipe');
+    if (tabEquipe) tabEquipe.style.display = (window._olgaUser && window._olgaUser.role === 'admin') ? '' : 'none';
   }
 
   // ── Restrições granulares ───────────────────────────────────────
@@ -1536,6 +1555,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <button class="nav-tab" id="tabCinemas" disabled onclick="switchMode('cinemas')"><span class="tab-icon"><i data-lucide="clapperboard"></i></span> Cinemas</button>
     <button class="nav-tab" id="tabDash" disabled onclick="switchMode('dash')"><span class="tab-icon"><i data-lucide="bar-chart-2"></i></span> Dashboard</button>
     <button class="nav-tab" id="tabReceptivo" disabled onclick="switchMode('receptivo')"><span class="tab-icon"><i data-lucide="users"></i></span> Receptivo</button>
+    <button class="nav-tab" id="tabEquipe" disabled onclick="switchMode('equipe')" style="display:none"><span class="tab-icon"><i data-lucide="shield"></i></span> Equipe</button>
   </nav>
   <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar esquema de cores">Tema</button>
   <div id="olga-userbar"></div>
@@ -1636,6 +1656,10 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   <div class="event-filters" id="dashEventFilters" style="margin-left:4px;"></div>
 </div>
 <div class="mode-bar hidden" id="barReceptivo"></div>
+<div class="mode-bar hidden" id="barEquipe">
+  <button class="print-btn" onclick="openEquipeNewUser()">+ novo usuário</button>
+  <span class="result-count" id="equipeCount"></span>
+</div>
 <div class="mode-bar hidden" id="barVinhetas">
   <div class="event-filters" id="vinhetasEventFilters"></div>
   <select id="vinhetasCinemaSelect" style="min-width:180px;margin-left:8px;" onchange="vinhetasCinemaFilter=this.value;rebuildVinhetasDaySelect();renderVinhetas();">
@@ -1789,6 +1813,9 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   </div>
   <div class="mode-panel" id="receptivo-panel">
     <div id="receptivo-container"></div>
+  </div>
+  <div class="mode-panel" id="equipe-panel">
+    <div id="equipe-container" style="padding:28px 32px 60px;max-width:1000px;margin:0 auto;"></div>
   </div>
 </div>
 
@@ -2003,6 +2030,7 @@ function applyParsedData(d,filename){
   activeEventsGrade=new Set(initEvs);activeEventsBusca=new Set(initEvs);activeEventsIngest=new Set(initEvs);activeEventsFicha=new Set(initEvs);activeEventsCinemas=new Set(initEvs);activeEventsDash=new Set(initEvs);activeEventsGrade2=new Set(initEvs);activeEventsSessoes=new Set(initEvs);activeEventsProjecao=new Set(initEvs);activeEventsVinhetas=new Set(initEvs);
   dataLoaded=true;
   ['tabProjecao','tabFicha','tabGrade','tabGrade2','tabSessoes','tabBusca','tabVinhetas','tabIngest','tabCinemas','tabDash','tabReceptivo'].forEach(function(id){document.getElementById(id).disabled=false;});
+  if(window._olgaUser&&window._olgaUser.role==='admin'){document.getElementById('tabEquipe').disabled=false;}
   ['modCardProjecao','modCardGrade','modCardSessoes','modCardBusca','modCardVinhetas','modCardCinemas','modCardDash','modCardReceptivo'].forEach(function(id){document.getElementById(id).classList.remove('disabled');});
   buildGradeDays();window._gradeYearsOpen=null;window._grade2YearsOpen=null;window._dashYearsOpen=null;buildFichaFilters();buildGradeFilters();buildGrade2Filters();buildSessoesFilters();buildProjecaoFilters();buildVinhetasFilters();buildBuscaFilters();buildIngestDays();buildIngestFilters();buildBuscaFilterPanel();buildCinemasFilters();buildDashFilters();
   fileNameEl.textContent=filename||'arquivo carregado';
@@ -2071,7 +2099,7 @@ function parseWorkbook(data,filename){
 function goHome(){
   if(currentMode){
     currentMode=null;
-    ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo'].forEach(function(m){
+    ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','equipe'].forEach(function(m){
       var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
       document.getElementById('tab'+cap).classList.remove('active');
       document.getElementById('bar'+cap).classList.add('hidden');
@@ -2096,7 +2124,7 @@ function switchMode(mode,noPush){
   if(mode!=='busca'&&_fpOpen){_fpOpen=false;document.getElementById('filterPanel').classList.remove('open');document.getElementById('filterToggleBtn').classList.remove('active');}
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='block';
-  ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo'].forEach(function(m){
+  ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','equipe'].forEach(function(m){
     var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
     document.getElementById('tab'+cap).classList.toggle('active',m===mode);
     document.getElementById('bar'+cap).classList.toggle('hidden',m!==mode);
@@ -2112,6 +2140,7 @@ function switchMode(mode,noPush){
   if(mode==='cinemas')renderCinemas();
   if(mode==='dash')renderDash();
   if(mode==='receptivo')renderReceptivo();
+  if(mode==='equipe')renderEquipe();
   if(mode==='busca'){
     var bl=document.getElementById('buscaLoading'),be2=document.getElementById('buscaEmpty'),br=document.getElementById('busca-results');
     bl.style.display='flex';be2.style.display='none';br.style.display='none';
@@ -5314,6 +5343,226 @@ function goToCinemaFromDash(sala){
   openCinemaDetail(sala);
 }
 
+/* ─── EQUIPE ─────────────────────────────────────────────────────── */
+var _equipeUsers=[], _equipeEditId=null, _equipeDeleteId=null;
+var _EQUIPE_MODULOS=['projecao','grade','sessoes','busca','vinhetas','cinemas','dash','receptivo'];
+var _EQUIPE_ROLES=['admin','projecao','programacao','producao','viewer'];
+var _EQUIPE_RESTRICOES=[
+  {k:'cinemas.bordero',label:'Cinemas · Borderô'},
+  {k:'sessoes.bordero',label:'Sessões · Borderô'},
+  {k:'dashboard.publico_total',label:'Dashboard · Público total'},
+  {k:'dashboard.publico_dias',label:'Dashboard · Público por dia'},
+  {k:'vinhetas.sessoes',label:'Vinhetas · Contador de sessões'},
+  {k:'vinhetas.cinemas',label:'Vinhetas · Contador de cinemas'},
+  {k:'vinhetas.publico',label:'Vinhetas · Contador de público'}
+];
+
+function renderEquipe(){
+  var el=document.getElementById('equipe-container');
+  el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:20px 0;">Carregando usuários…</div>';
+  if(!window._olgaUsuarios){el.innerHTML='<div style="color:var(--warn);font-family:var(--mono);font-size:11px;">API de usuários não disponível.</div>';return;}
+  window._olgaUsuarios.list().then(function(users){
+    _equipeUsers=users.sort(function(a,b){return a.id.localeCompare(b.id);});
+    renderEquipeTable();
+  }).catch(function(e){
+    el.innerHTML='<div style="color:var(--warn);font-family:var(--mono);font-size:11px;">Erro ao carregar: '+e.message+'</div>';
+  });
+}
+
+function renderEquipeTable(){
+  var el=document.getElementById('equipe-container');
+  var countEl=document.getElementById('equipeCount');
+  if(countEl)countEl.textContent=_equipeUsers.length+' usuário'+(_equipeUsers.length!==1?'s':'');
+  if(!_equipeUsers.length){
+    el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:20px 0;">Nenhum usuário cadastrado.</div>';
+    return;
+  }
+  var rows=_equipeUsers.map(function(u){
+    var d=u.data;
+    var ativo=d.ativo!==false;
+    var role=d.role||'—';
+    var modCount=(d.modulos&&d.modulos.length)?d.modulos.length:_EQUIPE_MODULOS.length;
+    var evCount=(d.eventos&&d.eventos.length)?d.eventos.length+' evento'+(d.eventos.length!==1?'s':''):'todos os eventos';
+    return '<tr style="'+(ativo?'':'opacity:0.45;')+'">'+
+      '<td style="padding:10px 12px;font-family:var(--mono);">'+
+        '<div style="font-size:12px;color:var(--text);">'+esc(u.id)+'</div>'+
+        (d.name?'<div style="font-size:10px;color:var(--text-dim);margin-top:2px;">'+esc(d.name)+'</div>':'')+
+      '</td>'+
+      '<td style="padding:10px 12px;font-family:var(--mono);font-size:10px;">'+
+        '<span style="display:inline-block;font-size:8px;font-weight:600;letter-spacing:0.07em;padding:2px 7px;border-radius:2px;text-transform:uppercase;border:1px solid;color:#a0c8ff;border-color:rgba(160,200,255,0.25);background:rgba(160,200,255,0.08);">'+esc(role)+'</span>'+
+      '</td>'+
+      '<td style="padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--text-dim);">'+modCount+' módulos · '+evCount+'</td>'+
+      '<td style="padding:10px 12px;">'+
+        '<span style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.08em;padding:2px 7px;border-radius:2px;text-transform:uppercase;border:1px solid;'+(ativo?'color:var(--ok);border-color:rgba(61,186,110,0.3);background:rgba(61,186,110,0.07);':'color:var(--text-muted);border-color:var(--border);')+'">'+
+          (ativo?'ativo':'inativo')+'</span>'+
+      '</td>'+
+      '<td style="padding:10px 12px;text-align:right;white-space:nowrap;">'+
+        '<button onclick="openEquipeEdit(\''+esc(u.id)+'\')" style="'+_equipeBtn()+'">editar</button> '+
+        '<button onclick="openEquipeDup(\''+esc(u.id)+'\')" style="'+_equipeBtn('dup')+'">duplicar</button> '+
+        '<button onclick="openEquipeDelete(\''+esc(u.id)+'\')" style="'+_equipeBtn('del')+'">excluir</button>'+
+      '</td>'+
+    '</tr>';
+  }).join('');
+  el.innerHTML='<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);">'+
+    '<thead><tr style="background:var(--surface2);border-bottom:1px solid var(--accent);">'+
+      '<th style="'+_equipeTh()+'">Email / Nome</th>'+
+      '<th style="'+_equipeTh()+'">Papel</th>'+
+      '<th style="'+_equipeTh()+'">Acesso</th>'+
+      '<th style="'+_equipeTh()+'">Status</th>'+
+      '<th style="'+_equipeTh()+'text-align:right">Ações</th>'+
+    '</tr></thead>'+
+    '<tbody>'+rows+'</tbody>'+
+  '</table>';
+}
+
+function _equipeTh(){return 'font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);padding:9px 12px;text-align:left;white-space:nowrap;';}
+function _equipeBtn(t){
+  var base='font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 9px;border:1px solid;border-radius:2px;background:transparent;cursor:pointer;';
+  if(t==='dup')return base+'color:var(--accent);border-color:rgba(232,160,32,0.3);';
+  if(t==='del')return base+'color:var(--warn);border-color:rgba(255,96,85,0.25);';
+  return base+'color:var(--text-dim);border-color:var(--border);';
+}
+
+function openEquipeNewUser(){_openEquipeForm(null,null);}
+function openEquipeEdit(id){_openEquipeForm(id,false);}
+function openEquipeDup(id){_openEquipeForm(id,true);}
+
+function _openEquipeForm(id,isDup){
+  _equipeEditId=(isDup||id===null)?null:id;
+  var u=id?_equipeUsers.find(function(x){return x.id===id;}):null;
+  var d=u?u.data:{};
+  document.getElementById('equipeModalTitle').textContent=isDup?'Duplicar · '+id:(id?'Editar · '+id:'Novo Usuário');
+  document.getElementById('equipeModalErr').style.display='none';
+
+  var modulos=d.modulos&&d.modulos.length?d.modulos:_EQUIPE_MODULOS.slice();
+  var eventos=d.eventos||[];
+  var restricoes=d.restricoes||[];
+  var ativo=d.ativo!==false;
+
+  var modChk=_EQUIPE_MODULOS.map(function(m){
+    var chk=modulos.indexOf(m)!==-1?'checked':'';
+    return '<label style="display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;color:var(--text-dim);cursor:pointer;padding:2px 0;">'+
+      '<input type="checkbox" name="eq_mod" value="'+m+'" '+chk+' style="accent-color:var(--accent);">'+m+'</label>';
+  }).join('');
+
+  var resChk=_EQUIPE_RESTRICOES.map(function(r){
+    var chk=restricoes.indexOf(r.k)!==-1?'checked':'';
+    return '<label style="display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;color:var(--text-dim);cursor:pointer;padding:2px 0;">'+
+      '<input type="checkbox" name="eq_res" value="'+r.k+'" '+chk+' style="accent-color:var(--accent);">'+r.label+'</label>';
+  }).join('');
+
+  var evChips=eventos.map(function(ev,i){
+    return '<span style="display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border2);padding:3px 8px;border-radius:2px;">'+
+      esc(ev)+'<button onclick="equipeRemoveEv('+i+')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0;">×</button></span>';
+  }).join(' ');
+
+  document.getElementById('equipeModalBody').innerHTML=
+    _eqField('Email (ID do documento)','<input id="eq_email" type="email" value="'+esc(isDup?'':(id||''))+'" placeholder="email@exemplo.com" '+(id&&!isDup?'readonly style="opacity:0.5;cursor:not-allowed;"':'')+' style="'+_eqInpStyle()+'">')+
+    _eqField('Nome de exibição','<input id="eq_name" value="'+esc(d.name||'')+'" placeholder="Nome completo" style="'+_eqInpStyle()+'">')+
+    _eqField('Papel','<select id="eq_role" style="'+_eqInpStyle()+'min-width:180px;">'+
+      _EQUIPE_ROLES.map(function(r){return'<option value="'+r+'"'+(r===(d.role||'viewer')?' selected':'')+'>'+r+'</option>';}).join('')+
+    '</select>')+
+    _eqSep('Módulos permitidos — desmarque para restringir acesso')+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;margin-bottom:16px;">'+modChk+'</div>'+
+    _eqSep('Eventos permitidos — vazio = todos')+
+    '<div id="eq_ev_chips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;">'+evChips+'</div>'+
+    '<div style="display:flex;gap:6px;margin-bottom:16px;">'+
+      '<input id="eq_ev_new" placeholder="código do evento…" onkeydown="if(event.key===\'Enter\'){event.preventDefault();equipeAddEv();}" style="'+_eqInpStyle()+'flex:1;min-width:0;">'+
+      '<button onclick="equipeAddEv()" style="'+_equipeBtn()+'padding:5px 12px;">+ adicionar</button>'+
+    '</div>'+
+    _eqSep('Restrições ativas — marque para bloquear')+
+    '<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:16px;">'+resChk+'</div>'+
+    _eqSep('Status')+
+    '<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--text-dim);">'+
+      '<input type="checkbox" id="eq_ativo" '+(ativo?'checked':'')+' style="accent-color:var(--accent);width:14px;height:14px;">'+
+      'Usuário ativo (desmarque para bloquear sem excluir)'+
+    '</label>';
+
+  // armazena eventos em memória para manipulação
+  window._equipeEvArr = eventos.slice();
+  document.getElementById('equipeModal').style.display='block';
+}
+
+function _eqField(label,inner){
+  return '<div style="margin-bottom:14px;">'+
+    '<div style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px;">'+label+'</div>'+
+    inner+'</div>';
+}
+function _eqSep(label){
+  return '<div style="border-top:1px solid var(--border);margin:4px 0 12px;padding-top:12px;font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);">'+label+'</div>';
+}
+function _eqInpStyle(){
+  return 'width:100%;font-family:var(--mono);font-size:11px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:7px 10px;outline:none;';
+}
+
+window.equipeRemoveEv=function(idx){
+  window._equipeEvArr.splice(idx,1);
+  var chips=window._equipeEvArr.map(function(ev,i){
+    return '<span style="display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border2);padding:3px 8px;border-radius:2px;">'+
+      esc(ev)+'<button onclick="equipeRemoveEv('+i+')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0;">×</button></span>';
+  }).join(' ');
+  document.getElementById('eq_ev_chips').innerHTML=chips;
+};
+window.equipeAddEv=function(){
+  var inp=document.getElementById('eq_ev_new');
+  var val=inp.value.trim();
+  if(!val)return;
+  window._equipeEvArr.push(val);
+  var chips=window._equipeEvArr.map(function(ev,i){
+    return '<span style="display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border2);padding:3px 8px;border-radius:2px;">'+
+      esc(ev)+'<button onclick="equipeRemoveEv('+i+')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0;">×</button></span>';
+  }).join(' ');
+  document.getElementById('eq_ev_chips').innerHTML=chips;
+  inp.value='';
+};
+
+window.closeEquipeModal=function(){
+  document.getElementById('equipeModal').style.display='none';
+};
+
+window.saveEquipeUser=async function(){
+  var errEl=document.getElementById('equipeModalErr');
+  var btn=document.getElementById('equipeModalSave');
+  errEl.style.display='none';
+  var email=(document.getElementById('eq_email').value||'').trim().toLowerCase();
+  if(!email||!email.includes('@')){errEl.textContent='Email inválido.';errEl.style.display='block';return;}
+  if(!_equipeEditId&&_equipeUsers.find(function(u){return u.id===email;})){errEl.textContent='Já existe um usuário com esse email.';errEl.style.display='block';return;}
+  var modulos=Array.from(document.querySelectorAll('input[name="eq_mod"]:checked')).map(function(x){return x.value;});
+  var restricoes=Array.from(document.querySelectorAll('input[name="eq_res"]:checked')).map(function(x){return x.value;});
+  var data={
+    name:document.getElementById('eq_name').value.trim(),
+    role:document.getElementById('eq_role').value,
+    modulos:modulos.length===_EQUIPE_MODULOS.length?[]:modulos,
+    eventos:window._equipeEvArr||[],
+    restricoes:restricoes,
+    ativo:document.getElementById('eq_ativo').checked
+  };
+  btn.disabled=true;btn.textContent='Salvando…';
+  try{
+    await window._olgaUsuarios.save(email,data);
+    closeEquipeModal();
+    renderEquipe();
+  }catch(e){errEl.textContent='Erro ao salvar: '+e.message;errEl.style.display='block';}
+  btn.disabled=false;btn.textContent='Salvar';
+};
+
+window.openEquipeDelete=function(id){
+  _equipeDeleteId=id;
+  document.getElementById('equipeDeleteEmail').textContent=id;
+  document.getElementById('equipeDeleteModal').style.display='flex';
+};
+window.confirmEquipeDelete=async function(){
+  var btn=document.getElementById('equipeDeleteConfirm');
+  btn.disabled=true;btn.textContent='Excluindo…';
+  try{
+    await window._olgaUsuarios.remove(_equipeDeleteId);
+    document.getElementById('equipeDeleteModal').style.display='none';
+    renderEquipe();
+  }catch(e){alert('Erro ao excluir: '+e.message);}
+  btn.disabled=false;btn.textContent='Excluir';
+};
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
 /* ZOOM */
 var ZOOM_STEPS=[70,80,90,100,110,120,130,150,170,200];
 var zoomIdx=ZOOM_STEPS.indexOf(100);
@@ -5377,7 +5626,7 @@ window.addEventListener('popstate',function(e){
       // ensure we're in cinemas mode first, then open detail
       if(currentMode!=='cinemas'){
         currentMode='cinemas';
-        ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo'].forEach(function(m){
+        ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','equipe'].forEach(function(m){
           var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
           document.getElementById('tab'+cap).classList.toggle('active',m==='cinemas');
           document.getElementById('bar'+cap).classList.toggle('hidden',m!=='cinemas');
@@ -5397,6 +5646,30 @@ window.addEventListener('popstate',function(e){
   _browserNav=false;
 });
 </script>
+<div id="equipeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;overflow-y:auto;padding:40px 20px;" onclick="if(event.target===this)closeEquipeModal()">
+  <div style="background:var(--surface);border:1px solid var(--border);width:100%;max-width:580px;margin:0 auto;display:flex;flex-direction:column;">
+    <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span id="equipeModalTitle" style="font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);"></span>
+      <button onclick="closeEquipeModal()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;line-height:1;">×</button>
+    </div>
+    <div id="equipeModalBody" style="padding:20px 22px;overflow-y:auto;max-height:70vh;"></div>
+    <div id="equipeModalErr" style="display:none;font-family:var(--mono);font-size:10px;color:var(--warn);padding:8px 22px;background:rgba(255,96,85,0.06);border-top:1px solid rgba(255,96,85,0.15);"></div>
+    <div style="padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeEquipeModal()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;">Cancelar</button>
+      <button id="equipeModalSave" onclick="saveEquipeUser()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 20px;background:var(--accent);color:#000;border:none;cursor:pointer;">Salvar</button>
+    </div>
+  </div>
+</div>
+<div id="equipeDeleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:600;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid rgba(255,96,85,0.3);padding:28px;max-width:380px;width:100%;">
+    <div style="font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--warn);margin-bottom:10px;">Excluir usuário</div>
+    <p style="font-family:var(--sans);font-size:12px;color:var(--text-dim);line-height:1.5;margin-bottom:20px;">Tem certeza que deseja excluir <strong id="equipeDeleteEmail" style="font-family:var(--mono);color:var(--text);"></strong>?</p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="document.getElementById('equipeDeleteModal').style.display='none'" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;">Cancelar</button>
+      <button id="equipeDeleteConfirm" onclick="confirmEquipeDelete()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;background:var(--warn);color:#fff;border:none;cursor:pointer;">Excluir</button>
+    </div>
+  </div>
+</div>
 <div id="borderoModal" onclick="if(event.target===this)closeBordero()">
   <div id="borderoContent"></div>
 </div>
