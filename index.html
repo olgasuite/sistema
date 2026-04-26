@@ -2593,7 +2593,6 @@ function buildPills(container,evColors,activeSet,onToggle){
   lbl.textContent='EVENTO:';
   lbl.style.cssText='cursor:pointer;padding:3px 8px;transition:background 0.15s,color 0.15s;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;border-radius:2px;white-space:nowrap;border:none;outline:none;box-shadow:none;';
   lbl.addEventListener('click',function(){
-    if(window._olgaHasRestricao&&window._olgaHasRestricao('eventos.lock'))return;
     var activate=!allActive();
     pills.forEach(function(p,i){
       var ev=events[i],col=evColors[ev];
@@ -2602,7 +2601,6 @@ function buildPills(container,evColors,activeSet,onToggle){
     });
     lbl.blur();updateLbl();onToggle();
   });
-  if(window._olgaHasRestricao&&window._olgaHasRestricao('eventos.lock')){lbl.style.cursor='default';}
   container.appendChild(lbl);
   var pills=[];
   events.forEach(function(ev){var col=evColors[ev];
@@ -2613,12 +2611,10 @@ function buildPills(container,evColors,activeSet,onToggle){
     if(isActive){pill.style.background=col.bg;pill.style.color=col.text;pill.style.borderColor='transparent';}
     else{pill.style.background='transparent';pill.style.color='#555';pill.style.borderColor='transparent';}
     pill.addEventListener('click',function(){
-      if(window._olgaHasRestricao&&window._olgaHasRestricao('eventos.lock'))return;
       if(activeSet.has(ev)){activeSet.delete(ev);pill.style.background='transparent';pill.style.color='#555';pill.style.borderColor='transparent';pill.classList.remove('active');}
       else{activeSet.add(ev);pill.style.background=col.bg;pill.style.color=col.text;pill.style.borderColor='transparent';pill.classList.add('active');}
       pill.blur();updateLbl();onToggle();
     });
-    if(window._olgaHasRestricao&&window._olgaHasRestricao('eventos.lock')){pill.style.cursor='default';}
     container.appendChild(pill);pills.push(pill);
   });
   updateLbl();
@@ -2741,7 +2737,7 @@ function renderSessoes(){
     if(!byDay[k]){byDay[k]=[];dayOrder.push(k);}
     byDay[k].push(s);
   });
-  dayOrder.sort();
+  dayOrder.sort().reverse();
   dayOrder.forEach(function(k){
     byDay[k].sort(function(a,b){return(a.time?a.time.h*60+a.time.m:0)-(b.time?b.time.h*60+b.time.m:0);});
   });
@@ -2781,7 +2777,8 @@ function renderSessoes(){
       '<div class="sess-day-header">'+
         '<span class="sess-day-label'+(isToday?' today':'')+'">'+lbl+(isToday?' · hoje':'')+'</span>'+
         '<span class="sess-day-count">'+d.length+' '+(d.length===1?'sessão':'sessões')+'</span>'+
-        ''+(!window._olgaHasRestricao("sessoes.bordero")?'<button class="bordero-btn" style="margin-left:auto;font-size:8px;padding:2px 8px;" onclick="event.stopPropagation();openBorderoSessoesDay(\''+safeKey+'\')">Borderô</button>':'')+''+
+        ''+(!window._olgaHasRestricao('sessoes.bordero')?'<button class="bordero-btn" style="margin-left:auto;font-size:8px;padding:2px 8px;" onclick="event.stopPropagation();openBorderoSessoesDay(\''+safeKey+'\')">Borderô</button>':'')+''+
+      '</div>'+
       rows+
     '</div>';
   }
@@ -5377,7 +5374,6 @@ var _equipeUsers=[], _equipeEditId=null, _equipeDeleteId=null;
 var _EQUIPE_MODULOS=['projecao','grade','sessoes','busca','vinhetas','cinemas','dash','receptivo'];
 var _EQUIPE_ROLES=['admin','projecao','programacao','producao','viewer'];
 var _EQUIPE_RESTRICOES=[
-  {k:'eventos.lock',label:'Eventos · Bloquear seleção de eventos'},
   {k:'cinemas.bordero',label:'Cinemas · Borderô'},
   {k:'sessoes.bordero',label:'Sessões · Borderô'},
   {k:'dashboard.publico_total',label:'Dashboard · Público total'},
