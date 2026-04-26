@@ -2895,7 +2895,7 @@ function renderGrade2(){
   if(minH===24)minH=9;minH=Math.max(0,minH-1);maxH=Math.min(26,maxH+1);
   var PPM=2.4,gridH=(maxH-minH)*60*PPM;
   chr.innerHTML='';var gh=document.createElement('div');gh.className='time-gutter-header';chr.appendChild(gh);
-  co.forEach(function(cinema){var cnt=ds.filter(function(s){return s.cinema===cinema;}).length;var div=document.createElement('div');div.className='col-header';div.innerHTML='<div class="col-cinema-name">'+cinema+'</div><div class="col-session-count">'+cnt+' sessão'+(cnt!==1?'ões':'')+'</div>';chr.appendChild(div);});
+  co.forEach(function(cinema){var cnt=ds.filter(function(s){return s.cinema===cinema;}).length;var div=document.createElement('div');div.className='col-header';div.innerHTML='<div class="col-cinema-name">'+cinema+'</div><div class="col-session-count">'+cnt+' '+(cnt===1?'sessão':'sessões')+'</div>';chr.appendChild(div);});
   gb2.innerHTML='';gb2.style.height=gridH+'px';
   var gut=document.createElement('div');gut.className='time-gutter';gut.style.height=gridH+'px';
   for(var h=minH;h<=maxH;h++){var top=(h-minH)*60*PPM;var lbl=document.createElement('div');lbl.className='time-label';lbl.style.top=top+'px';lbl.textContent=String(h%24).padStart(2,'0')+':00';gut.appendChild(lbl);var half=document.createElement('div');half.className='hour-line half';half.style.top=(top+30*PPM)+'px';gut.appendChild(half);}
@@ -4113,7 +4113,7 @@ function renderGrade(){
   if(minH===24)minH=9;minH=Math.max(0,minH-1);maxH=Math.min(26,maxH+1);
   var PPM=2.4,gridH=(maxH-minH)*60*PPM;
   chr.innerHTML='';var gh=document.createElement('div');gh.className='time-gutter-header';chr.appendChild(gh);
-  co.forEach(function(cinema){var cnt=ds.filter(function(s){return s.cinema===cinema;}).length;var div=document.createElement('div');div.className='col-header';div.innerHTML='<div class="col-cinema-name">'+cinema+'</div><div class="col-session-count">'+cnt+' sessão'+(cnt!==1?'ões':'')+'</div>';chr.appendChild(div);});
+  co.forEach(function(cinema){var cnt=ds.filter(function(s){return s.cinema===cinema;}).length;var div=document.createElement('div');div.className='col-header';div.innerHTML='<div class="col-cinema-name">'+cinema+'</div><div class="col-session-count">'+cnt+' '+(cnt===1?'sessão':'sessões')+'</div>';chr.appendChild(div);});
   gb2.innerHTML='';gb2.style.height=gridH+'px';
   var gut=document.createElement('div');gut.className='time-gutter';gut.style.height=gridH+'px';
   for(var h=minH;h<=maxH;h++){var top=(h-minH)*60*PPM;var lbl=document.createElement('div');lbl.className='time-label';lbl.style.top=top+'px';lbl.textContent=String(h%24).padStart(2,'0')+':00';gut.appendChild(lbl);var half=document.createElement('div');half.className='hour-line half';half.style.top=(top+30*PPM)+'px';gut.appendChild(half);}
