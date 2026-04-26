@@ -2735,11 +2735,20 @@ function rebuildGradeCinemaSelect(){
   var cs=new Set();active.forEach(function(s){if(s.cinema)cs.add(s.cinema);});
   var sel=document.getElementById('gradeCinemaSelect');
   var prev=sel.value;
-  sel.innerHTML='<option value="">Todas as salas</option>';
-  Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
-  // keep selection only if still valid
-  if(prev&&cs.has(prev))sel.value=prev;
-  else{sel.value='';gradeCinemaFilter='';}
+  var cx=window._olgaGetUserComplexo&&window._olgaGetUserComplexo();
+  if(cx){
+    sel.innerHTML='';
+    Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+    if(prev&&cs.has(prev)){sel.value=prev;gradeCinemaFilter=prev;}
+    else if(cs.size){sel.value=Array.from(cs).sort()[0];gradeCinemaFilter=sel.value;}
+    sel.disabled=cs.size<=1;
+  } else {
+    sel.innerHTML='<option value="">Todas as salas</option>';
+    Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+    if(prev&&cs.has(prev))sel.value=prev;
+    else{sel.value='';gradeCinemaFilter='';}
+    sel.disabled=false;
+  }
 }
 
 function buildGradeFilters(){
@@ -2759,10 +2768,20 @@ function rebuildGrade2CinemaSelect(){
   var cs=new Set();active.forEach(function(s){if(s.cinema)cs.add(s.cinema);});
   var sel=document.getElementById('grade2CinemaSelect');
   var prev=sel.value;
-  sel.innerHTML='<option value="">Todas as salas</option>';
-  Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
-  if(prev&&cs.has(prev))sel.value=prev;
-  else{sel.value='';grade2CinemaFilter='';}
+  var cx=window._olgaGetUserComplexo&&window._olgaGetUserComplexo();
+  if(cx){
+    sel.innerHTML='';
+    Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+    if(prev&&cs.has(prev)){sel.value=prev;grade2CinemaFilter=prev;}
+    else if(cs.size){sel.value=Array.from(cs).sort()[0];grade2CinemaFilter=sel.value;}
+    sel.disabled=cs.size<=1;
+  } else {
+    sel.innerHTML='<option value="">Todas as salas</option>';
+    Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+    if(prev&&cs.has(prev))sel.value=prev;
+    else{sel.value='';grade2CinemaFilter='';}
+    sel.disabled=false;
+  }
 }
 
 function buildGrade2Filters(){
@@ -2784,10 +2803,20 @@ function rebuildSessoesCinemaSelect(){
   sessoesSessoes().forEach(function(s){if(s.cinema)cs.add(s.cinema);});
   var sel=document.getElementById('sessoesCinemaSelect');
   var prev=sel.value;
-  sel.innerHTML='<option value="">Todas as salas</option>';
-  Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
-  if(prev&&cs.has(prev))sel.value=prev;
-  else{sel.value='';sessoesCinemaFilter='';}
+  var cx=window._olgaGetUserComplexo&&window._olgaGetUserComplexo();
+  if(cx){
+    sel.innerHTML='';
+    Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+    if(prev&&cs.has(prev)){sel.value=prev;sessoesCinemaFilter=prev;}
+    else if(cs.size){sel.value=Array.from(cs).sort()[0];sessoesCinemaFilter=sel.value;}
+    sel.disabled=cs.size<=1;
+  } else {
+    sel.innerHTML='<option value="">Todas as salas</option>';
+    Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+    if(prev&&cs.has(prev))sel.value=prev;
+    else{sel.value='';sessoesCinemaFilter='';}
+    sel.disabled=false;
+  }
 }
 
 function buildSessoesFilters(){
@@ -3033,10 +3062,20 @@ function rebuildIngestCinemaSelect(){
   });
   var sel=document.getElementById('ingestCinemaSelect');
   var prev=sel.value;
-  sel.innerHTML='<option value="">Todos os cinemas</option>';
-  Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
-  if(prev&&cs.has(prev))sel.value=prev;
-  else{sel.value='';ingestCinemaFilter='';}
+  var cx=window._olgaGetUserComplexo&&window._olgaGetUserComplexo();
+  if(cx){
+    sel.innerHTML='';
+    Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+    if(prev&&cs.has(prev)){sel.value=prev;ingestCinemaFilter=prev;}
+    else if(cs.size){sel.value=Array.from(cs).sort()[0];ingestCinemaFilter=sel.value;}
+    sel.disabled=cs.size<=1;
+  } else {
+    sel.innerHTML='<option value="">Todos os cinemas</option>';
+    Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+    if(prev&&cs.has(prev))sel.value=prev;
+    else{sel.value='';ingestCinemaFilter='';}
+    sel.disabled=false;
+  }
 }
 
 function rebuildIngestHdSelect(){
@@ -3130,13 +3169,24 @@ function rebuildCinemasComplexoSelect(){
   });
   var sel=document.getElementById('cinemasComplexoSelect');
   var prev=sel.value;
-  sel.innerHTML='<option value="">Todos os complexos</option>';
-  Array.from(complexos).sort().forEach(function(c){
-    var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);
-  });
-  // keep previous selection only if still valid
-  if(prev&&complexos.has(prev))sel.value=prev;
-  else{sel.value='';cinemasComplexoFilter='';}
+  var cx=window._olgaGetUserComplexo&&window._olgaGetUserComplexo();
+  if(cx){
+    sel.innerHTML='';
+    Array.from(complexos).sort().forEach(function(c){
+      var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);
+    });
+    if(prev&&complexos.has(prev)){sel.value=prev;cinemasComplexoFilter=prev;}
+    else if(complexos.size){sel.value=Array.from(complexos).sort()[0];cinemasComplexoFilter=sel.value;}
+    sel.disabled=complexos.size<=1;
+  } else {
+    sel.innerHTML='<option value="">Todos os complexos</option>';
+    Array.from(complexos).sort().forEach(function(c){
+      var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);
+    });
+    if(prev&&complexos.has(prev))sel.value=prev;
+    else{sel.value='';cinemasComplexoFilter='';}
+    sel.disabled=false;
+  }
 }
 
 function renderCinemas(){
