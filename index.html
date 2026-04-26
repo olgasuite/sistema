@@ -5546,7 +5546,16 @@ function _openEquipeForm(id,isDup){
     '</select>')+
     _eqSep('Complexo — deixe vazio para acesso a todos')+
     _eqField('Complexo (restringe salas visíveis)',
-      '<input id="eq_complexo" value="'+esc(complexo)+'" placeholder="nome exato do complexo ou vazio" style="'+_eqInpStyle()+'">'
+      (function(){
+        var cxSet=new Set();
+        cinemasArr.forEach(function(c){if(c.complexo)cxSet.add(c.complexo);});
+        var opts='<option value="">— sem restrição (todos os complexos) —</option>';
+        Array.from(cxSet).sort().forEach(function(cx){
+          opts+='<option value="'+esc(cx)+'"'+(cx===complexo?' selected':'')+'>'+esc(cx)+'</option>';
+        });
+        if(!cxSet.size) opts+='<option disabled>Nenhum complexo encontrado nos dados</option>';
+        return '<select id="eq_complexo" style="'+_eqInpStyle()+'min-width:220px;">'+opts+'</select>';
+      })()
     )+
     _eqSep('Módulos permitidos — desmarque para restringir acesso')+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;margin-bottom:16px;">'+modChk+'</div>'+
