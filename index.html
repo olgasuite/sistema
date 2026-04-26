@@ -1175,6 +1175,21 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     window._olgaUser = null;
   };
 
+  // ── Restrições granulares ───────────────────────────────────────
+  // Valores possíveis no array "restricoes" do documento do usuário:
+  //   sessoes.bordero         → oculta botão Borderô em Sessões
+  //   cinemas.bordero         → oculta botão Borderô em Cinemas
+  //   dashboard.bordero       → oculta botão Borderô no Dashboard
+  //   dashboard.publico_total → oculta tile "público total" em Números do evento
+  //   dashboard.publico_dias  → oculta tile "público" em Dados dos dias selecionados
+  //   vinhetas.sessoes        → oculta contador de sessões no card de vinheta
+  //   vinhetas.cinemas        → oculta contador de cinemas no card de vinheta
+  //   vinhetas.publico        → oculta contador de público no card de vinheta
+  window._olgaHasRestricao = function(chave) {
+    var r = window._olgaUser && window._olgaUser.restricoes;
+    return r && r.indexOf(chave) !== -1;
+  };
+
   // ── Aplica visibilidade de abas/cards conforme perfil ───────────
   function applyModulePermissions(modulos) {
     // modulos: null = tudo liberado; [] ou lista = só esses
@@ -1203,21 +1218,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     });
   }
 
-  // ── Restrições granulares ───────────────────────────────────────
-  // restricoes: array de strings como "cinemas.bordero", "dashboard.publico_total"
-  // Valores possíveis:
-  //   cinemas.bordero         → botão Borderô no módulo Cinemas
-  //   sessoes.bordero         → botão Borderô no módulo Sessões
-  //   dashboard.publico_total → tile "público total" em Números do evento
-  //   dashboard.publico_dias  → tile "público" em Dados dos dias selecionados
-  //   vinhetas.sessoes        → contador de sessões no card de vinheta
-  //   vinhetas.cinemas        → contador de cinemas no card de vinheta
-  //   vinhetas.publico        → contador de público no card de vinheta
-  window._olgaHasRestricao = function(chave) {
-    var r = window._olgaUser && window._olgaUser.restricoes;
-    return r && r.indexOf(chave) !== -1;
-  };
-
+  // ── Loader Firestore ────────────────────────────────────────────
   window._olgaLoadFirestore = async function() {
     var landingDrop = document.getElementById('landingDrop');
     var fileNameEl  = document.getElementById('fileName');
@@ -1455,12 +1456,11 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
             return;
           }
           perfil = {
-            email:      email,
-            name:       d.name  || user.displayName || email,
-            role:       d.role  || 'viewer',
-            modulos:    (d.modulos    && d.modulos.length)    ? d.modulos    : null,
-            eventos:    (d.eventos    && d.eventos.length)    ? d.eventos    : null,
-            restricoes: (d.restricoes && d.restricoes.length) ? d.restricoes : []
+            email:   email,
+            name:    d.name  || user.displayName || email,
+            role:    d.role  || 'viewer',
+            modulos: (d.modulos && d.modulos.length) ? d.modulos : null,
+            eventos: (d.eventos && d.eventos.length) ? d.eventos : null
           };
         }
       } catch(e) {
@@ -2165,13 +2165,12 @@ function renderFicha(nome,s){
   // extra panel (right side of header)
   function feRow(label,value){if(!value)return'';return'<div class="fe-row"><span class="fe-label">'+label+'</span><span class="fe-value accent">'+value+'</span></div>';}
   function feCheck(label,val){var checked=(val||'').toLowerCase()==='sim';return'<div class="fe-check"><span class="fe-box'+(checked?' checked':'')+'">'+( checked?'✕':'')+'</span><span>'+label+'</span></div>';}
-  var hasExtra=s.convidados||s.apresentacao||s.publico||s.ingressos||s.leg_eletronica||s.col_ag||s.acessibilidades;
+  var hasExtra=s.convidados||s.apresentacao||s.ingressos||s.leg_eletronica||s.col_ag||s.acessibilidades;
   var extraHtml='';
   if(hasExtra){
     var checkFields=(s.apresentacao||s.leg_eletronica||s.col_ag)?'<div class="fe-checks">'+feCheck('Apresentação',s.apresentacao)+feCheck('Leg. elet.',s.leg_eletronica)+feCheck('Debate',s.col_ag)+'</div>':'';
     extraHtml='<div class="ficha-extra">'+
       (s.convidados?feRow('Convidados',s.convidados):'')+
-      (s.publico?feRow('Público',s.publico):'')+
       (s.ingressos?feRow('Ing. reservados',s.ingressos):'')+
       checkFields+
       (s.acessibilidades?feRow('Acessib.',s.acessibilidades):'')+
@@ -2733,7 +2732,8 @@ function renderSessoes(){
       '<div class="sess-day-header">'+
         '<span class="sess-day-label'+(isToday?' today':'')+'">'+lbl+(isToday?' · hoje':'')+'</span>'+
         '<span class="sess-day-count">'+d.length+' '+(d.length===1?'sessão':'sessões')+'</span>'+
-        ''+(!window._olgaHasRestricao("sessoes.bordero")?'<button class="bordero-btn" style="margin-left:auto;font-size:8px;padding:2px 8px;" onclick="event.stopPropagation();openBorderoSessoesDay(\''+safeKey+'\')">Borderô</button>':'')+''+
+        ''+(!window._olgaHasRestricao('sessoes.bordero')?'<button class="bordero-btn" style="margin-left:auto;font-size:8px;padding:2px 8px;" onclick="event.stopPropagation();openBorderoSessoesDay(\''+safeKey+'\')">Borderô</button>':'')+''+
+      '</div>'+
       rows+
     '</div>';
   }
@@ -4394,7 +4394,7 @@ function buildBuscaFilterPanel(){
     {key:'som',label:'Som',field:'som'},
     {key:'kdm',label:'KDM',field:'kdm'},
     {key:'status',label:'Status',field:'status'},
-    {key:'col_k',label:'DCP Creator',field:'col_k'},
+    {key:'col_k',label:'Stat. Leg.',field:'col_n'},
     {key:'resolucao',label:'Resolução',field:'resolucao'},
     {key:'fps',label:'FPS',field:'fps'},
   ];
