@@ -1203,7 +1203,21 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     });
   }
 
-  // ── Loader Firestore ────────────────────────────────────────────
+  // ── Restrições granulares ───────────────────────────────────────
+  // restricoes: array de strings como "cinemas.bordero", "dashboard.publico_total"
+  // Valores possíveis:
+  //   cinemas.bordero         → botão Borderô no módulo Cinemas
+  //   sessoes.bordero         → botão Borderô no módulo Sessões
+  //   dashboard.publico_total → tile "público total" em Números do evento
+  //   dashboard.publico_dias  → tile "público" em Dados dos dias selecionados
+  //   vinhetas.sessoes        → contador de sessões no card de vinheta
+  //   vinhetas.cinemas        → contador de cinemas no card de vinheta
+  //   vinhetas.publico        → contador de público no card de vinheta
+  window._olgaHasRestricao = function(chave) {
+    var r = window._olgaUser && window._olgaUser.restricoes;
+    return r && r.indexOf(chave) !== -1;
+  };
+
   window._olgaLoadFirestore = async function() {
     var landingDrop = document.getElementById('landingDrop');
     var fileNameEl  = document.getElementById('fileName');
@@ -1441,11 +1455,12 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
             return;
           }
           perfil = {
-            email:   email,
-            name:    d.name  || user.displayName || email,
-            role:    d.role  || 'viewer',
-            modulos: (d.modulos && d.modulos.length) ? d.modulos : null,
-            eventos: (d.eventos && d.eventos.length) ? d.eventos : null
+            email:      email,
+            name:       d.name  || user.displayName || email,
+            role:       d.role  || 'viewer',
+            modulos:    (d.modulos    && d.modulos.length)    ? d.modulos    : null,
+            eventos:    (d.eventos    && d.eventos.length)    ? d.eventos    : null,
+            restricoes: (d.restricoes && d.restricoes.length) ? d.restricoes : []
           };
         }
       } catch(e) {
@@ -2718,8 +2733,7 @@ function renderSessoes(){
       '<div class="sess-day-header">'+
         '<span class="sess-day-label'+(isToday?' today':'')+'">'+lbl+(isToday?' · hoje':'')+'</span>'+
         '<span class="sess-day-count">'+d.length+' '+(d.length===1?'sessão':'sessões')+'</span>'+
-        '<button class="bordero-btn" style="margin-left:auto;font-size:8px;padding:2px 8px;" onclick="event.stopPropagation();openBorderoSessoesDay(\''+safeKey+'\')">Borderô</button>'+
-      '</div>'+
+        ''+(!window._olgaHasRestricao("sessoes.bordero")?'<button class="bordero-btn" style="margin-left:auto;font-size:8px;padding:2px 8px;" onclick="event.stopPropagation();openBorderoSessoesDay(\''+safeKey+'\')">Borderô</button>':'')+''+
       rows+
     '</div>';
   }
@@ -3027,7 +3041,7 @@ function renderCinemas(){
   var html='<div style="padding:24px 32px 48px;max-width:1200px;margin:0 auto;">';
   complexoOrder.forEach(function(cx){
     var safeCx=cx.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    html+='<div class="cinemas-complexo"><div class="cinemas-complexo-header" style="display:flex;align-items:center;justify-content:space-between;">'+cx+'<button class="bordero-btn" onclick="event.stopPropagation();openBordero(\''+safeCx+'\')">Borderô</button></div>';
+    html+='<div class="cinemas-complexo"><div class="cinemas-complexo-header" style="display:flex;align-items:center;justify-content:space-between;">'+cx+(!window._olgaHasRestricao('cinemas.bordero')?'<button class="bordero-btn" onclick="event.stopPropagation();openBordero(\''+safeCx+'\')">Borderô</button>':'')+'</div>';
     html+='<div class="cinemas-grid">';
     byComplexo[cx].forEach(function(c){
       var allEvs=cinemaAllEvents(c);
@@ -3143,7 +3157,7 @@ function openCinemaDetail(sala){
     +'<div class="cinema-detail-header">'
     +'<div class="cinema-detail-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">'+
       '<span>'+sala+(c.complexo&&c.complexo!==sala?' <span style="font-size:13px;font-weight:400;opacity:0.5">'+c.complexo+'</span>':'')+'</span>'+
-      '<button class="bordero-btn" onclick="openBorderoCinema(\''+safeSalaBtn+'\')">Borderô</button>'+
+      ''+(!window._olgaHasRestricao('cinemas.bordero')?'<button class="bordero-btn" onclick="openBorderoCinema(\''+safeSalaBtn+'\')">Borderô</button>':'')+''+
     '</div>'
     +(specsHtml?'<div class="cinema-detail-meta">'+specsHtml+'</div>':'')
     +(evTags?'<div style="padding:8px 16px;border-top:1px solid var(--border);display:flex;gap:4px;flex-wrap:wrap;">'+evTags+'</div>':'')
@@ -3942,9 +3956,9 @@ function renderVinhetas(){
         '<span class="vinheta-card-name">'+nome+'</span>'+
         (badges?'<span class="vinheta-card-badges">'+badges+'</span>':'')+
         '<div class="vinheta-card-counts">'+
-          '<div class="vinheta-count-item"><span class="vinheta-count-num">'+sessions.length+'</span><span class="vinheta-count-label">sessões</span></div>'+
-          '<div class="vinheta-count-item"><span class="vinheta-count-num">'+Object.keys(byCinema).length+'</span><span class="vinheta-count-label">cinemas</span></div>'+
-          (hasPubData?'<div class="vinheta-count-item"><span class="vinheta-count-num">'+pubTotal.toLocaleString('pt-BR')+'</span><span class="vinheta-count-label">público</span></div>':'')+
+          (!window._olgaHasRestricao('vinhetas.sessoes')?'<div class="vinheta-count-item"><span class="vinheta-count-num">'+sessions.length+'</span><span class="vinheta-count-label">sessões</span></div>':'')+
+          (!window._olgaHasRestricao('vinhetas.cinemas')?'<div class="vinheta-count-item"><span class="vinheta-count-num">'+Object.keys(byCinema).length+'</span><span class="vinheta-count-label">cinemas</span></div>':'')+
+          (!window._olgaHasRestricao('vinhetas.publico')&&hasPubData?'<div class="vinheta-count-item"><span class="vinheta-count-num">'+pubTotal.toLocaleString('pt-BR')+'</span><span class="vinheta-count-label">público</span></div>':'')+
         '</div>'+
       '</div>'+
       (cinemaChips?'<div class="vinheta-cinema-bar">'+cinemaChips+'</div>':'')+
@@ -4380,7 +4394,7 @@ function buildBuscaFilterPanel(){
     {key:'som',label:'Som',field:'som'},
     {key:'kdm',label:'KDM',field:'kdm'},
     {key:'status',label:'Status',field:'status'},
-    {key:'col_k',label:'Stat. Leg.',field:'col_n'},
+    {key:'col_k',label:'DCP Creator',field:'col_k'},
     {key:'resolucao',label:'Resolução',field:'resolucao'},
     {key:'fps',label:'FPS',field:'fps'},
   ];
@@ -4964,7 +4978,7 @@ function renderDash(){
     }else if(key==='sessoes'){
       title='Sessões ('+sessoes.length+')';
       var sorted=sessoes.slice().sort(function(a,b){return a.date&&b.date?a.date-b.date||(a.time&&b.time?a.time.h*60+a.time.m-(b.time.h*60+b.time.m):0):0;});
-      var borderoBtn='<button class="bordero-btn" style="margin-left:8px;font-size:9px;padding:3px 10px;" onclick="openBorderoDashSessoes(\''+scope+'\')">⊞ Borderô</button>';
+      var borderoBtn=!window._olgaHasRestricao('dashboard.bordero')?'<button class="bordero-btn" style="margin-left:8px;font-size:9px;padding:3px 10px;" onclick="openBorderoDashSessoes(\''+scope+'\')">⊞ Borderô</button>':'';
       bodyHtml='';
       sorted.forEach(function(s){
         var safe=s.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
@@ -5109,7 +5123,7 @@ function renderDash(){
   globalBody+=statTile('filmes','global','<svg width="20" height="20" viewBox="0 0 24 24" style=\"stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;\" xmlns=\"http://www.w3.org/2000/svg\"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>',statsNum(gs.filmes),'filmes exibidos','títulos únicos nas sessões','dash-stat-accent');
   globalBody+=statTile('sessoes','global','<svg width="20" height="20" viewBox="0 0 24 24" style=\"stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;\" xmlns=\"http://www.w3.org/2000/svg\"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>',statsNum(gs.sessoes),'sessões','programadas no evento');
   globalBody+=statTile('salas','global','<svg width="20" height="20" viewBox="0 0 24 24" style=\"stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;\" xmlns=\"http://www.w3.org/2000/svg\"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1-.3 2.1.3 2.4 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 3.9"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>',statsNum(gs.salas),'salas','com sessões nos eventos ativos');
-  globalBody+=statTile('publico','global','<svg width="20" height="20" viewBox="0 0 24 24" style=\"stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;\" xmlns=\"http://www.w3.org/2000/svg\"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',gs.hasPubData?statsNum(gs.pub):'—','público total',gs.hasPubData?'ingressos registrados':'aguardando dados','dash-stat-ok');
+  if(!window._olgaHasRestricao('dashboard.publico_total'))globalBody+=statTile('publico','global','<svg width="20" height="20" viewBox="0 0 24 24" style=\"stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;\" xmlns=\"http://www.w3.org/2000/svg\"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',gs.hasPubData?statsNum(gs.pub):'—','público total',gs.hasPubData?'ingressos registrados':'aguardando dados','dash-stat-ok');
   globalBody+=statTile('acess','global','<svg width="14" height="14" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="4" r="1"/><path d="m11 9 2 7h5l-1.5 3"/><path d="M9 9H7l1 7"/><path d="M13.5 19a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z"/></svg>',statsNum(gs.acessSess),'sessões acessíveis',statsNum(gs.acessFilmes)+' filme'+(gs.acessFilmes!==1?'s':'')+' com acessibilidade');
   if(gs.legSess>0)globalBody+=statTile('legelet','global','<svg width="20" height="20" viewBox="0 0 24 24" style=\"stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;\" xmlns=\"http://www.w3.org/2000/svg\"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points=\"14 2 14 8 20 8\"/><line x1=\"16\" y1=\"13\" x2=\"8\" y2=\"13\"/><line x1=\"16\" y1=\"17\" x2=\"8\" y2=\"17\"/><polyline points=\"10 9 9 9 8 9\"/></svg>',statsNum(gs.legSess),'Leg. Eletrônica','filmes com legendagem simultânea no cinema');
   globalBody+='</div>';
@@ -5135,7 +5149,7 @@ function renderDash(){
     daysBody+=statTile('filmes','days','<svg width="20" height="20" viewBox="0 0 24 24" style=\"stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;\" xmlns=\"http://www.w3.org/2000/svg\"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>',statsNum(ds.filmes),'filmes','títulos únicos nesses dias');
     daysBody+=statTile('sessoes','days','<svg width="20" height="20" viewBox="0 0 24 24" style=\"stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;\" xmlns=\"http://www.w3.org/2000/svg\"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>',statsNum(ds.sessoes),'sessões','nesses dias');
     daysBody+=statTile('salas','days','<svg width="20" height="20" viewBox="0 0 24 24" style=\"stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;\" xmlns=\"http://www.w3.org/2000/svg\"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1-.3 2.1.3 2.4 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 3.9"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>',statsNum(ds.salas),'salas','ativas nesses dias');
-    daysBody+=statTile('publico','days','<svg width="20" height="20" viewBox="0 0 24 24" style=\"stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;\" xmlns=\"http://www.w3.org/2000/svg\"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',ds.hasPubData?statsNum(ds.pub):'—','público',ds.hasPubData?'ingressos nos dias selecionados':'aguardando dados','dash-stat-ok');
+    if(!window._olgaHasRestricao('dashboard.publico_dias'))daysBody+=statTile('publico','days','<svg width="20" height="20" viewBox="0 0 24 24" style=\"stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;\" xmlns=\"http://www.w3.org/2000/svg\"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',ds.hasPubData?statsNum(ds.pub):'—','público',ds.hasPubData?'ingressos nos dias selecionados':'aguardando dados','dash-stat-ok');
     if(ds.acessSess>0)daysBody+=statTile('acess','days','<svg width="14" height="14" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="4" r="1"/><path d="m11 9 2 7h5l-1.5 3"/><path d="M9 9H7l1 7"/><path d="M13.5 19a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z"/></svg>',statsNum(ds.acessSess),'sessões acessíveis',statsNum(ds.acessFilmes)+' filme'+(ds.acessFilmes!==1?'s':'')+' com acessibilidade');
     if(ds.legSess>0)daysBody+=statTile('legelet','days','<svg width="20" height="20" viewBox="0 0 24 24" style=\"stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;\" xmlns=\"http://www.w3.org/2000/svg\"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points=\"14 2 14 8 20 8\"/><line x1=\"16\" y1=\"13\" x2=\"8\" y2=\"13\"/><line x1=\"16\" y1=\"17\" x2=\"8\" y2=\"17\"/><polyline points=\"10 9 9 9 8 9\"/></svg>',statsNum(ds.legSess),'Leg. Eletrônica','filmes com legendagem simultânea no cinema');
     daysBody+='</div>';
