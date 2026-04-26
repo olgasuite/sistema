@@ -2593,6 +2593,7 @@ function buildPills(container,evColors,activeSet,onToggle){
   lbl.textContent='EVENTO:';
   lbl.style.cssText='cursor:pointer;padding:3px 8px;transition:background 0.15s,color 0.15s;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;border-radius:2px;white-space:nowrap;border:none;outline:none;box-shadow:none;';
   lbl.addEventListener('click',function(){
+    if(window._olgaHasRestricao&&window._olgaHasRestricao('eventos.lock'))return;
     var activate=!allActive();
     pills.forEach(function(p,i){
       var ev=events[i],col=evColors[ev];
@@ -2601,6 +2602,7 @@ function buildPills(container,evColors,activeSet,onToggle){
     });
     lbl.blur();updateLbl();onToggle();
   });
+  if(window._olgaHasRestricao&&window._olgaHasRestricao('eventos.lock')){lbl.style.cursor='default';}
   container.appendChild(lbl);
   var pills=[];
   events.forEach(function(ev){var col=evColors[ev];
