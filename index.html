@@ -1482,6 +1482,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
             role:       d.role  || 'viewer',
             modulos:    (d.modulos    && d.modulos.length)    ? d.modulos    : null,
             eventos:    (d.eventos    && d.eventos.length)    ? d.eventos    : null,
+            complexos:  (d.complexos  && d.complexos.length)  ? d.complexos  : null,
             restricoes: (d.restricoes && d.restricoes.length) ? d.restricoes : []
           };
         }
@@ -1558,7 +1559,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <button class="nav-tab" id="tabCinemas" disabled onclick="switchMode('cinemas')"><span class="tab-icon"><i data-lucide="clapperboard"></i></span> Cinemas</button>
     <button class="nav-tab" id="tabDash" disabled onclick="switchMode('dash')"><span class="tab-icon"><i data-lucide="bar-chart-2"></i></span> Dashboard</button>
     <button class="nav-tab" id="tabReceptivo" disabled onclick="switchMode('receptivo')"><span class="tab-icon"><i data-lucide="users"></i></span> Receptivo</button>
-    <button class="nav-tab" id="tabEquipe" disabled onclick="switchMode('equipe')" style="display:none"><span class="tab-icon"><i data-lucide="shield"></i></span> Equipe</button>
+    <button class="nav-tab" id="tabEquipe" disabled onclick="switchMode('equipe')" style="display:none"><span class="tab-icon"><i data-lucide="shield"></i></span> Usuários</button>
   </nav>
   <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar esquema de cores">Tema</button>
   <div id="olga-userbar"></div>
@@ -2620,7 +2621,7 @@ function buildPills(container,evColors,activeSet,onToggle){
 }
 /* helpers: sessões filtradas por evento */
 function sessoesFicha(){return sessoesArr.filter(function(s){return!s.evento||activeEventsFicha.has(s.evento);});}
-function sessoesGrade(){return sessoesArr.filter(function(s){return!s.evento||activeEventsGrade.has(s.evento);});}
+function sessoesGrade(){var as=allowedSalas();return sessoesArr.filter(function(s){if(s.evento&&!activeEventsGrade.has(s.evento))return false;if(as&&s.cinema&&!as.has(s.cinema))return false;return true;});}
 function sessoesIngest(){return sessoesArr.filter(function(s){return!s.evento||activeEventsIngest.has(s.evento);});}
 
 function rebuildSessionSelect(){
@@ -2649,12 +2650,12 @@ function buildFichaFilters(){
 
 function rebuildGradeCinemaSelect(){
   var active=sessoesGrade();
-  var cs=new Set();active.forEach(function(s){if(s.cinema)cs.add(s.cinema);});
+  var as=allowedSalas();
+  var cs=new Set();active.forEach(function(s){if(s.cinema&&(!as||as.has(s.cinema)))cs.add(s.cinema);});
   var sel=document.getElementById('gradeCinemaSelect');
   var prev=sel.value;
-  sel.innerHTML='<option value="">Todas as salas</option>';
+  sel.innerHTML='<option value="">Todas as salas'+(as?' do complexo':'')+'</option>';
   Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
-  // keep selection only if still valid
   if(prev&&cs.has(prev))sel.value=prev;
   else{sel.value='';gradeCinemaFilter='';}
 }
@@ -2669,14 +2670,15 @@ function buildGradeFilters(){
 }
 
 /* GRADE 2 */
-function sessoesGrade2(){return sessoesArr.filter(function(s){return!s.evento||activeEventsGrade2.has(s.evento);});}
+function sessoesGrade2(){var as=allowedSalas();return sessoesArr.filter(function(s){if(s.evento&&!activeEventsGrade2.has(s.evento))return false;if(as&&s.cinema&&!as.has(s.cinema))return false;return true;});}
 
 function rebuildGrade2CinemaSelect(){
   var active=sessoesGrade2();
-  var cs=new Set();active.forEach(function(s){if(s.cinema)cs.add(s.cinema);});
+  var as=allowedSalas();
+  var cs=new Set();active.forEach(function(s){if(s.cinema&&(!as||as.has(s.cinema)))cs.add(s.cinema);});
   var sel=document.getElementById('grade2CinemaSelect');
   var prev=sel.value;
-  sel.innerHTML='<option value="">Todas as salas</option>';
+  sel.innerHTML='<option value="">Todas as salas'+(as?' do complexo':'')+'</option>';
   Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
   if(prev&&cs.has(prev))sel.value=prev;
   else{sel.value='';grade2CinemaFilter='';}
@@ -2697,11 +2699,12 @@ function sessoesSessoes(){
 }
 
 function rebuildSessoesCinemaSelect(){
+  var as=allowedSalas();
   var cs=new Set();
-  sessoesSessoes().forEach(function(s){if(s.cinema)cs.add(s.cinema);});
+  sessoesSessoes().forEach(function(s){if(s.cinema&&(!as||as.has(s.cinema)))cs.add(s.cinema);});
   var sel=document.getElementById('sessoesCinemaSelect');
   var prev=sel.value;
-  sel.innerHTML='<option value="">Todas as salas</option>';
+  sel.innerHTML='<option value="">Todas as salas'+(as?' do complexo':'')+'</option>';
   Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
   if(prev&&cs.has(prev))sel.value=prev;
   else{sel.value='';sessoesCinemaFilter='';}
@@ -2721,6 +2724,7 @@ function renderSessoes(){
   var filtered=sessoesArr.filter(function(s){
     if(s.evento&&!activeEventsSessoes.has(s.evento))return false;
     if(sessoesCinemaFilter&&s.cinema!==sessoesCinemaFilter)return false;
+    var as=allowedSalas();if(as&&s.cinema&&!as.has(s.cinema))return false;
     return true;
   });
   if(!filtered.length){sc.innerHTML='';se.style.display='flex';return;}
@@ -3884,15 +3888,30 @@ function sessoesVinhetas(){
   return sessoesArr.filter(function(s){return!s.evento||activeEventsVinhetas.has(s.evento);});
 }
 
+// Retorna Set de salas permitidas ao usuário pelo filtro de complexos.
+// null = sem restrição (todos os complexos liberados).
+function allowedSalas(){
+  var complexos=window._olgaUser&&window._olgaUser.complexos&&window._olgaUser.complexos.length
+    ?window._olgaUser.complexos:null;
+  if(!complexos)return null;
+  var allowed=new Set();
+  cinemasArr.forEach(function(c){
+    if(complexos.indexOf(c.complexo)!==-1)allowed.add(c.sala);
+  });
+  // salas de sessões sem cadastro em cinemasArr: bloqueadas por padrão
+  return allowed;
+}
+
 function rebuildVinhetasCinemaSelect(){
+  var as=allowedSalas();
   var cs=new Set();
   sessoesVinhetas().forEach(function(s){
-    if(!vinhetasDayFilter||( s.date&&s.date.toISOString().slice(0,10)===vinhetasDayFilter))
-      if(s.cinema&&s.vinhetas&&s.vinhetas.length)cs.add(s.cinema);
+    if(!vinhetasDayFilter||(s.date&&s.date.toISOString().slice(0,10)===vinhetasDayFilter))
+      if(s.cinema&&s.vinhetas&&s.vinhetas.length&&(!as||as.has(s.cinema)))cs.add(s.cinema);
   });
   var sel=document.getElementById('vinhetasCinemaSelect');
   var prev=sel.value;
-  sel.innerHTML='<option value="">Todos os cinemas</option>';
+  sel.innerHTML='<option value="">Todos os cinemas'+(as?' do complexo':'')+'</option>';
   Array.from(cs).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
   if(prev&&cs.has(prev))sel.value=prev;else{sel.value='';vinhetasCinemaFilter='';}
 }
@@ -3926,10 +3945,12 @@ function buildVinhetasFilters(){
 }
 
 function filteredSessoesForVinhetas(){
+  var as=allowedSalas();
   return sessoesVinhetas().filter(function(s){
     if(!s.vinhetas||!s.vinhetas.length)return false;
     if(vinhetasCinemaFilter&&s.cinema!==vinhetasCinemaFilter)return false;
     if(vinhetasDayFilter&&(!s.date||s.date.toISOString().slice(0,10)!==vinhetasDayFilter))return false;
+    if(as&&s.cinema&&!as.has(s.cinema))return false;
     return true;
   });
 }
@@ -5383,6 +5404,7 @@ function renderEquipeTable(){
     var role=d.role||'—';
     var modCount=(d.modulos&&d.modulos.length)?d.modulos.length:_EQUIPE_MODULOS.length;
     var evCount=(d.eventos&&d.eventos.length)?d.eventos.length+' evento'+(d.eventos.length!==1?'s':''):'todos os eventos';
+    var cxCount=(d.complexos&&d.complexos.length)?d.complexos.join(', '):'todos os complexos';
     return '<tr style="'+(ativo?'':'opacity:0.45;')+'">'+
       '<td style="padding:10px 12px;font-family:var(--mono);">'+
         '<div style="font-size:12px;color:var(--text);">'+esc(u.id)+'</div>'+
@@ -5391,7 +5413,7 @@ function renderEquipeTable(){
       '<td style="padding:10px 12px;font-family:var(--mono);font-size:10px;">'+
         '<span style="display:inline-block;font-size:8px;font-weight:600;letter-spacing:0.07em;padding:2px 7px;border-radius:2px;text-transform:uppercase;border:1px solid;color:#a0c8ff;border-color:rgba(160,200,255,0.25);background:rgba(160,200,255,0.08);">'+esc(role)+'</span>'+
       '</td>'+
-      '<td style="padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--text-dim);">'+modCount+' módulos · '+evCount+'</td>'+
+      '<td style="padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--text-dim);">'+modCount+' módulos · '+evCount+'<br><span style="font-size:9px;color:var(--text-muted);">'+cxCount+'</span></td>'+
       '<td style="padding:10px 12px;">'+
         '<span style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.08em;padding:2px 7px;border-radius:2px;text-transform:uppercase;border:1px solid;'+(ativo?'color:var(--ok);border-color:rgba(61,186,110,0.3);background:rgba(61,186,110,0.07);':'color:var(--text-muted);border-color:var(--border);')+'">'+
           (ativo?'ativo':'inativo')+'</span>'+
@@ -5436,8 +5458,19 @@ function _openEquipeForm(id,isDup){
 
   var modulos=d.modulos&&d.modulos.length?d.modulos:_EQUIPE_MODULOS.slice();
   var eventos=d.eventos||[];
+  var complexos=d.complexos||[];
   var restricoes=d.restricoes||[];
   var ativo=d.ativo!==false;
+
+  // lista de complexos disponíveis derivada do cinemasArr global
+  var todosComplexos=[];
+  (function(){var s=new Set();cinemasArr.forEach(function(c){if(c.complexo)s.add(c.complexo);});todosComplexos=Array.from(s).sort();})();
+
+  var complexoChk=todosComplexos.map(function(cx){
+    var chk=complexos.indexOf(cx)!==-1?'checked':'';
+    return '<label style="display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;color:var(--text-dim);cursor:pointer;padding:2px 0;">'+
+      '<input type="checkbox" name="eq_complexo" value="'+esc(cx)+'" '+chk+' style="accent-color:var(--accent);">'+esc(cx)+'</label>';
+  }).join('')||'<span style="font-family:var(--mono);font-size:10px;color:var(--text-muted);">Nenhum complexo cadastrado na planilha.</span>';
 
   var modChk=_EQUIPE_MODULOS.map(function(m){
     var chk=modulos.indexOf(m)!==-1?'checked':'';
@@ -5462,6 +5495,8 @@ function _openEquipeForm(id,isDup){
     _eqField('Papel','<select id="eq_role" style="'+_eqInpStyle()+'min-width:180px;">'+
       _EQUIPE_ROLES.map(function(r){return'<option value="'+r+'"'+(r===(d.role||'viewer')?' selected':'')+'>'+r+'</option>';}).join('')+
     '</select>')+
+    _eqSep('Complexos permitidos — vazio = todos os complexos')+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;margin-bottom:16px;" id="eq_complexo_list">'+complexoChk+'</div>'+
     _eqSep('Módulos permitidos — desmarque para restringir acesso')+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;margin-bottom:16px;">'+modChk+'</div>'+
     _eqSep('Eventos permitidos — vazio = todos')+
@@ -5528,11 +5563,13 @@ window.saveEquipeUser=async function(){
   if(!email||!email.includes('@')){errEl.textContent='Email inválido.';errEl.style.display='block';return;}
   if(!_equipeEditId&&_equipeUsers.find(function(u){return u.id===email;})){errEl.textContent='Já existe um usuário com esse email.';errEl.style.display='block';return;}
   var modulos=Array.from(document.querySelectorAll('input[name="eq_mod"]:checked')).map(function(x){return x.value;});
+  var complexosSel=Array.from(document.querySelectorAll('input[name="eq_complexo"]:checked')).map(function(x){return x.value;});
   var restricoes=Array.from(document.querySelectorAll('input[name="eq_res"]:checked')).map(function(x){return x.value;});
   var data={
     name:document.getElementById('eq_name').value.trim(),
     role:document.getElementById('eq_role').value,
     modulos:modulos.length===_EQUIPE_MODULOS.length?[]:modulos,
+    complexos:complexosSel,
     eventos:window._equipeEvArr||[],
     restricoes:restricoes,
     ativo:document.getElementById('eq_ativo').checked
