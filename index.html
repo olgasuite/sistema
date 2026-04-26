@@ -1237,6 +1237,57 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     return r && r.indexOf(chave) !== -1;
   };
 
+  // Retorna o complexo restrito do usuário atual (ou null = sem restrição)
+  window._olgaGetUserComplexo = function() {
+    return window._olgaUser && window._olgaUser.complexo ? window._olgaUser.complexo : null;
+  };
+
+  // Aplica restrição de complexo nos seletores de cinema/complexo de todos os módulos.
+  // Chamado após os dados serem carregados.
+  window._olgaApplyComplexoFilter = function() {
+    var cx = window._olgaGetUserComplexo();
+    if (!cx) return; // sem restrição, nada a fazer
+
+    // Mapa: seletor → variável de filtro global → função de render
+    var targets = [
+      { selId: 'cinemasComplexoSelect', varSetter: function(v){ cinemasComplexoFilter = v; }, render: function(){ renderCinemas(); } },
+      { selId: 'gradeCinemaSelect',     varSetter: function(v){ gradeCinemaFilter = v; },     render: function(){ renderGrade(); } },
+      { selId: 'grade2CinemaSelect',    varSetter: function(v){ grade2CinemaFilter = v; },    render: function(){ renderGrade2(); } },
+      { selId: 'sessoesCinemaSelect',   varSetter: function(v){ sessoesCinemaFilter = v; },   render: function(){ renderSessoes(); } },
+      { selId: 'ingestCinemaSelect',    varSetter: function(v){ ingestCinemaFilter = v; },    render: function(){ renderIngest(); } },
+    ];
+
+    targets.forEach(function(t) {
+      var sel = document.getElementById(t.selId);
+      if (!sel) return;
+
+      // Para cinemasComplexoSelect: o valor é o nome do complexo
+      // Para os demais (cinema): precisamos mapear complexo → salas
+      if (t.selId === 'cinemasComplexoSelect') {
+        // verifica se o complexo existe nas opções
+        var opt = Array.from(sel.options).find(function(o){ return o.value === cx; });
+        if (opt) {
+          sel.value = cx;
+          t.varSetter(cx);
+        }
+      } else {
+        // Para seletores de sala: pré-seleciona a primeira sala do complexo, ou deixa vazio
+        // mas bloqueia a interação — a filtragem real é via cinemasComplexoFilter em cinemas,
+        // e via complexo das sessões nos demais (filtramos as opções disponíveis).
+        // Ocultamos o seletor e filtramos diretamente pela variável.
+        // Não setamos valor (as salas são filtradas pelo complexo internamente via sessoesArr)
+      }
+
+      // Oculta e desabilita o seletor para que o usuário não possa trocar
+      sel.style.display = 'none';
+      sel.disabled = true;
+    });
+
+    // Oculta também o seletor de estado em Cinemas para não confundir
+    var estadoSel = document.getElementById('cinemasEstadoSelect');
+    if (estadoSel) { estadoSel.style.display = 'none'; estadoSel.disabled = true; }
+  };
+
   window._olgaLoadFirestore = async function() {
     var landingDrop = document.getElementById('landingDrop');
     var fileNameEl  = document.getElementById('fileName');
@@ -1386,6 +1437,33 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
         });
       });
 
+      // ── Restrição de complexo ──────────────────────────────────────
+      // Se o usuário tem complexo definido, filtra cinemas e sessões
+      var userComplexo = window._olgaUser && window._olgaUser.complexo ? window._olgaUser.complexo : null;
+      if (userComplexo) {
+        // salas pertencentes ao complexo do usuário
+        var salasDoComplexo = new Set(
+          cinemasArr2
+            .filter(function(c){ return (c.complexo || c.sala) === userComplexo; })
+            .map(function(c){ return c.sala; })
+        );
+        // filtra cinemas
+        cinemasArr2 = cinemasArr2.filter(function(c){ return (c.complexo || c.sala) === userComplexo; });
+        // filtra sessões
+        sessoesArr2 = sessoesArr2.filter(function(s){ return salasDoComplexo.has(s.cinema); });
+        // reconstrói maps e reverse após filtro de sessões
+        sessoesMap2 = {};
+        buscaRev2 = {};
+        sessoesArr2.forEach(function(s){
+          sessoesMap2[s.nome] = s;
+          s.filmes.forEach(function(c){
+            if(!buscaRev2[c]) buscaRev2[c] = [];
+            buscaRev2[c].push(s.nome);
+          });
+        });
+      }
+      // ──────────────────────────────────────────────────────────────
+
       // vinhetas
       var vinhetasArr2 = [];
       vinhetasSnap.forEach(function(doc) {
@@ -1434,6 +1512,8 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
           vinhetasArr: vinhetasArr2, vinhetaReverseSessoes: vinhetaRev2,
           events: Array.from(evSet)
         }, label);
+        // Aplica restrição de complexo nos seletores (oculta e trava)
+        if (typeof window._olgaApplyComplexoFilter === 'function') window._olgaApplyComplexoFilter();
       }
 
     } catch (err) {
@@ -1479,7 +1559,8 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
             role:       d.role  || 'viewer',
             modulos:    (d.modulos    && d.modulos.length)    ? d.modulos    : null,
             eventos:    (d.eventos    && d.eventos.length)    ? d.eventos    : null,
-            restricoes: (d.restricoes && d.restricoes.length) ? d.restricoes : []
+            restricoes: (d.restricoes && d.restricoes.length) ? d.restricoes : [],
+            complexo:   d.complexo || null
           };
         }
       } catch(e) {
@@ -5391,7 +5472,7 @@ function renderEquipeTable(){
       '<td style="padding:10px 12px;font-family:var(--mono);font-size:10px;">'+
         '<span style="display:inline-block;font-size:8px;font-weight:600;letter-spacing:0.07em;padding:2px 7px;border-radius:2px;text-transform:uppercase;border:1px solid;color:#a0c8ff;border-color:rgba(160,200,255,0.25);background:rgba(160,200,255,0.08);">'+esc(role)+'</span>'+
       '</td>'+
-      '<td style="padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--text-dim);">'+modCount+' módulos · '+evCount+'</td>'+
+      '<td style="padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--text-dim);">'+modCount+' módulos · '+evCount+(d.complexo?'<br><span style="font-size:9px;color:var(--accent);border:1px solid rgba(232,160,32,0.25);background:rgba(232,160,32,0.07);padding:1px 6px;border-radius:2px;display:inline-block;margin-top:3px;">⊡ '+esc(d.complexo)+'</span>':'')+'</td>'+
       '<td style="padding:10px 12px;">'+
         '<span style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.08em;padding:2px 7px;border-radius:2px;text-transform:uppercase;border:1px solid;'+(ativo?'color:var(--ok);border-color:rgba(61,186,110,0.3);background:rgba(61,186,110,0.07);':'color:var(--text-muted);border-color:var(--border);')+'">'+
           (ativo?'ativo':'inativo')+'</span>'+
@@ -5437,6 +5518,7 @@ function _openEquipeForm(id,isDup){
   var modulos=d.modulos&&d.modulos.length?d.modulos:_EQUIPE_MODULOS.slice();
   var eventos=d.eventos||[];
   var restricoes=d.restricoes||[];
+  var complexo=d.complexo||'';
   var ativo=d.ativo!==false;
 
   var modChk=_EQUIPE_MODULOS.map(function(m){
@@ -5462,6 +5544,10 @@ function _openEquipeForm(id,isDup){
     _eqField('Papel','<select id="eq_role" style="'+_eqInpStyle()+'min-width:180px;">'+
       _EQUIPE_ROLES.map(function(r){return'<option value="'+r+'"'+(r===(d.role||'viewer')?' selected':'')+'>'+r+'</option>';}).join('')+
     '</select>')+
+    _eqSep('Complexo — deixe vazio para acesso a todos')+
+    _eqField('Complexo (restringe salas visíveis)',
+      '<input id="eq_complexo" value="'+esc(complexo)+'" placeholder="nome exato do complexo ou vazio" style="'+_eqInpStyle()+'">'
+    )+
     _eqSep('Módulos permitidos — desmarque para restringir acesso')+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;margin-bottom:16px;">'+modChk+'</div>'+
     _eqSep('Eventos permitidos — vazio = todos')+
@@ -5535,6 +5621,7 @@ window.saveEquipeUser=async function(){
     modulos:modulos.length===_EQUIPE_MODULOS.length?[]:modulos,
     eventos:window._equipeEvArr||[],
     restricoes:restricoes,
+    complexo:(document.getElementById('eq_complexo').value||'').trim()||null,
     ativo:document.getElementById('eq_ativo').checked
   };
   btn.disabled=true;btn.textContent='Salvando…';
