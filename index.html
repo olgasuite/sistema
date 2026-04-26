@@ -1420,10 +1420,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       filmesArr2.forEach(function(f)  { if (f.evento) evSet.add(f.evento); });
       sessoesArr2.forEach(function(s) { if (s.evento) evSet.add(s.evento); });
       cinemasArr2.forEach(function(c) {
-        if (c.evento) c.evento.split(';').forEach(function(e){
-          var t=e.trim();
-          if(t && allowedEvento(t)) evSet.add(t);
-        });
+        if (c.evento) c.evento.split(';').forEach(function(e){ var t=e.trim(); if(t) evSet.add(t); });
       });
       vinhetasArr2.forEach(function(v){ if (v.evento) evSet.add(v.evento); });
 
@@ -2619,7 +2616,7 @@ function buildPills(container,evColors,activeSet,onToggle){
       else{activeSet.add(ev);pill.style.background=col.bg;pill.style.color=col.text;pill.style.borderColor='transparent';pill.classList.add('active');}
       pill.blur();updateLbl();onToggle();
     });
-    if(window._olgaHasRestricao&&window._olgaHasRestricao('eventos.lock')){pill.style.cursor='default';pill.title='';}
+    if(window._olgaHasRestricao&&window._olgaHasRestricao('eventos.lock')){pill.style.cursor='default';}
     container.appendChild(pill);pills.push(pill);
   });
   updateLbl();
@@ -5378,6 +5375,7 @@ var _equipeUsers=[], _equipeEditId=null, _equipeDeleteId=null;
 var _EQUIPE_MODULOS=['projecao','grade','sessoes','busca','vinhetas','cinemas','dash','receptivo'];
 var _EQUIPE_ROLES=['admin','projecao','programacao','producao','viewer'];
 var _EQUIPE_RESTRICOES=[
+  {k:'eventos.lock',label:'Eventos · Bloquear seleção de eventos'},
   {k:'cinemas.bordero',label:'Cinemas · Borderô'},
   {k:'sessoes.bordero',label:'Sessões · Borderô'},
   {k:'dashboard.publico_total',label:'Dashboard · Público total'},
