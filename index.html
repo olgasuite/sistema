@@ -1140,7 +1140,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-  import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  import { getFirestore, collection, doc, getDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyDIBhcsqlK3QebTmbWMNqsN_rPPybREj64",
@@ -1151,15 +1151,18 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     appId: "1:311816862566:web:1cc16ba1312f4437d7a6a7"
   };
 
-  // Authorized users — edit locally and push to update
-  const AUTHORIZED = {
-    "lg.rchrd@gmail.com": { name: "Admin", role: "admin" }
-  };
-
-  const app = initializeApp(firebaseConfig);
+  const app  = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db   = getFirestore(app);
   const provider = new GoogleAuthProvider();
+
+  // _olgaUser: perfil do usuário logado
+  // {
+  //   email, name, role,
+  //   modulos: [] ou null  (null = todos),
+  //   eventos: [] ou null  (null = todos)
+  // }
+  window._olgaUser = null;
 
   window._olgaSignIn = function() {
     signInWithPopup(auth, provider).catch(function(err) {
@@ -1169,7 +1172,36 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 
   window._olgaSignOut = function() {
     signOut(auth);
+    window._olgaUser = null;
   };
+
+  // ── Aplica visibilidade de abas/cards conforme perfil ───────────
+  function applyModulePermissions(modulos) {
+    // modulos: null = tudo liberado; [] ou lista = só esses
+    var ALL = ['projecao','grade','sessoes','busca','vinhetas','cinemas','dash','receptivo'];
+    var allowed = modulos && modulos.length ? new Set(modulos) : null;
+
+    // Tabs do nav (tabProjecao, tabGrade, etc.)
+    var tabMap = {
+      projecao:'tabProjecao', grade:'tabGrade', sessoes:'tabSessoes',
+      busca:'tabBusca', vinhetas:'tabVinhetas', cinemas:'tabCinemas',
+      dash:'tabDash', receptivo:'tabReceptivo'
+    };
+    // Module cards na landing
+    var cardMap = {
+      projecao:'modCardProjecao', grade:'modCardGrade', sessoes:'modCardSessoes',
+      busca:'modCardBusca', vinhetas:'modCardVinhetas', cinemas:'modCardCinemas',
+      dash:'modCardDash', receptivo:'modCardReceptivo'
+    };
+
+    ALL.forEach(function(m) {
+      var visible = !allowed || allowed.has(m);
+      var tabEl  = document.getElementById(tabMap[m]);
+      var cardEl = document.getElementById(cardMap[m]);
+      if (tabEl)  tabEl.style.display  = visible ? '' : 'none';
+      if (cardEl) cardEl.style.display = visible ? '' : 'none';
+    });
+  }
 
   // ── Loader Firestore ────────────────────────────────────────────
   window._olgaLoadFirestore = async function() {
@@ -1198,6 +1230,14 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       return String(v).trim();
     }
 
+    // Filtro de eventos do usuário (null = todos)
+    var userEventos = window._olgaUser && window._olgaUser.eventos && window._olgaUser.eventos.length
+      ? new Set(window._olgaUser.eventos)
+      : null;
+    function allowedEvento(ev) {
+      return !userEventos || userEventos.has(ev);
+    }
+
     try {
       const [filmesSnap, sessoesSnap, cinemasSnap, vinhetasSnap] = await Promise.all([
         getDocs(collection(db, 'filmes')),
@@ -1212,29 +1252,20 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
         var r = doc.data();
         var codigo = fs(r['festival_code']);
         if (!codigo || codigo === '-' || codigo === '0') return;
+        var evento = fs(r['event_name']);
+        if (!allowedEvento(evento)) return;
         var f = {
-          evento:        fs(r['event_name']),
-          codigo:        codigo,
-          hd:            fs(r['storage_location']),
-          titulo:        fs(r['title']),
-          idioma:        fs(r['original_language']),
-          legenda:       fs(r['dcp_subtitle_code']),
-          col_g:         fs(r['program_section']),
-          vf:            fs(r['vf_subtitle_code']),
-          lente:         fs(r['projection_lens']),
-          som:           fs(r['audio_format']),
-          col_k:         fs(r['dcp_creator']),
-          kdm:           fs(r['has_kdm']),
-          status:        fs(r['status']),
-          col_n:         fs(r['subtitle_status']),
-          obs:           fs(r['notes']),
-          cpl:           fs(r['cpl_id']),
-          resolucao:     fs(r['dcp_resolution']),
-          duracao:       fs(r['dcp_duration']),
-          gb:            fs(r['dcp_size']),
-          fps:           fs(r['dcp_fps']),
-          cplOV:         fs(r['ov_cpl_id']),
-          acessibilidade:fs(r['accessibility_features'])
+          evento: evento,      codigo: codigo,
+          hd:     fs(r['storage_location']),   titulo:    fs(r['title']),
+          idioma: fs(r['original_language']),  legenda:   fs(r['dcp_subtitle_code']),
+          col_g:  fs(r['program_section']),    vf:        fs(r['vf_subtitle_code']),
+          lente:  fs(r['projection_lens']),    som:       fs(r['audio_format']),
+          col_k:  fs(r['dcp_creator']),        kdm:       fs(r['has_kdm']),
+          status: fs(r['status']),             col_n:     fs(r['subtitle_status']),
+          obs:    fs(r['notes']),              cpl:       fs(r['cpl_id']),
+          resolucao: fs(r['dcp_resolution']),  duracao:   fs(r['dcp_duration']),
+          gb:     fs(r['dcp_size']),           fps:       fs(r['dcp_fps']),
+          cplOV:  fs(r['ov_cpl_id']),          acessibilidade: fs(r['accessibility_features'])
         };
         filmesMap2[codigo] = f;
         filmesArr2.push(f);
@@ -1246,12 +1277,13 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
         var r = doc.data();
         var nome = fs(r['session_id']);
         if (!nome) return;
+        var evento = fs(r['event_name']);
+        // se evento da sessao não vier preenchido, herda do primeiro filme
         var codes = [];
         for (var fi = 1; fi <= 10; fi++) {
           var c = fs(r['film_' + fi]);
           if (c && c !== '-' && !/^=/.test(c)) codes.push(c);
         }
-        var evento = fs(r['event_name']);
         if (!evento) {
           for (var fi2 = 0; fi2 < codes.length; fi2++) {
             if (filmesMap2[codes[fi2]] && filmesMap2[codes[fi2]].evento) {
@@ -1259,14 +1291,14 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
             }
           }
         }
+        if (!allowedEvento(evento)) return;
+
         var vinhetas2 = [];
         for (var vi = 1; vi <= 10; vi++) {
           var vc = fs(r['bumper_' + vi]);
           if (vc && vc !== '-' && !/^=/.test(vc)) vinhetas2.push(vc);
         }
-        var dateVal = fs(r['date']);
-        var timeVal = fs(r['time']);
-        // fmtDateStr / parseDate / parseTime: mesmas funções do Worker
+        var dateVal = fs(r['date']), timeVal = fs(r['time']);
         function _parseDate(v) {
           if (!v) return null;
           var m = v.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
@@ -1280,26 +1312,18 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
         }
         function _parseTime(v) {
           if (!v) return {h:0,m:0,str:'?'};
-          var p = v.split(':').map(Number); var h=p[0]||0, m=p[1]||0;
-          return {h:h, m:m, str:String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')};
+          var p = v.split(':').map(Number);
+          return {h:p[0]||0, m:p[1]||0, str:String(p[0]||0).padStart(2,'0')+':'+String(p[1]||0).padStart(2,'0')};
         }
         var s = {
-          nome:           nome,
-          cinema:         fs(r['venue_name']),
-          dia:            _fmtDate(dateVal),
-          hora:           timeVal ? timeVal.slice(0,5) : '—',
-          filmes:         codes,
-          date:           _parseDate(dateVal),
-          time:           _parseTime(timeVal),
-          evento:         evento,
-          vinhetas:       vinhetas2,
-          convidados:     fs(r['guests']),
-          apresentacao:   fs(r['has_introduction']),
-          publico:        fs(r['total_audience']),
-          ingressos:      fs(r['reserved_tickets']),
-          leg_eletronica: fs(r['has_electronic_subtitles']),
-          acessibilidades:fs(r['available_accessibility']),
-          col_ag:         fs(r['has_debate'])
+          nome: nome,               cinema:         fs(r['venue_name']),
+          dia:  _fmtDate(dateVal),  hora:           timeVal ? timeVal.slice(0,5) : '—',
+          filmes: codes,            date:           _parseDate(dateVal),
+          time: _parseTime(timeVal),evento:         evento,
+          vinhetas: vinhetas2,      convidados:     fs(r['guests']),
+          apresentacao: fs(r['has_introduction']),  publico:    fs(r['total_audience']),
+          ingressos: fs(r['reserved_tickets']),     leg_eletronica: fs(r['has_electronic_subtitles']),
+          acessibilidades: fs(r['available_accessibility']), col_ag: fs(r['has_debate'])
         };
         sessoesArr2.push(s);
         sessoesMap2[nome] = s;
@@ -1315,19 +1339,17 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
         var r = doc.data();
         var sala = fs(r['venue_name']);
         if (!sala) return;
+        // cinemas podem ter multiplos eventos (separados por ;)
+        var eventoRaw = fs(r['event_name']);
+        var eventosList = eventoRaw ? eventoRaw.split(';').map(function(e){return e.trim();}).filter(Boolean) : [];
+        if (userEventos && eventosList.length && !eventosList.some(function(e){return userEventos.has(e);})) return;
         cinemasArr2.push({
-          complexo:    fs(r['complex_name']),
-          sala:        sala,
-          servidor:    fs(r['server_model']),
-          serial:      fs(r['server_serial']),
-          projetor:    fs(r['projector_model']),
-          assentos:    fs(r['seat_count']),
-          proporcao:   fs(r['screen_aspect_ratio']),
-          som:         fs(r['sound_system']),
-          obs:         fs(r['notes']),
-          cineassista: fs(r['cineassist_system']),
-          evento:      fs(r['event_name']),
-          estado:      fs(r['state'])
+          complexo: fs(r['complex_name']), sala:       sala,
+          servidor: fs(r['server_model']), serial:     fs(r['server_serial']),
+          projetor: fs(r['projector_model']),assentos: fs(r['seat_count']),
+          proporcao:fs(r['screen_aspect_ratio']),som:  fs(r['sound_system']),
+          obs:      fs(r['notes']),        cineassista:fs(r['cineassist_system']),
+          evento:   eventoRaw,             estado:     fs(r['state'])
         });
       });
 
@@ -1337,16 +1359,14 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
         var r = doc.data();
         var codigo = fs(r['bumper_code']);
         if (!codigo || codigo === '-') return;
+        var evento = fs(r['event_name']);
+        if (!allowedEvento(evento)) return;
         vinhetasArr2.push({
-          evento:  fs(r['event_name']),
-          codigo:  codigo,
-          nome:    fs(r['title']),
-          lente:   fs(r['projection_lens']),
-          som:     fs(r['audio_format']),
-          obs:     fs(r['notes']),
-          cpl:     fs(r['cpl_id']),
-          link:    fs(r['file_link']),
-          duracao: fs(r['duration'])
+          evento: evento, codigo: codigo,
+          nome:   fs(r['title']),           lente:  fs(r['projection_lens']),
+          som:    fs(r['audio_format']),    obs:    fs(r['notes']),
+          cpl:    fs(r['cpl_id']),          link:   fs(r['file_link']),
+          duracao:fs(r['duration'])
         });
       });
 
@@ -1359,7 +1379,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
         });
       });
 
-      // events set
+      // events set (só eventos permitidos)
       var evSet = new Set();
       filmesArr2.forEach(function(f)  { if (f.evento) evSet.add(f.evento); });
       sessoesArr2.forEach(function(s) { if (s.evento) evSet.add(s.evento); });
@@ -1396,35 +1416,70 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   };
   // ───────────────────────────────────────────────────────────────
 
-  onAuthStateChanged(auth, function(user) {
+  onAuthStateChanged(auth, async function(user) {
     var loginScreen = document.getElementById('olga-login');
-    var appWrap    = document.getElementById('olga-app');
-    var userBar    = document.getElementById('olga-userbar');
+    var appWrap     = document.getElementById('olga-app');
+    var userBar     = document.getElementById('olga-userbar');
+    var authError   = document.getElementById('auth-error');
 
     if (user) {
       var email = user.email.toLowerCase();
-      var authData = AUTHORIZED[email];
-      if (authData) {
-        // Authorized
-        loginScreen.style.display = 'none';
-        appWrap.style.display = '';
-        if (userBar) {
-          userBar.innerHTML =
-            '<span class="userbar-name">' + (user.displayName || email) + '</span>' +
-            '<button class="userbar-btn" onclick="_olgaSignOut()">sair</button>';
+      authError.textContent = '';
+
+      // Buscar perfil na coleção usuarios
+      var perfil = null;
+      try {
+        var snap = await getDoc(doc(db, 'usuarios', email));
+        if (snap.exists()) {
+          var d = snap.data();
+          // ativo:false bloqueia sem remover o documento
+          if (d.ativo === false) {
+            loginScreen.style.display = 'flex';
+            appWrap.style.display = 'none';
+            authError.textContent = 'Acesso desativado para ' + email + '. Entre em contato com o administrador.';
+            signOut(auth);
+            return;
+          }
+          perfil = {
+            email:   email,
+            name:    d.name  || user.displayName || email,
+            role:    d.role  || 'viewer',
+            modulos: (d.modulos && d.modulos.length) ? d.modulos : null,
+            eventos: (d.eventos && d.eventos.length) ? d.eventos : null
+          };
         }
-        // Auto-load do Firestore após login
-        window._olgaLoadFirestore();
-      } else {
-        // Logged in but not authorized
+      } catch(e) {
+        console.warn('Erro ao buscar perfil:', e);
+      }
+
+      if (!perfil) {
+        // Email não está na coleção usuarios
         loginScreen.style.display = 'flex';
         appWrap.style.display = 'none';
-        document.getElementById('auth-error').textContent =
-          'Acesso não autorizado para ' + user.email + '. Entre em contato com o administrador.';
+        authError.textContent = 'Acesso não autorizado para ' + email + '. Entre em contato com o administrador.';
         signOut(auth);
+        return;
       }
+
+      // Login autorizado
+      window._olgaUser = perfil;
+      loginScreen.style.display = 'none';
+      appWrap.style.display = '';
+
+      if (userBar) {
+        userBar.innerHTML =
+          '<span class="userbar-name">' + perfil.name + '</span>' +
+          '<button class="userbar-btn" onclick="_olgaSignOut()">sair</button>';
+      }
+
+      // Aplicar restrições de módulos
+      applyModulePermissions(perfil.modulos);
+
+      // Carregar dados (já filtrados por eventos dentro do loader)
+      window._olgaLoadFirestore();
+
     } else {
-      // Not logged in
+      window._olgaUser = null;
       loginScreen.style.display = 'flex';
       appWrap.style.display = 'none';
     }
