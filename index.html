@@ -1420,7 +1420,10 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       filmesArr2.forEach(function(f)  { if (f.evento) evSet.add(f.evento); });
       sessoesArr2.forEach(function(s) { if (s.evento) evSet.add(s.evento); });
       cinemasArr2.forEach(function(c) {
-        if (c.evento) c.evento.split(';').forEach(function(e){ var t=e.trim(); if(t) evSet.add(t); });
+        if (c.evento) c.evento.split(';').forEach(function(e){
+          var t=e.trim();
+          if(t && allowedEvento(t)) evSet.add(t);
+        });
       });
       vinhetasArr2.forEach(function(v){ if (v.evento) evSet.add(v.evento); });
 
@@ -2611,10 +2614,12 @@ function buildPills(container,evColors,activeSet,onToggle){
     if(isActive){pill.style.background=col.bg;pill.style.color=col.text;pill.style.borderColor='transparent';}
     else{pill.style.background='transparent';pill.style.color='#555';pill.style.borderColor='transparent';}
     pill.addEventListener('click',function(){
+      if(window._olgaHasRestricao&&window._olgaHasRestricao('eventos.lock'))return;
       if(activeSet.has(ev)){activeSet.delete(ev);pill.style.background='transparent';pill.style.color='#555';pill.style.borderColor='transparent';pill.classList.remove('active');}
       else{activeSet.add(ev);pill.style.background=col.bg;pill.style.color=col.text;pill.style.borderColor='transparent';pill.classList.add('active');}
       pill.blur();updateLbl();onToggle();
     });
+    if(window._olgaHasRestricao&&window._olgaHasRestricao('eventos.lock')){pill.style.cursor='default';pill.title='';}
     container.appendChild(pill);pills.push(pill);
   });
   updateLbl();
