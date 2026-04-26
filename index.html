@@ -2165,16 +2165,24 @@ function renderFicha(nome,s){
   // extra panel (right side of header)
   function feRow(label,value){if(!value)return'';return'<div class="fe-row"><span class="fe-label">'+label+'</span><span class="fe-value accent">'+value+'</span></div>';}
   function feCheck(label,val){var checked=(val||'').toLowerCase()==='sim';return'<div class="fe-check"><span class="fe-box'+(checked?' checked':'')+'">'+( checked?'✕':'')+'</span><span>'+label+'</span></div>';}
-  var hasExtra=s.convidados||s.apresentacao||s.publico||s.ingressos||s.leg_eletronica||s.col_ag||s.acessibilidades;
+  var hasExtra=s.convidados||s.apresentacao||s.ingressos||s.leg_eletronica||s.col_ag||s.acessibilidades;
   var extraHtml='';
   if(hasExtra){
     var checkFields=(s.apresentacao||s.leg_eletronica||s.col_ag)?'<div class="fe-checks">'+feCheck('Apresentação',s.apresentacao)+feCheck('Leg. elet.',s.leg_eletronica)+feCheck('Debate',s.col_ag)+'</div>':'';
+    var acessSet=[];
+    films.forEach(function(f){
+      if(f.acessibilidade){
+        f.acessibilidade.split(/[,;\/\n]+/).forEach(function(a){
+          var t=a.trim();if(t&&acessSet.indexOf(t)<0)acessSet.push(t);
+        });
+      }
+    });
+    var acessLabel=acessSet.length?acessSet.join(' · '):'';
     extraHtml='<div class="ficha-extra">'+
       (s.convidados?feRow('Convidados',s.convidados):'')+
-      (s.publico?feRow('Público',s.publico):'')+
       (s.ingressos?feRow('Ing. reservados',s.ingressos):'')+
       checkFields+
-      (s.acessibilidades?feRow('Acessib.',s.acessibilidades):'')+
+      (acessLabel?feRow('Acessib.',acessLabel):'')+
     '</div>';
   }
 
