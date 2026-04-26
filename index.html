@@ -2887,10 +2887,12 @@ function renderGrade2(){
   var ge=document.getElementById('grade2Empty'),gw=document.getElementById('grade2Wrap');
   var chr=document.getElementById('grade2ColHeaderRow'),gb2=document.getElementById('grade2GridBody');
   var tip=document.getElementById('tooltip');
+  var _as2=allowedSalas();
   var ds=sessoesArr.filter(function(s){
     return s.date&&s.date.toISOString().slice(0,10)===grade2CurrentDay&&
            (!s.evento||activeEventsGrade2.has(s.evento))&&
-           (!grade2CinemaFilter||s.cinema===grade2CinemaFilter);
+           (!grade2CinemaFilter||s.cinema===grade2CinemaFilter)&&
+           (!_as2||!s.cinema||_as2.has(s.cinema));
   });
   if(!ds.length){gw.style.display='none';ge.style.display='flex';return;}
   ge.style.display='none';gw.style.display='block';
@@ -4122,10 +4124,12 @@ function renderGrade(){
   var ge=document.getElementById('gradeEmpty'),gw=document.getElementById('gradeWrap');
   var chr=document.getElementById('colHeaderRow'),gb2=document.getElementById('gridBody');
   var tip=document.getElementById('tooltip');
+  var _as=allowedSalas();
   var ds=sessoesArr.filter(function(s){
     return s.date&&s.date.toISOString().slice(0,10)===currentDay&&
            (!s.evento||activeEventsGrade.has(s.evento))&&
-           (!gradeCinemaFilter||s.cinema===gradeCinemaFilter);
+           (!gradeCinemaFilter||s.cinema===gradeCinemaFilter)&&
+           (!_as||!s.cinema||_as.has(s.cinema));
   });
   if(!ds.length){gw.style.display='none';ge.style.display='flex';return;}
   ge.style.display='none';gw.style.display='block';
