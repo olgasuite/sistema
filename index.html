@@ -6279,8 +6279,8 @@ function goToCinemaFromDash(sala){
 
 /* ─── EQUIPE ─────────────────────────────────────────────────────── */
 var _equipeUsers=[], _equipeEditId=null, _equipeDeleteId=null;
-var _EQUIPE_MODULOS=['projecao','grade','sessoes','busca','vinhetas','cinemas','dash','receptivo'];
-var _EQUIPE_ROLES=['admin','projecao','programacao','producao','viewer'];
+var _EQUIPE_MODULOS=['projecao','grade','sessoes','busca','vinhetas','cinemas','dash','receptivo','catalogo'];
+var _EQUIPE_ROLES=['admin','editor','projecao','programacao','producao','viewer'];
 var _EQUIPE_RESTRICOES=[
   {k:'cinemas.bordero',label:'Cinemas · Borderô'},
   {k:'sessoes.bordero',label:'Sessões · Borderô'},
@@ -6567,12 +6567,16 @@ function renderCatalogo(){
     var meta=catalogoFilmesMap[f.codigo]||{};
     var hasMeta=!!(meta.title||meta.director);
     var title=meta.title||f.titulo||f.codigo;
-    var dir=meta.director||'';var dur=fmtDurMin(f.duracao);var sCls=catStatusCls(f.status);
+    var dir=Array.isArray(meta.director)?meta.director.join(', '):(meta.director||'');
+    var dur=fmtDurMin(f.duracao);var sCls=catStatusCls(f.status);
+    var selCls={'FEST':'ok','SUPLENTE':'warn'};
+    var selTag=meta.selecao?'<span class="cat-item-status '+(selCls[meta.selecao]||'')+'" style="text-transform:uppercase;letter-spacing:0.05em;">'+meta.selecao+'</span>':'';
     html+='<button class="cat-item'+(hasMeta?' has-meta':'')+'" data-cod="'+f.codigo.replace(/"/g,'&quot;')+'" onclick="openCatDetail(this.dataset.cod)">'
       +'<span class="cat-item-code">'+f.codigo+'</span>'
       +'<span class="cat-item-title">'+(title||'')+'</span>'
       +(dir?'<span class="cat-item-dir">'+dir+'</span>':'<span class="cat-item-dir dim">—</span>')
       +(dur?'<span class="cat-item-dur">'+dur+'</span>':'')
+      +selTag
       +(f.status?'<span class="cat-item-status '+sCls+'">'+f.status+'</span>':'')
     +'</button>';
   });
