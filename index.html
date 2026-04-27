@@ -2283,6 +2283,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <span class="file-name" id="fileName">nenhum arquivo</span>
   </div>
   <nav class="nav-tabs">
+    <button class="nav-tab" id="tabDash" disabled onclick="switchMode('dash')"><span class="tab-icon"><i data-lucide="bar-chart-2"></i></span> Dashboard</button>
     <button class="nav-tab" id="tabProjecao" disabled onclick="switchMode('projecao')"><span class="tab-icon"><i data-lucide="projector"></i></span> Projeção</button>
     <button class="nav-tab" id="tabFicha" disabled onclick="switchMode('ficha')" style="display:none"></button>
     <button class="nav-tab" id="tabGrade" disabled onclick="switchMode('grade')"><span class="tab-icon"><i data-lucide="layout-dashboard"></i></span> Grade</button>
@@ -2292,7 +2293,6 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <button class="nav-tab" id="tabVinhetas" disabled onclick="switchMode('vinhetas')"><span class="tab-icon"><i data-lucide="film"></i></span> Vinhetas</button>
     <button class="nav-tab" id="tabIngest" disabled onclick="switchMode('ingest')" style="display:none"></button>
     <button class="nav-tab" id="tabCinemas" disabled onclick="switchMode('cinemas')"><span class="tab-icon"><i data-lucide="clapperboard"></i></span> Cinemas</button>
-    <button class="nav-tab" id="tabDash" disabled onclick="switchMode('dash')"><span class="tab-icon"><i data-lucide="bar-chart-2"></i></span> Dashboard</button>
     <button class="nav-tab" id="tabReceptivo" disabled onclick="switchMode('receptivo')"><span class="tab-icon"><i data-lucide="users"></i></span> Receptivo</button>
     <button class="nav-tab" id="tabEquipe" disabled onclick="switchMode('equipe')" style="display:none"><span class="tab-icon"><i data-lucide="shield"></i></span> Usuários</button>
   </nav>
@@ -2420,6 +2420,11 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <div class="drop-sub">clique ou arraste o arquivo aqui</div>
   </div>
   <div class="landing-modules" style="grid-template-columns:repeat(8,1fr);max-width:1600px;">
+    <div class="module-card disabled" id="modCardDash" onclick="moduleCardClick('dash')">
+      <div class="module-icon"><i data-lucide="bar-chart-2"></i></div>
+      <div class="module-name">Dashboard</div>
+      <div class="module-desc">Monitoramento de filmes por situação no sistema e dados gerais do evento</div>
+    </div>
     <div class="module-card disabled" id="modCardProjecao" onclick="moduleCardClick('projecao')">
       <div class="module-icon"><i data-lucide="projector"></i></div>
       <div class="module-name">Projeção</div>
@@ -2449,11 +2454,6 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       <div class="module-icon"><i data-lucide="clapperboard"></i></div>
       <div class="module-name">Cinemas</div>
       <div class="module-desc">Fichas técnicas das salas, equipamentos e Borderô</div>
-    </div>
-    <div class="module-card disabled" id="modCardDash" onclick="moduleCardClick('dash')">
-      <div class="module-icon"><i data-lucide="bar-chart-2"></i></div>
-      <div class="module-name">Dashboard</div>
-      <div class="module-desc">Monitoramento de filmes por situação no sistema e dados gerais do evento</div>
     </div>
     <div class="module-card disabled" id="modCardReceptivo" onclick="moduleCardClick('receptivo')">
       <div class="module-icon"><i data-lucide="users"></i></div>
@@ -5480,6 +5480,14 @@ function renderBuscaResults(){
   document.getElementById('buscaLoading').style.display='none';
   var q=buscaQuery.toLowerCase();
   var hasCurrentFilters=q||(countActiveFilters()>0);
+  // nada ativo: mostrar estado vazio sem renderizar
+  if(!q&&!countActiveFilters()&&!buscaAdditiveSlots.length){
+    re.style.display='none';re.innerHTML='';
+    be.style.display='flex';
+    be.querySelector('p').textContent='Digite para buscar ou aplique filtros.';
+    document.getElementById('resultCount').textContent='';
+    return;
+  }
   var filtered;
   if(!buscaAdditiveSlots.length||hasCurrentFilters){
     filtered=filmesArr.filter(function(f){
@@ -5517,9 +5525,7 @@ function renderBuscaResults(){
     var sess=buscaReverseSessoes[f.codigo]||[];
     var legStr=vf?'VF '+vf:leg;
 
-    var kdmTag=kdm
-      ?'<span class="badge badge-kdm">⚠ KDM</span>'
-      :'<span class="badge-kdm-no">kdm —</span>';
+    var kdmTag=kdm?'<span class="badge badge-kdm">⚠ KDM</span>':'';
     var resTag=res?'<div class="meta-tag"><span class="label">Res</span>'+res+'</div>':'';
     var cplOVRow=cplOV?'<div class="cpl-ov-row"><div class="cpl-ov-label">CPL OV</div><div class="cpl-ov-value">'+hl(cplOV,buscaQuery)+'</div></div>':'';
     var cplPanel=cpl
