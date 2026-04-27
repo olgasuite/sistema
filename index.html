@@ -1739,6 +1739,8 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .cat-tag-input-wrap{display:flex;flex-wrap:wrap;gap:4px;padding:4px 8px;border:1px solid var(--border2);background:var(--bg);align-items:center;min-height:36px;}
 .cat-tag-input-wrap:focus-within{border-color:var(--accent);}
 .cat-tag-input{border:none;background:transparent;font-family:var(--sans);font-size:12px;color:var(--text);outline:none;min-width:80px;flex:1;padding:2px 0;}
+.cat-card-btn{margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 8px;background:transparent;color:var(--text-muted);border:1px solid var(--border);cursor:pointer;flex-shrink:0;transition:all 0.1s;}
+.cat-card-btn:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim);}
 .cat-no-results{display:flex;align-items:center;justify-content:center;min-height:40vh;color:var(--text-muted);font-family:var(--mono);font-size:12px;}
 
 @media print{
@@ -5701,6 +5703,7 @@ function renderBuscaResults(){
             (f.evento&&col?'<span class="card-evento" style="background:'+col.bg+';color:'+col.text+'">'+f.evento+'</span>':'')+
             statusBadge(f.status)+
             kdmTag+
+            '<button class="cat-card-btn" data-cod="'+f.codigo.replace(/"/g,'&quot;')+'" onclick="event.stopPropagation();switchMode(\'catalogo\');openCatDetail(this.dataset.cod)" title="Ver no Catálogo">⊞</button>'+
           '</div>'+
           '<div class="card-meta">'+
             lenteBadge(clean(f.lente))+' '+somBadge(clean(f.som))+
@@ -6692,20 +6695,23 @@ async function doSaveCat(){
   if(msg){msg.className='cat-msg';msg.textContent='Salvando…';}
   if(!window._olgaCatalogo){if(msg){msg.className='cat-msg err';msg.textContent='API não disponível.';}return;}
   try{
+    var selEl=document.getElementById('catf_selecao');
     var data={
-      festival_code:_catCode,title:gv('title'),title_pt:gv('title_pt'),
+      festival_code:_catCode,title_pt:gv('title_pt'),
       original_title:gv('original_title'),english_title:gv('english_title'),
-      director:gv('director'),original_language:gv('original_language'),
       film_type:gv('film_type'),content_rating:gv('content_rating'),
-      production_company:gv('production_company'),distribution_company:gv('distribution_company'),
       contact_email:gv('contact_email'),year:parseInt(gv('year'))||null,
       copy_arrival_forecast:gv('copy_arrival_forecast'),copy_notes:gv('copy_notes'),
+      screener:gv('screener'),selecao:selEl?selEl.value:'',
       synopsis:(document.getElementById('catf_synopsis')||{value:''}).value.trim(),
-      countries:catGetTags('countries'),subtitles:catGetTags('subtitles'),genre:catGetTags('genre'),
+      director:catGetTags('director'),
+      countries:catGetTags('countries'),genre:catGetTags('genre'),
+      production_company:catGetTags('production_company'),
+      distribution_company:catGetTags('distribution_company'),
       awards:catGetTags('awards'),director_filmography:catGetTags('director_filmography'),
-      crew:{cinematography:gv('crew_cinematography'),screenplay:gv('crew_screenplay'),
-            editing:gv('crew_editing'),sound:gv('crew_sound'),
-            art_direction:gv('crew_art_direction'),costume_design:gv('crew_costume_design'),
+      crew:{cinematography:catGetTags('crew_cinematography'),screenplay:catGetTags('crew_screenplay'),
+            editing:catGetTags('crew_editing'),sound:catGetTags('crew_sound'),
+            art_direction:catGetTags('crew_art_direction'),costume_design:catGetTags('crew_costume_design'),
             cast:catGetTags('crew_cast')}
     };
     await window._olgaCatalogo.save(_catCode,data);
