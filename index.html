@@ -1743,6 +1743,42 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .cat-card-btn:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim);}
 .cat-no-results{display:flex;align-items:center;justify-content:center;min-height:40vh;color:var(--text-muted);font-family:var(--mono);font-size:12px;}
 
+/* CATÁLOGO — BUSCA AVANÇADA */
+.cat-sf-form{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px 4px;}
+.cat-sf-row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.cat-sf-cell{display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px;}
+.cat-sf-cell.narrow{flex:0 0 150px;}
+.cat-sf-cell.wide{flex:2;}
+.cat-sf-lbl{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);}
+.cat-sf-wrap{display:flex;gap:4px;align-items:stretch;}
+.cat-sf-inp{flex:1;font-family:var(--sans);font-size:12px;background:var(--bg);color:var(--text);border:1px solid var(--border2);padding:5px 9px;outline:none;min-width:0;}
+.cat-sf-inp:focus{border-color:var(--accent);}
+.cat-sf-inp.neg-on{border-color:var(--warn)!important;background:rgba(255,96,85,0.04);}
+.cat-neg-btn{width:26px;flex-shrink:0;font-family:var(--mono);font-size:12px;font-weight:700;background:transparent;color:var(--text-muted);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.cat-neg-btn:hover{border-color:var(--warn);color:var(--warn);}
+.cat-neg-btn.neg{background:rgba(255,96,85,0.1);color:var(--warn);border-color:rgba(255,96,85,0.4);}
+.cat-pres-grp{display:flex;border:1px solid var(--border2);}
+.cat-pres-btn{font-family:var(--mono);font-size:9px;font-weight:600;padding:5px 8px;background:transparent;color:var(--text-muted);border:none;cursor:pointer;flex:1;white-space:nowrap;}
+.cat-pres-btn:not(:last-child){border-right:1px solid var(--border2);}
+.cat-pres-btn:hover{color:var(--text);}
+.cat-pres-btn.active-pos{background:rgba(90,160,214,0.12);color:var(--accent);}
+.cat-pres-btn.active-neg{background:rgba(255,96,85,0.1);color:var(--warn);}
+.cat-sf-actions{display:flex;gap:8px;align-items:center;padding:10px 24px;background:var(--surface);border-bottom:2px solid var(--border);flex-wrap:wrap;}
+.cat-run-btn{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 20px;background:var(--accent);color:var(--bg);border:none;cursor:pointer;}
+.cat-run-btn:hover{opacity:0.85;}
+.cat-add-btn{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:7px 14px;background:transparent;color:var(--accent);border:1px solid var(--accent);cursor:pointer;}
+.cat-add-btn:hover{background:var(--accent-dim);}
+.cat-all-btn{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:7px 14px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;margin-left:auto;}
+.cat-all-btn:hover{border-color:var(--text-dim);color:var(--text);}
+.cat-clear-btn{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:7px 12px;background:transparent;color:var(--text-muted);border:1px solid var(--border);cursor:pointer;}
+.cat-clear-btn:hover{color:var(--warn);border-color:var(--warn);}
+.cat-slots-bar{display:flex;gap:6px;flex-wrap:wrap;padding:7px 24px;border-bottom:1px solid var(--border);background:var(--bg);}
+.cat-slot-chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;padding:3px 10px;background:var(--accent-dim);color:var(--accent);border:1px solid rgba(90,160,214,0.35);}
+.cat-slot-rm{background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;line-height:1;padding:0;opacity:0.7;}
+.cat-slot-rm:hover{opacity:1;}
+.cat-res-hdr{display:flex;align-items:center;gap:10px;padding:8px 24px;border-bottom:1px solid var(--border);background:var(--surface);}
+.cat-res-count{font-family:var(--mono);font-size:10px;color:var(--text-muted);}
+
 @media print{
   #main-content{zoom:1!important;}
   @page{margin:14mm 11mm;size:A4 landscape;}
@@ -2536,10 +2572,6 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   <div class="event-filters" id="dashEventFilters" style="margin-left:4px;"></div>
 </div>
 <div class="mode-bar hidden" id="barCatalogo">
-  <div class="search-wrap" style="max-width:320px;">
-    <input type="text" id="catSearchInput" placeholder="título, código, direção…" oninput="catQuery=this.value.trim();document.getElementById('catSearchClear').style.display=catQuery?'block':'none';if(typeof renderCatalogo==='function'&&currentMode==='catalogo')renderCatalogo();">
-    <button class="search-clear" id="catSearchClear" style="display:none" onclick="document.getElementById('catSearchInput').value='';catQuery='';this.style.display='none';if(typeof renderCatalogo==='function')renderCatalogo();">×</button>
-  </div>
   <div class="event-filters" id="catEventFilters"></div>
   <span class="result-count" id="catResultCount"></span>
 </div>
@@ -6515,7 +6547,9 @@ window.confirmEquipeDelete=async function(){
 /* ============================================================
    CATÁLOGO MODULE — JS
    ============================================================ */
-var _catView='list',_catCode=null,_catEditing=false,catQuery='';
+var _catView='search',_catCode=null,_catEditing=false,catQuery='';
+var _catSearch={texto:'',texto_neg:false,director:'',director_neg:false,selecao:'',selecao_neg:false,ftype:'',ftype_neg:false,kdm:'',kdm_neg:false,stat:'',stat_neg:false,idioma:'',idioma_neg:false,genre:'',genre_neg:false,pais:'',pais_neg:false,prod:'',prod_neg:false,dist:'',dist_neg:false,syn_pres:'',scr_pres:'',email_pres:''};
+var _catSlots=[],_catShowAll=false,_catRan=false;
 
 function fmtDurMin(str){
   if(!str)return'';
@@ -6543,33 +6577,75 @@ function buildCatalogoFilters(){
 }
 function catToggleEvent(ev){
   if(activeEventsCatalogo.has(ev))activeEventsCatalogo.delete(ev);else activeEventsCatalogo.add(ev);
-  buildCatalogoFilters();if(_catView==='list')renderCatalogo();
+  buildCatalogoFilters();renderCatalogo();
 }
-function renderCatalogo(){
-  _catView='list';_catCode=null;_catEditing=false;
-  var cont=document.getElementById('catalogo-container');if(!cont)return;
-  var q=(catQuery||'').toLowerCase();
-  var filtered=filmesArr.filter(function(f){
-    if(f.evento&&!activeEventsCatalogo.has(f.evento))return false;
-    if(!q)return true;
-    var meta=catalogoFilmesMap[f.codigo]||{};
-    return((f.titulo||'')+(f.codigo||'')+(meta.title||'')+(meta.title_pt||'')+(meta.original_title||'')+(meta.director||'')).toLowerCase().includes(q);
-  });
-  filtered.sort(function(a,b){
-    var ma=catalogoFilmesMap[a.codigo]||{},mb=catalogoFilmesMap[b.codigo]||{};
-    return(ma.title||a.titulo||a.codigo).localeCompare((mb.title||b.titulo||b.codigo),'pt-BR',{sensitivity:'base'});
-  });
-  var rc=document.getElementById('catResultCount');
-  if(rc)rc.textContent=filtered.length+' título'+(filtered.length!==1?'s':'');
-  if(!filtered.length){cont.innerHTML='<div class="cat-no-results">Nenhum título encontrado.</div>';return;}
+
+/* ── search state read/write ── */
+function _catReadForm(){
+  function v(id){var el=document.getElementById('catsf_'+id);return el?(el.value||'').trim():'';}
+  function neg(id){var el=document.getElementById('catneg_'+id);return el?el.classList.contains('neg'):false;}
+  function pres(id){var a=document.querySelector('.cat-pres-btn[data-field="'+id+'"].active-pos');var b=document.querySelector('.cat-pres-btn[data-field="'+id+'"].active-neg');return a?'sim':b?'nao':'';}
+  _catSearch={texto:v('texto'),texto_neg:neg('texto'),director:v('director'),director_neg:neg('director'),selecao:v('selecao'),selecao_neg:neg('selecao'),ftype:v('ftype'),ftype_neg:neg('ftype'),kdm:v('kdm'),kdm_neg:neg('kdm'),stat:v('stat'),stat_neg:neg('stat'),idioma:v('idioma'),idioma_neg:neg('idioma'),genre:v('genre'),genre_neg:neg('genre'),pais:v('pais'),pais_neg:neg('pais'),prod:v('prod'),prod_neg:neg('prod'),dist:v('dist'),dist_neg:neg('dist'),syn_pres:pres('syn'),scr_pres:pres('scr'),email_pres:pres('email')};
+}
+function _catHasCriteria(s){
+  return s.texto||s.director||s.selecao||s.ftype||s.kdm||s.stat||s.idioma||s.genre||s.pais||s.prod||s.dist||s.syn_pres||s.scr_pres||s.email_pres;
+}
+function _catSlotDesc(s){
+  var parts=[];
+  if(s.texto)parts.push((s.texto_neg?'≠':'')+'«'+s.texto+'»');
+  if(s.director)parts.push((s.director_neg?'≠dir:':'dir:')+s.director);
+  if(s.selecao)parts.push((s.selecao_neg?'≠':'')+'sel:'+s.selecao);
+  if(s.ftype)parts.push((s.ftype_neg?'≠':'')+'tipo:'+s.ftype);
+  if(s.kdm)parts.push((s.kdm_neg?'≠':'')+'kdm');
+  if(s.stat)parts.push((s.stat_neg?'≠':'')+'status:'+s.stat);
+  if(s.idioma)parts.push((s.idioma_neg?'≠':'')+'idm:'+s.idioma);
+  if(s.genre)parts.push((s.genre_neg?'≠':'')+'gen:'+s.genre);
+  if(s.pais)parts.push((s.pais_neg?'≠':'')+'país:'+s.pais);
+  if(s.prod)parts.push((s.prod_neg?'≠':'')+'prod:'+s.prod);
+  if(s.dist)parts.push((s.dist_neg?'≠':'')+'dist:'+s.dist);
+  if(s.syn_pres)parts.push('sinopse:'+(s.syn_pres==='sim'?'✓':'✗'));
+  if(s.scr_pres)parts.push('screener:'+(s.scr_pres==='sim'?'✓':'✗'));
+  if(s.email_pres)parts.push('email:'+(s.email_pres==='sim'?'✓':'✗'));
+  return parts.join(' · ')||'conjunto';
+}
+
+/* ── filter logic ── */
+function _catMatch(f,s){
+  var copia=filmesMap[f.codigo]||{};var meta=catalogoFilmesMap[f.codigo]||{};
+  function strMatch(hay,q){return(hay||'').toLowerCase().includes(q.toLowerCase());}
+  function arrMatch(arr,q){return(Array.isArray(arr)?arr:(arr?[arr]:[])).some(function(v){return strMatch(v,q);});}
+  function check(matches,neg){return neg?!matches:matches;}
+  if(s.texto){var hay=[f.codigo,f.titulo,meta.title,meta.title_pt,meta.original_title,meta.english_title].join(' ');if(!check(strMatch(hay,s.texto),s.texto_neg))return false;}
+  if(s.director){if(!check(arrMatch(meta.director,s.director),s.director_neg))return false;}
+  if(s.selecao){if(!check((meta.selecao||'')===s.selecao,s.selecao_neg))return false;}
+  if(s.ftype){if(!check(strMatch(meta.film_type,s.ftype),s.ftype_neg))return false;}
+  if(s.kdm){if(!check((copia.kdm||'').toUpperCase()==='SIM',s.kdm_neg))return false;}
+  if(s.stat){if(!check(strMatch(f.status,s.stat),s.stat_neg))return false;}
+  if(s.idioma){if(!check(strMatch(copia.idioma,s.idioma),s.idioma_neg))return false;}
+  if(s.genre){if(!check(arrMatch(meta.genre,s.genre),s.genre_neg))return false;}
+  if(s.pais){if(!check(arrMatch(meta.countries,s.pais),s.pais_neg))return false;}
+  if(s.prod){if(!check(arrMatch(meta.production_company,s.prod),s.prod_neg))return false;}
+  if(s.dist){if(!check(arrMatch(meta.distribution_company,s.dist),s.dist_neg))return false;}
+  if(s.syn_pres==='sim'&&!meta.synopsis)return false;
+  if(s.syn_pres==='nao'&&meta.synopsis)return false;
+  if(s.scr_pres==='sim'&&!meta.screener)return false;
+  if(s.scr_pres==='nao'&&meta.screener)return false;
+  if(s.email_pres==='sim'&&!meta.contact_email)return false;
+  if(s.email_pres==='nao'&&meta.contact_email)return false;
+  return true;
+}
+
+/* ── card builder (shared between search results + show all) ── */
+function _catBuildCards(films){
+  if(!films.length)return'<div class="cat-no-results">Nenhum resultado.</div>';
+  var selCls={'FEST':'ok','SUPLENTE':'warn'};
   var html='<div class="cat-list">';
-  filtered.forEach(function(f){
+  films.forEach(function(f){
     var meta=catalogoFilmesMap[f.codigo]||{};
     var hasMeta=!!(meta.title||meta.director);
     var title=meta.title||f.titulo||f.codigo;
     var dir=Array.isArray(meta.director)?meta.director.join(', '):(meta.director||'');
     var dur=fmtDurMin(f.duracao);var sCls=catStatusCls(f.status);
-    var selCls={'FEST':'ok','SUPLENTE':'warn'};
     var selTag=meta.selecao?'<span class="cat-item-status '+(selCls[meta.selecao]||'')+'" style="text-transform:uppercase;letter-spacing:0.05em;">'+meta.selecao+'</span>':'';
     html+='<button class="cat-item'+(hasMeta?' has-meta':'')+'" data-cod="'+f.codigo.replace(/"/g,'&quot;')+'" onclick="openCatDetail(this.dataset.cod)">'
       +'<span class="cat-item-code">'+f.codigo+'</span>'
@@ -6580,8 +6656,161 @@ function renderCatalogo(){
       +(f.status?'<span class="cat-item-status '+sCls+'">'+f.status+'</span>':'')
     +'</button>';
   });
-  cont.innerHTML=html+'</div>';
+  return html+'</div>';
 }
+
+/* ── pres toggle (no re-render) ── */
+function catTogglePres(field,val){
+  var btns=document.querySelectorAll('.cat-pres-btn[data-field="'+field+'"]');
+  btns.forEach(function(btn){
+    var isThis=btn.getAttribute('data-val')===val;
+    var wasPos=btn.classList.contains('active-pos');
+    var wasNeg=btn.classList.contains('active-neg');
+    btn.classList.remove('active-pos','active-neg');
+    if(isThis){
+      if(val==='sim'&&!wasPos)btn.classList.add('active-pos');
+      else if(val==='nao'&&!wasNeg)btn.classList.add('active-neg');
+    }
+  });
+}
+
+/* ── neg toggle (no re-render) ── */
+function catToggleNeg(field){
+  var btn=document.getElementById('catneg_'+field);
+  var inp=document.getElementById('catsf_'+field);
+  if(!btn)return;
+  var isNeg=btn.classList.toggle('neg');
+  btn.textContent=isNeg?'≠':'±';
+  if(inp)inp.classList.toggle('neg-on',isNeg);
+}
+
+/* ── actions ── */
+function runCatSearch(){
+  _catReadForm();
+  _catRan=true;_catShowAll=false;
+  _catRenderResults();
+}
+function addCatSlot(){
+  _catReadForm();
+  if(!_catHasCriteria(_catSearch))return;
+  _catSlots.push(JSON.parse(JSON.stringify(_catSearch)));
+  _catSearch={texto:'',texto_neg:false,director:'',director_neg:false,selecao:'',selecao_neg:false,ftype:'',ftype_neg:false,kdm:'',kdm_neg:false,stat:'',stat_neg:false,idioma:'',idioma_neg:false,genre:'',genre_neg:false,pais:'',pais_neg:false,prod:'',prod_neg:false,dist:'',dist_neg:false,syn_pres:'',scr_pres:'',email_pres:''};
+  _catRan=true;_catShowAll=false;
+  renderCatalogo();
+}
+function removeCatSlot(idx){
+  _catSlots.splice(idx,1);
+  if(!_catSlots.length&&!_catRan){_catShowAll=false;}
+  _catRenderResults();
+}
+function catShowAll(){
+  _catShowAll=true;_catRan=false;_catSlots=[];
+  renderCatalogo();
+}
+function clearCatSearch(){
+  _catSearch={texto:'',texto_neg:false,director:'',director_neg:false,selecao:'',selecao_neg:false,ftype:'',ftype_neg:false,kdm:'',kdm_neg:false,stat:'',stat_neg:false,idioma:'',idioma_neg:false,genre:'',genre_neg:false,pais:'',pais_neg:false,prod:'',prod_neg:false,dist:'',dist_neg:false,syn_pres:'',scr_pres:'',email_pres:''};
+  _catSlots=[];_catRan=false;_catShowAll=false;
+  renderCatalogo();
+}
+
+function _catRenderResults(){
+  var resEl=document.getElementById('cat-res-area');if(!resEl)return;
+  var slotsEl=document.getElementById('cat-slots-bar');
+  if(slotsEl){
+    slotsEl.innerHTML=_catSlots.length?_catSlots.map(function(s,i){return'<span class="cat-slot-chip">'+_catSlotDesc(s)+'<button class="cat-slot-rm" onclick="removeCatSlot('+i+')">×</button></span>';}).join(''):'';
+    slotsEl.style.display=_catSlots.length?'flex':'none';
+  }
+  if(!_catRan&&!_catShowAll&&!_catSlots.length){resEl.innerHTML='';return;}
+  var base=filmesArr.filter(function(f){return f.evento?activeEventsCatalogo.has(f.evento):true;});
+  var results;
+  if(_catShowAll){
+    results=base;
+  }else{
+    var allSlots=_catSlots.slice();
+    if(_catRan&&_catHasCriteria(_catSearch))allSlots.push(_catSearch);
+    results=allSlots.length?base.filter(function(f){return allSlots.some(function(s){return _catMatch(f,s);});}):[];
+  }
+  results.sort(function(a,b){var ma=catalogoFilmesMap[a.codigo]||{},mb=catalogoFilmesMap[b.codigo]||{};return(ma.title||a.titulo||a.codigo).localeCompare((mb.title||b.titulo||b.codigo),'pt-BR',{sensitivity:'base'});});
+  var rc=document.getElementById('catResultCount');if(rc)rc.textContent=results.length+' título'+(results.length!==1?'s':'');
+  resEl.innerHTML='<div class="cat-res-hdr"><span class="cat-res-count">'+results.length+' título'+(results.length!==1?'s':'')+'</span></div>'+_catBuildCards(results);
+}
+
+/* ── search form render ── */
+function _catNegBtn(field){return'<button class="cat-neg-btn" id="catneg_'+field+'" onclick="catToggleNeg(\''+field+'\')" title="Pesquisa negativa">±</button>';}
+function _catPresGroup(field){
+  return'<div class="cat-pres-grp">'
+    +'<button class="cat-pres-btn" data-field="'+field+'" data-val="sim" onclick="catTogglePres(\''+field+'\',\'sim\')">SIM</button>'
+    +'<button class="cat-pres-btn" data-field="'+field+'" data-val="nao" onclick="catTogglePres(\''+field+'\',\'nao\')">NÃO</button>'
+    +'<button class="cat-pres-btn" data-field="'+field+'" data-val="" onclick="catTogglePres(\''+field+'\',\'\')">—</button>'
+    +'</div>';
+}
+function _catInp(field,ph,restore){
+  var val=(restore||'').replace(/"/g,'&quot;');
+  return'<input class="cat-sf-inp" id="catsf_'+field+'" type="text" placeholder="'+ph+'" value="'+val+'" onkeydown="if(event.key===\'Enter\')runCatSearch()">';
+}
+function _catSel(field,opts,restore){
+  var html='<select class="cat-sf-inp" id="catsf_'+field+'">';
+  html+='<option value="">—</option>';
+  opts.forEach(function(o){html+='<option value="'+o+'"'+(restore===o?' selected':'')+'>'+o+'</option>';});
+  return html+'</select>';
+}
+
+function renderCatalogo(){
+  _catView='search';_catCode=null;_catEditing=false;
+  var cont=document.getElementById('catalogo-container');if(!cont)return;
+  var s=_catSearch;
+  var statVals=Array.from(new Set(filmesArr.map(function(f){return f.status;}).filter(Boolean))).sort();
+  var idiomaVals=Array.from(new Set(filmesArr.map(function(f){return f.idioma;}).filter(Boolean))).sort();
+  var html='<div class="cat-sf-form">';
+  // row 1: texto + director
+  html+='<div class="cat-sf-row">';
+  html+='<div class="cat-sf-cell wide"><div class="cat-sf-lbl">Título / Código</div><div class="cat-sf-wrap">'+_catInp('texto','busca em todos os títulos e código',s.texto)+_catNegBtn('texto')+'</div></div>';
+  html+='<div class="cat-sf-cell"><div class="cat-sf-lbl">Direção</div><div class="cat-sf-wrap">'+_catInp('director','nome do(a) diretor(a)',s.director)+_catNegBtn('director')+'</div></div>';
+  html+='</div>';
+  // row 2: seleção + metragem + kdm
+  html+='<div class="cat-sf-row">';
+  html+='<div class="cat-sf-cell narrow"><div class="cat-sf-lbl">Seleção</div><div class="cat-sf-wrap">'+_catSel('selecao',['FEST','NÃO FEST','SUPLENTE','CONVIDADO','VISIONAMENTO'],s.selecao)+_catNegBtn('selecao')+'</div></div>';
+  html+='<div class="cat-sf-cell narrow"><div class="cat-sf-lbl">Metragem</div><div class="cat-sf-wrap">'+_catSel('ftype',['curta','média','longa'],s.ftype)+_catNegBtn('ftype')+'</div></div>';
+  html+='<div class="cat-sf-cell narrow"><div class="cat-sf-lbl">KDM</div><div class="cat-sf-wrap">'+_catSel('kdm',['SIM'],s.kdm)+_catNegBtn('kdm')+'</div></div>';
+  html+='<div class="cat-sf-cell"><div class="cat-sf-lbl">Status DCP</div><div class="cat-sf-wrap">'+_catSel('stat',statVals,s.stat)+_catNegBtn('stat')+'</div></div>';
+  html+='<div class="cat-sf-cell"><div class="cat-sf-lbl">Idioma</div><div class="cat-sf-wrap">'+_catSel('idioma',idiomaVals,s.idioma)+_catNegBtn('idioma')+'</div></div>';
+  html+='</div>';
+  // row 3: gênero + país + produtora + distribuidora
+  html+='<div class="cat-sf-row">';
+  html+='<div class="cat-sf-cell"><div class="cat-sf-lbl">Gênero</div><div class="cat-sf-wrap">'+_catInp('genre','ex: drama',s.genre)+_catNegBtn('genre')+'</div></div>';
+  html+='<div class="cat-sf-cell"><div class="cat-sf-lbl">País</div><div class="cat-sf-wrap">'+_catInp('pais','ex: Brasil',s.pais)+_catNegBtn('pais')+'</div></div>';
+  html+='<div class="cat-sf-cell"><div class="cat-sf-lbl">Produtora</div><div class="cat-sf-wrap">'+_catInp('prod','nome da produtora',s.prod)+_catNegBtn('prod')+'</div></div>';
+  html+='<div class="cat-sf-cell"><div class="cat-sf-lbl">Distribuidora</div><div class="cat-sf-wrap">'+_catInp('dist','nome da distribuidora',s.dist)+_catNegBtn('dist')+'</div></div>';
+  html+='</div>';
+  // row 4: presence toggles
+  html+='<div class="cat-sf-row">';
+  html+='<div class="cat-sf-cell narrow"><div class="cat-sf-lbl">Sinopse</div>'+_catPresGroup('syn')+'</div>';
+  html+='<div class="cat-sf-cell narrow"><div class="cat-sf-lbl">Screener</div>'+_catPresGroup('scr')+'</div>';
+  html+='<div class="cat-sf-cell narrow"><div class="cat-sf-lbl">Email</div>'+_catPresGroup('email')+'</div>';
+  html+='</div>';
+  html+='</div>'; // /cat-sf-form
+  // actions
+  html+='<div class="cat-sf-actions">';
+  html+='<button class="cat-run-btn" onclick="runCatSearch()">⊞ Buscar</button>';
+  html+='<button class="cat-add-btn" onclick="addCatSlot()">+ Adicionar ao conjunto</button>';
+  if(_catRan||_catSlots.length)html+='<button class="cat-clear-btn" onclick="clearCatSearch()">✕ Limpar</button>';
+  html+='<button class="cat-all-btn" onclick="catShowAll()">Mostrar todos</button>';
+  html+='</div>';
+  // slots bar
+  html+='<div class="cat-slots-bar" id="cat-slots-bar" style="display:'+((_catSlots.length)?'flex':'none')+'">';
+  html+=_catSlots.map(function(sl,i){return'<span class="cat-slot-chip">'+_catSlotDesc(sl)+'<button class="cat-slot-rm" onclick="removeCatSlot('+i+')">×</button></span>';}).join('');
+  html+='</div>';
+  // results area
+  html+='<div id="cat-res-area"></div>';
+  cont.innerHTML=html;
+  // restore neg/pres state from _catSearch
+  function maybeNeg(field,val){if(val){var btn=document.getElementById('catneg_'+field);var inp=document.getElementById('catsf_'+field);if(btn){btn.classList.add('neg');btn.textContent='≠';}if(inp)inp.classList.add('neg-on');}}
+  maybeNeg('texto',s.texto_neg);maybeNeg('director',s.director_neg);maybeNeg('selecao',s.selecao_neg);maybeNeg('ftype',s.ftype_neg);maybeNeg('kdm',s.kdm_neg);maybeNeg('stat',s.stat_neg);maybeNeg('idioma',s.idioma_neg);maybeNeg('genre',s.genre_neg);maybeNeg('pais',s.pais_neg);maybeNeg('prod',s.prod_neg);maybeNeg('dist',s.dist_neg);
+  function restorePres(field,val){if(val){var cls=val==='sim'?'active-pos':'active-neg';var btn=document.querySelector('.cat-pres-btn[data-field="'+field+'"][data-val="'+val+'"]');if(btn)btn.classList.add(cls);}}
+  restorePres('syn',s.syn_pres);restorePres('scr',s.scr_pres);restorePres('email',s.email_pres);
+  if(_catRan||_catShowAll||_catSlots.length)_catRenderResults();
+}
+
 function openCatDetail(codigo){_catView='detail';_catCode=codigo;_catEditing=false;renderCatDetail();}
 function renderCatDetail(){
   var cont=document.getElementById('catalogo-container');if(!cont||!_catCode)return;
