@@ -1191,6 +1191,8 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 [data-theme="win98"] .tt-name{color:#000080;font-family:Tahoma,'MS Sans Serif',Arial,sans-serif;}
 [data-theme="win98"] .tt-row{color:#222;font-family:Tahoma,'MS Sans Serif',Arial,sans-serif;}
 [data-theme="win98"] .tt-row span{color:#000;}
+[data-theme="win98"] .tt-film{color:#333;font-family:Tahoma,'MS Sans Serif',Arial,sans-serif;}
+[data-theme="win98"] .tt-film span{color:#000;}
 
 /* SESSÕES */
 [data-theme="win98"] .sess-day-header{
@@ -6012,7 +6014,6 @@ function renderDash(){
     ctrlBody+='<button class="dash-tile '+cls+(isActive?' active':'')+'" onclick="selectDashStatus(\''+st.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">'+
       '<div class="dash-tile-count">'+count+'</div>'+
       '<div class="dash-tile-status">'+(st||'sem status')+'</div>'+
-      '<div class="dash-tile-sub">filme'+(count!==1?'s':'')+'</div>'+
     '</button>';
   });
   ctrlBody+='</div>';
@@ -6054,12 +6055,15 @@ function renderDash(){
 
   // footer
   var sysUpdate='última atualização do sistema · 24/04/2026 às 15:00';
-  var fileModStr=fileLastModified?fileLastModified.toLocaleString('pt-BR'):'—';
-  var loadLabel=window._olgaDataLabel||null;
+  var dataUpdate='—';
+  if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
+    dataUpdate=window._olgaDataLabel;
+  }else if(fileLastModified){
+    dataUpdate='planilha · '+fileLastModified.toLocaleDateString('pt-BR')+' '+fileLastModified.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  }
   html+='<div class="dash-footer">'+
     '<span>◉ '+sysUpdate+'</span>'+
-    (loadLabel?'<span>⟳ '+loadLabel+'</span>':'')+
-    '<span>📄 última modificação da planilha · '+fileModStr+'</span>'+
+    '<span>⟳ última atualização dos dados · '+dataUpdate+'</span>'+
   '</div>';
 
   dc.innerHTML=html;
