@@ -1272,6 +1272,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 [data-theme="win98"] *{transition:none!important;animation-duration:0.01ms!important;}
 /* END WIN98 THEME */
 
+@media print{
   #main-content{zoom:1!important;}
   @page{margin:14mm 11mm;size:A4 landscape;}
   body{background:white;color:black;}
@@ -5976,6 +5977,8 @@ function applyTheme(theme){
     html.setAttribute('data-theme','gray');
   }else if(theme==='terminal'){
     html.setAttribute('data-theme','terminal');
+  }else if(theme==='win98'){
+    html.setAttribute('data-theme','win98');
   }
   // re-render grades so block colors follow the new theme
   if(typeof renderGrade==='function'&&document.getElementById('gradeWrap')&&dataLoaded)renderGrade();
