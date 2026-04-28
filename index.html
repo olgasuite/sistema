@@ -2507,7 +2507,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <button class="nav-tab" id="tabGrade" disabled onclick="switchMode('grade')"><span class="tab-icon"><i data-lucide="layout-dashboard"></i></span> Grade</button>
     <button class="nav-tab" id="tabGrade2" disabled onclick="switchMode('grade2')" style="display:none"></button>
     <button class="nav-tab" id="tabSessoes" disabled onclick="switchMode('sessoes')"><span class="tab-icon"><i data-lucide="calendar-clock"></i></span> Sessões</button>
-    <button class="nav-tab" id="tabBusca" disabled onclick="switchMode('busca')" style="display:none"><span class="tab-icon"><i data-lucide="search"></i></span> Acervo</button>
+    <button class="nav-tab" id="tabBusca" onclick="switchMode('busca')" style="display:none"><span class="tab-icon"><i data-lucide="search"></i></span> Acervo</button>
     <button class="nav-tab" id="tabVinhetas" disabled onclick="switchMode('vinhetas')"><span class="tab-icon"><i data-lucide="film"></i></span> Vinhetas</button>
     <button class="nav-tab" id="tabIngest" disabled onclick="switchMode('ingest')" style="display:none"></button>
     <button class="nav-tab" id="tabCinemas" disabled onclick="switchMode('cinemas')"><span class="tab-icon"><i data-lucide="clapperboard"></i></span> Cinemas</button>
@@ -2658,7 +2658,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <div class="module-card disabled" id="modCardProjecao" onclick="moduleCardClick('projecao')">
       <div class="module-icon"><i data-lucide="projector"></i></div>
       <div class="module-name">Projeção</div>
-      <div class="module-desc">Ficha, Ingest, Grade de Projeção e Cinemas</div>
+      <div class="module-desc">Ficha, Ingest, Grade de Projeção e Acervo</div>
     </div>
     <div class="module-card disabled" id="modCardGrade" onclick="moduleCardClick('grade')">
       <div class="module-icon"><i data-lucide="layout-dashboard"></i></div>
@@ -2669,11 +2669,6 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       <div class="module-icon"><i data-lucide="calendar-clock"></i></div>
       <div class="module-name">Sessões</div>
       <div class="module-desc">Lista de sessões por dia com filtro por sala</div>
-    </div>
-    <div class="module-card disabled" id="modCardBusca" onclick="moduleCardClick('busca')" style="display:none">
-      <div class="module-icon"><i data-lucide="search"></i></div>
-      <div class="module-name">Acervo</div>
-      <div class="module-desc">Busca e filtragem de filmes na base de dados</div>
     </div>
     <div class="module-card disabled" id="modCardVinhetas" onclick="moduleCardClick('vinhetas')">
       <div class="module-icon"><i data-lucide="film"></i></div>
@@ -6320,7 +6315,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 28/04/2026 às 23:30';
+  var sysUpdate='última atualização do sistema · 28/04/2026 às 23:45';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -7441,7 +7436,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 28/04/2026 às 23:30</span></div>
+<div id="page-footer"><span>última atualização · 28/04/2026 às 23:45</span></div>
 
 </div>
 
