@@ -704,7 +704,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .zoom-level{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text-muted);min-width:36px;text-align:center;letter-spacing:0.05em;cursor:default;user-select:none;}
 .zoom-level:hover{color:var(--text-dim);}
 .zoom-level[title]{cursor:pointer;}
-.administracao-role-pill{display:inline-block;font-size:8px;font-weight:600;letter-spacing:0.07em;padding:2px 7px;border-radius:2px;text-transform:uppercase;border:1px solid;color:#a0c8ff;border-color:rgba(160,200,255,0.25);background:rgba(160,200,255,0.08);}
+.equipe-role-pill{display:inline-block;font-size:8px;font-weight:600;letter-spacing:0.07em;padding:2px 7px;border-radius:2px;text-transform:uppercase;border:1px solid;color:#a0c8ff;border-color:rgba(160,200,255,0.25);background:rgba(160,200,255,0.08);}
 #page-footer{position:fixed;bottom:0;left:0;right:0;z-index:100;height:22px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;padding:0 16px;pointer-events:none;}
 #page-footer span{font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.08em;}
 @media print{#page-footer{display:none!important;}}
@@ -1262,7 +1262,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 [data-theme="win98"] .vinheta-card-cpl{color:#000!important;}
 [data-theme="win98"] .gb-val{color:#000!important;}
 /* role pill */
-[data-theme="win98"] .administracao-role-pill{color:#000080;border-color:rgba(0,0,128,0.35);background:rgba(0,0,128,0.07);}
+[data-theme="win98"] .equipe-role-pill{color:#000080;border-color:rgba(0,0,128,0.35);background:rgba(0,0,128,0.07);}
 /* CPL-OV — semi-transparent greens ficam invisíveis no cinza */
 [data-theme="win98"] .cpl-ov-label{color:#007700!important;}
 [data-theme="win98"] .cpl-ov-value{color:#005500!important;}
@@ -1634,7 +1634,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 [data-theme="doremi"] .ingest-film-gb{color:var(--text-dim);}
 
 /* ROLE PILL */
-[data-theme="doremi"] .administracao-role-pill{color:var(--accent);border-color:rgba(90,160,214,0.35);background:rgba(90,160,214,0.10);}
+[data-theme="doremi"] .equipe-role-pill{color:var(--accent);border-color:rgba(90,160,214,0.35);background:rgba(90,160,214,0.10);}
 
 /* VINHETA OBS */
 [data-theme="doremi"] .vinheta-detail-obs{color:rgba(214,185,100,0.9)!important;}
@@ -1848,7 +1848,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   .ingest-film-row{padding:5px 14px!important;}
   /* BUSCA PRINT */
   body.print-busca header,.mode-bar,#filterPanel,.filter-toggle-btn,.search-clear{display:none!important;}
-  body.print-busca #acervo-panel{display:block!important;}
+  body.print-busca #busca-panel{display:block!important;}
   body.print-busca .film-card{background:white!important;border:1px solid #ccc!important;border-left:3px solid #999!important;page-break-inside:avoid;margin-bottom:6px;}
   body.print-busca .film-card:hover{background:white!important;}
   body.print-busca .card-titulo{color:#000!important;font-size:13px!important;}
@@ -2126,7 +2126,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     // Tabs do nav (tabProjecao, tabGrade, etc.)
     var tabMap = {
       projecao:'tabProjecao', grade:'tabGrade', sessoes:'tabSessoes',
-      busca:'tabAcervo', vinhetas:'tabVinhetas', cinemas:'tabCinemas',
+      busca:'tabBusca', vinhetas:'tabVinhetas', cinemas:'tabCinemas',
       dash:'tabDash', receptivo:'tabReceptivo', catalogo:'tabCatalogo'
     };
     // Module cards na landing
@@ -2144,8 +2144,8 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       if (cardEl) cardEl.style.display = visible ? '' : 'none';
     });
     // aba Equipe: só para admin, independente de modulos
-    var tabAdministracao = document.getElementById('tabAdministracao');
-    if (tabAdministracao) tabAdministracao.style.display = (window._olgaUser && window._olgaUser.role === 'admin') ? '' : 'none';
+    var tabEquipe = document.getElementById('tabEquipe');
+    if (tabEquipe) tabEquipe.style.display = (window._olgaUser && window._olgaUser.role === 'admin') ? '' : 'none';
   }
 
   // ── Restrições granulares ───────────────────────────────────────
@@ -2496,14 +2496,14 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <button class="nav-tab" id="tabGrade" disabled onclick="switchMode('grade')"><span class="tab-icon"><i data-lucide="layout-dashboard"></i></span> Grade</button>
     <button class="nav-tab" id="tabGrade2" disabled onclick="switchMode('grade2')" style="display:none"></button>
     <button class="nav-tab" id="tabSessoes" disabled onclick="switchMode('sessoes')"><span class="tab-icon"><i data-lucide="calendar-clock"></i></span> Sessões</button>
-    <button class="nav-tab" id="tabAcervo" disabled onclick="switchMode('acervo')"><span class="tab-icon"><i data-lucide="search"></i></span> Acervo</button>
-    <button class="nav-tab" id="tabVinhetas" disabled onclick="switchMode('vinhetas')"><span class="tab-icon"><i data-lucide="film"></i></span> vinhetas</button>
+    <button class="nav-tab" id="tabBusca" disabled onclick="switchMode('busca')"><span class="tab-icon"><i data-lucide="search"></i></span> Acervo</button>
+    <button class="nav-tab" id="tabVinhetas" disabled onclick="switchMode('vinhetas')"><span class="tab-icon"><i data-lucide="film"></i></span> Vinhetas</button>
     <button class="nav-tab" id="tabIngest" disabled onclick="switchMode('ingest')" style="display:none"></button>
     <button class="nav-tab" id="tabCinemas" disabled onclick="switchMode('cinemas')"><span class="tab-icon"><i data-lucide="clapperboard"></i></span> Cinemas</button>
     <button class="nav-tab" id="tabReceptivo" disabled onclick="switchMode('receptivo')"><span class="tab-icon"><i data-lucide="users"></i></span> Receptivo</button>
-    <button class="nav-tab" id="tabAdministracao" disabled onclick="switchMode('administracao')" style="display:none"><span class="tab-icon"><i data-lucide="shield"></i></span> Administração</button>
+    <button class="nav-tab" id="tabEquipe" disabled onclick="switchMode('equipe')" style="display:none"><span class="tab-icon"><i data-lucide="shield"></i></span> Administração</button>
   </nav>
-  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar esquema de cores"><span class="tab-icon"><i data-lucide="refresh-cw"></i></span> Tema</button>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar esquema de cores">Tema</button>
   <div id="olga-userbar"></div>
   <div class="zoom-controls">
     <button class="zoom-btn" onclick="changeZoom(-1)" title="Diminuir zoom">−</button>
@@ -2543,7 +2543,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <option value="">Todas as salas</option>
   </select>
 </div>
-<div class="mode-bar hidden" id="barAcervo">
+<div class="mode-bar hidden" id="barBusca">
   <div class="search-wrap">
     <input type="text" id="searchInput" placeholder="título, código, CPL, idioma…" disabled>
     <button class="search-clear" id="searchClear">×</button>
@@ -2606,11 +2606,11 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   <span class="result-count" id="catResultCount"></span>
 </div>
 <div class="mode-bar hidden" id="barReceptivo"></div>
-<div class="mode-bar hidden" id="barAdministracao">
-  <button class="print-btn" onclick="openAdministracaoNewUser()">+ novo usuário</button>
+<div class="mode-bar hidden" id="barEquipe">
+  <button class="print-btn" onclick="openEquipeNewUser()">+ novo usuário</button>
   <button class="print-btn" onclick="openEventoModal(null)" style="margin-left:6px;">+ novo evento</button>
   <button class="print-btn" onclick="importarEventosExistentes()" style="margin-left:6px;">↓ importar eventos</button>
-  <span class="result-count" id="administracaoCount"></span>
+  <span class="result-count" id="equipeCount"></span>
 </div>
 <div class="mode-bar hidden" id="barVinhetas">
   <div class="event-filters" id="vinhetasEventFilters"></div>
@@ -2665,7 +2665,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     </div>
     <div class="module-card disabled" id="modCardVinhetas" onclick="moduleCardClick('vinhetas')">
       <div class="module-icon"><i data-lucide="film"></i></div>
-      <div class="module-name">vinhetas</div>
+      <div class="module-name">Vinhetas</div>
       <div class="module-desc">Propaganda e divulgação por sessão e cinema</div>
     </div>
     <div class="module-card disabled" id="modCardCinemas" onclick="moduleCardClick('cinemas')">
@@ -2725,7 +2725,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     </div>
     <div id="sessoes-container"></div>
   </div>
-  <div class="mode-panel" id="acervo-panel">
+  <div class="mode-panel" id="busca-panel">
     <div class="busca-print-header" id="buscaPrintHeader" style="display:none;padding:18px 24px 0;"></div>
     <div id="buscaAdditiveBar"></div>
     <div class="empty-state" id="buscaEmpty">
@@ -2771,8 +2771,8 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   <div class="mode-panel" id="receptivo-panel">
     <div id="receptivo-container"></div>
   </div>
-  <div class="mode-panel" id="administracao-panel">
-    <div id="administracao-container" style="padding:28px 32px 60px;max-width:1000px;margin:0 auto;"></div>
+  <div class="mode-panel" id="equipe-panel">
+    <div id="equipe-container" style="padding:28px 32px 60px;max-width:1000px;margin:0 auto;"></div>
   </div>
   <div class="mode-panel" id="catalogo-panel">
     <div id="catalogo-container"></div>
@@ -2996,8 +2996,8 @@ function applyParsedData(d,filename){
   var initEvs=currentEvs.size>0?currentEvs:new Set(events);
   activeEventsGrade=new Set(initEvs);activeEventsBusca=new Set(initEvs);activeEventsIngest=new Set(initEvs);activeEventsFicha=new Set(initEvs);activeEventsCinemas=new Set(initEvs);activeEventsDash=new Set(initEvs);activeEventsGrade2=new Set(initEvs);activeEventsSessoes=new Set(initEvs);activeEventsProjecao=new Set(initEvs);activeEventsVinhetas=new Set(initEvs);activeEventsCatalogo=new Set(initEvs);
   dataLoaded=true;
-  ['tabProjecao','tabFicha','tabGrade','tabGrade2','tabSessoes','tabAcervo','tabVinhetas','tabIngest','tabCinemas','tabDash','tabReceptivo','tabCatalogo'].forEach(function(id){document.getElementById(id).disabled=false;});
-  if(window._olgaUser&&window._olgaUser.role==='admin'){document.getElementById('tabAdministracao').disabled=false;}
+  ['tabProjecao','tabFicha','tabGrade','tabGrade2','tabSessoes','tabBusca','tabVinhetas','tabIngest','tabCinemas','tabDash','tabReceptivo','tabCatalogo'].forEach(function(id){document.getElementById(id).disabled=false;});
+  if(window._olgaUser&&window._olgaUser.role==='admin'){document.getElementById('tabEquipe').disabled=false;}
   ['modCardProjecao','modCardGrade','modCardSessoes','modCardBusca','modCardVinhetas','modCardCinemas','modCardDash','modCardReceptivo','modCardCatalogo'].forEach(function(id){document.getElementById(id).classList.remove('disabled');});
   buildGradeDays();window._gradeYearsOpen=null;window._grade2YearsOpen=null;window._dashYearsOpen=null;buildFichaFilters();buildGradeFilters();buildGrade2Filters();buildSessoesFilters();buildProjecaoFilters();buildVinhetasFilters();buildBuscaFilters();buildIngestDays();buildIngestFilters();buildBuscaFilterPanel();buildCinemasFilters();buildDashFilters();buildCatalogoFilters();
   fileNameEl.textContent=filename||'arquivo carregado';
@@ -3067,8 +3067,8 @@ function parseWorkbook(data,filename){
 function goHome(){
   if(currentMode){
     currentMode=null;
-    ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','administracao','catalogo'].forEach(function(m){
-      var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
+    ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','equipe','catalogo'].forEach(function(m){
+      var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
       document.getElementById('tab'+cap).classList.remove('active');
       document.getElementById('bar'+cap).classList.add('hidden');
       document.getElementById(m+'-panel').classList.remove('active');
@@ -3089,13 +3089,13 @@ function switchMode(mode,noPush){
   currentMode=mode;
   if(!noPush&&!_browserNav)history.pushState({olga:mode},'');
   // always collapse the busca filter panel when leaving busca
-  if(mode!=='acervo'&&_fpOpen){_fpOpen=false;document.getElementById('filterPanel').classList.remove('open');document.getElementById('filterToggleBtn').classList.remove('active');}
+  if(mode!=='busca'&&_fpOpen){_fpOpen=false;document.getElementById('filterPanel').classList.remove('open');document.getElementById('filterToggleBtn').classList.remove('active');}
   // reset catalogo search state when leaving the module
   if(currentMode==='catalogo'&&mode!=='catalogo'&&!_browserNav){_catResetState();}
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='block';
-  ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','administracao','catalogo'].forEach(function(m){
-    var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
+  ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','equipe','catalogo'].forEach(function(m){
+    var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
     document.getElementById('tab'+cap).classList.toggle('active',m===mode);
     document.getElementById('bar'+cap).classList.toggle('hidden',m!==mode);
     document.getElementById(m+'-panel').classList.toggle('active',m===mode);
@@ -3110,13 +3110,13 @@ function switchMode(mode,noPush){
   if(mode==='cinemas')renderCinemas();
   if(mode==='dash')renderDash();
   if(mode==='receptivo')renderReceptivo();
-  if(mode==='administracao')renderAdministracao();
+  if(mode==='equipe')renderEquipe();
   if(mode==='catalogo'){if(!_browserNav)_catResetState();renderCatalogo();}
-  if(mode==='acervo'){
+  if(mode==='busca'){
     var bl=document.getElementById('buscaLoading'),be2=document.getElementById('buscaEmpty'),br=document.getElementById('busca-results');
     bl.style.display='flex';be2.style.display='none';br.style.display='none';
     document.getElementById('searchInput').focus();
-    setTimeout(function(){bl.style.display='none';renderAcervoResults();},0);
+    setTimeout(function(){bl.style.display='none';renderBuscaResults();},0);
   }
 }
 
@@ -3209,7 +3209,7 @@ function renderFicha(nome,s){
       var durSum=vh>0?(vh+"h"+String(vm).padStart(2,'0')+"'"):(vm>0?(vs>0?vm+"'"+String(vs).padStart(2,'0')+'"':vm+"'"):(vs+'"'));
       tags+='<span style="font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-left:6px;border-left:1px solid var(--border);padding-left:8px;">'+durSum+'</span>';
     }
-    vinhetasHtml='<div class="ficha-vinhetas"><span class="ficha-vinhetas-label">vinhetas</span>'+tags+'</div>'+
+    vinhetasHtml='<div class="ficha-vinhetas"><span class="ficha-vinhetas-label">Vinhetas</span>'+tags+'</div>'+
       '<div class="ficha-vinhetas-obs">* em caso de mais de uma opção da vinheta indicada escolher a opção que facilite a menor troca de lentes na sessão</div>';
   }
 
@@ -3915,7 +3915,7 @@ function buildBuscaFilters(){buildPills(document.getElementById('buscaEventFilte
     var sess=sessoesMap[s];
     if(sess&&sess.evento&&!activeEventsBusca.has(sess.evento))buscaFilters.sessao.delete(s);
   });
-  renderAcervoResults();buildBuscaFilterPanel();
+  renderBuscaResults();buildBuscaFilterPanel();
 });}
 
 function rebuildIngestCinemaSelect(){
@@ -5185,8 +5185,8 @@ function moveTooltip(ev){
 }
 
 /* BUSCA */
-document.getElementById('searchInput').addEventListener('input',function(){buscaQuery=this.value.trim();document.getElementById('searchClear').style.display=buscaQuery?'block':'none';renderAcervoResults();});
-document.getElementById('searchClear').addEventListener('click',function(){document.getElementById('searchInput').value='';buscaQuery='';this.style.display='none';renderAcervoResults();});
+document.getElementById('searchInput').addEventListener('input',function(){buscaQuery=this.value.trim();document.getElementById('searchClear').style.display=buscaQuery?'block':'none';renderBuscaResults();});
+document.getElementById('searchClear').addEventListener('click',function(){document.getElementById('searchInput').value='';buscaQuery='';this.style.display='none';renderBuscaResults();});
 
 function hl(str,q){if(!q||!str)return str||'';var re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');return str.replace(re,'<mark>$1</mark>');}
 function statusBadge(v){if(!v||v==='-')return'';var u=v.toUpperCase();if(u.includes('OK'))return'<span class="card-status status-ok">'+v+'</span>';if(u.includes('CANCEL'))return'<span class="card-status status-cancel">'+v+'</span>';return'<span class="card-status status-other">'+v+'</span>';}
@@ -5244,7 +5244,7 @@ function syncEventFiltersFrom(src){
   [activeEventsGrade,activeEventsBusca,activeEventsIngest,activeEventsFicha,activeEventsCinemas,activeEventsDash,activeEventsGrade2,activeEventsSessoes,activeEventsProjecao,activeEventsVinhetas].forEach(function(s){s.clear();evs.forEach(function(e){s.add(e);});});
 }
 function activeEventsForMode(m){
-  if(m==='grade')return activeEventsGrade;if(m==='acervo')return activeEventsBusca;
+  if(m==='grade')return activeEventsGrade;if(m==='busca')return activeEventsBusca;
   if(m==='ingest')return activeEventsIngest;if(m==='ficha')return activeEventsFicha;
   if(m==='cinemas')return activeEventsCinemas;if(m==='dash')return activeEventsDash;
   if(m==='grade2')return activeEventsGrade2;if(m==='sessoes')return activeEventsSessoes;
@@ -5257,7 +5257,7 @@ function rebuildPillsForMode(m){
   else if(m==='vinhetas')buildVinhetasFilters();
   else if(m==='ingest')buildIngestFilters();
   else if(m==='ficha')buildFichaFilters();else if(m==='cinemas')buildCinemasFilters();
-  else if(m==='acervo')buildBuscaFilters();else if(m==='dash')buildDashFilters();
+  else if(m==='busca')buildBuscaFilters();else if(m==='dash')buildDashFilters();
   else if(m==='catalogo')buildCatalogoFilters();
 }
 
@@ -5296,10 +5296,10 @@ function addBuscaSlot(){
   buscaQuery='';
   document.getElementById('searchInput').value='';document.getElementById('searchClear').style.display='none';
   clearAllBuscaFilters();
-  renderAcervoResults();
+  renderBuscaResults();
 }
-function removeAdditiveSlot(idx){buscaAdditiveSlots.splice(idx,1);renderAcervoResults();}
-function clearAdditiveSlots(){buscaAdditiveSlots=[];renderAcervoResults();}
+function removeAdditiveSlot(idx){buscaAdditiveSlots.splice(idx,1);renderBuscaResults();}
+function clearAdditiveSlots(){buscaAdditiveSlots=[];renderBuscaResults();}
 function renderAdditiveSlots(){
   var bar=document.getElementById('buscaAdditiveBar');
   var btn=document.getElementById('addSlotBtn');
@@ -5360,7 +5360,7 @@ function clearAllBuscaFilters(){
   document.querySelectorAll('#fpRangeGroups .fp-range-input').forEach(function(i){i.value='';i.classList.remove('has-val');});
   document.querySelectorAll('#fpRangeGroups .fp-range-preset').forEach(function(p){p.classList.remove('active');});
   updateFilterBadge();
-  renderAcervoResults();
+  renderBuscaResults();
 }
 
 function parseDurMinutes(v){
@@ -5486,7 +5486,7 @@ function buildBuscaFilterPanel(){
           // neutral → included
           buscaFilters[fd.key].add(v);p.classList.add('active');
         }
-        refreshLblState();updateFilterBadge();renderAcervoResults();
+        refreshLblState();updateFilterBadge();renderBuscaResults();
       });
       wrap.appendChild(p);
     });
@@ -5524,7 +5524,7 @@ function buildBuscaFilterPanel(){
           buscaFilters[fd.key]=state;p.classList.add(cls);
         }
         lbl.classList.toggle('has-active',buscaFilters[fd.key]!==null);
-        updateFilterBadge();renderAcervoResults();
+        updateFilterBadge();renderBuscaResults();
       });
       return p;
     }
@@ -5596,7 +5596,7 @@ function buildRangeFilters(){
           if(mn!==buscaFilters[fd.minKey]||mx!==buscaFilters[fd.maxKey])p.classList.remove('active');
           else p.classList.add('active');
         });
-        updateFilterBadge();renderAcervoResults();
+        updateFilterBadge();renderBuscaResults();
       });
       return inp;
     }
@@ -5635,7 +5635,7 @@ function buildRangeFilters(){
           inpMin.value=pr.min===null?'':pr.min;inpMin.classList.toggle('has-val',pr.min!==null);
           inpMax.value=pr.max===null?'':pr.max;inpMax.classList.toggle('has-val',pr.max!==null);
         }
-        updateFilterBadge();renderAcervoResults();
+        updateFilterBadge();renderBuscaResults();
       });
       presetsRow.appendChild(btn);
     });
@@ -5678,7 +5678,7 @@ function buildSessaoFilterSection(){
       var cb=document.createElement('input');cb.type='checkbox';cb.id='fpsess_'+s;cb.checked=buscaFilters.sessao.has(s);
       cb.addEventListener('change',function(){
         if(cb.checked)buscaFilters.sessao.add(s);else buscaFilters.sessao.delete(s);
-        updateFilterBadge();renderAcervoResults();
+        updateFilterBadge();renderBuscaResults();
       });
       var lbl=document.createElement('label');lbl.htmlFor='fpsess_'+s;lbl.textContent=s;lbl.title=s;
       item.appendChild(cb);item.appendChild(lbl);listEl.appendChild(item);
@@ -5700,11 +5700,11 @@ function buildSessaoFilterSection(){
   }
   btnRow.appendChild(mkBtn('Marcar todas',function(){
     sorted.forEach(function(s){buscaFilters.sessao.add(s);});
-    renderList(searchEl.value.trim());updateFilterBadge();renderAcervoResults();
+    renderList(searchEl.value.trim());updateFilterBadge();renderBuscaResults();
   }));
   btnRow.appendChild(mkBtn('Desmarcar todas',function(){
     buscaFilters.sessao.clear();
-    renderList(searchEl.value.trim());updateFilterBadge();renderAcervoResults();
+    renderList(searchEl.value.trim());updateFilterBadge();renderBuscaResults();
   }));
 
   renderList('');
@@ -5713,7 +5713,7 @@ function buildSessaoFilterSection(){
   container.appendChild(listEl);
 }
 
-function renderAcervoResults(){
+function renderBuscaResults(){
   var re=document.getElementById('busca-results'),be=document.getElementById('buscaEmpty');
   document.getElementById('buscaLoading').style.display='none';
   var q=buscaQuery.toLowerCase();
@@ -6341,7 +6341,7 @@ function goToCinemaFromDash(sala){
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='block';
   ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo'].forEach(function(m){
-    var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
+    var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
     document.getElementById('tab'+cap).classList.toggle('active',m==='cinemas');
     document.getElementById('bar'+cap).classList.toggle('hidden',m!=='cinemas');
     document.getElementById(m+'-panel').classList.toggle('active',m==='cinemas');
@@ -6355,8 +6355,8 @@ function goToCinemaFromDash(sala){
 }
 
 /* ─── EQUIPE ─────────────────────────────────────────────────────── */
-var _administracaoUsers=[], _administracaoEditId=null, _administracaoDeleteId=null, _adminEventos=[], _administracaoEventoFiltro='';
-var _ADMINISTRACAO_MODULOS=['projecao','grade','sessoes','busca','vinhetas','cinemas','dash','receptivo','catalogo'];
+var _equipeUsers=[], _equipeEditId=null, _equipeDeleteId=null, _adminEventos=[], _equipeEventoFiltro='';
+var _EQUIPE_MODULOS=['projecao','grade','sessoes','busca','vinhetas','cinemas','dash','receptivo','catalogo'];
 var _EQUIPE_ROLES=['admin','editor','projecao','programacao','producao','viewer'];
 var _EQUIPE_RESTRICOES=[
   {k:'cinemas.bordero',label:'Cinemas · Borderô'},
@@ -6369,56 +6369,56 @@ var _EQUIPE_RESTRICOES=[
   {k:'eventos.locked',label:'Eventos · Bloquear seleção de eventos (usuário vê, não altera)'}
 ];
 
-function renderAdministracao(){
-  var el=document.getElementById('administracao-container');
+function renderEquipe(){
+  var el=document.getElementById('equipe-container');
   el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:20px 0;">Carregando…</div>';
   if(!window._olgaUsuarios){el.innerHTML='<div style="color:var(--warn);font-family:var(--mono);font-size:11px;">API de usuários não disponível.</div>';return;}
   Promise.all([
     window._olgaUsuarios.list(),
     window._olgaEventos ? window._olgaEventos.list() : Promise.resolve([])
   ]).then(function(results){
-    _administracaoUsers=results[0].sort(function(a,b){return a.id.localeCompare(b.id);});
+    _equipeUsers=results[0].sort(function(a,b){return a.id.localeCompare(b.id);});
     _adminEventos=results[1];
     window._olgaEventosCache=results[1].map(function(e){return{nome:e.data.nome||e.id};});
-    renderAdministracaoTable();
+    renderEquipeTable();
   }).catch(function(e){
     el.innerHTML='<div style="color:var(--warn);font-family:var(--mono);font-size:11px;">Erro ao carregar: '+e.message+'</div>';
   });
 }
 
-function renderAdministracaoTable(){
-  var el=document.getElementById('administracao-container');
-  var countEl=document.getElementById('administracaoCount');
+function renderEquipeTable(){
+  var el=document.getElementById('equipe-container');
+  var countEl=document.getElementById('equipeCount');
 
   // filtro de evento nos usuários
-  var usersVisiveis=_administracaoUsers.filter(function(u){
-    if(!_administracaoEventoFiltro)return true;
+  var usersVisiveis=_equipeUsers.filter(function(u){
+    if(!_equipeEventoFiltro)return true;
     var evs=u.data.eventos;
     if(!evs||!evs.length)return false;
-    return evs.indexOf(_administracaoEventoFiltro)!==-1;
+    return evs.indexOf(_equipeEventoFiltro)!==-1;
   });
-  if(countEl)countEl.textContent=_administracaoUsers.length+' usuário'+(_administracaoUsers.length!==1?'s':'');
+  if(countEl)countEl.textContent=_equipeUsers.length+' usuário'+(_equipeUsers.length!==1?'s':'');
 
   // dropdown de eventos para filtro (todos os eventos conhecidos)
-  var todosEvs=(function(){var s=new Set();_administracaoUsers.forEach(function(u){(u.data.eventos||[]).forEach(function(e){s.add(e);});});return Array.from(s).sort();})();
+  var todosEvs=(function(){var s=new Set();_equipeUsers.forEach(function(u){(u.data.eventos||[]).forEach(function(e){s.add(e);});});return Array.from(s).sort();})();
   var filtroHtml='<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">'+
     '<label style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap;">Filtrar por evento</label>'+
-    '<select onchange="_administracaoEventoFiltro=this.value;renderAdministracaoTable();" style="font-family:var(--mono);font-size:11px;background:var(--bg);color:var(--text);border:1px solid var(--border2);padding:4px 8px;min-width:180px;">'+
+    '<select onchange="_equipeEventoFiltro=this.value;renderEquipeTable();" style="font-family:var(--mono);font-size:11px;background:var(--bg);color:var(--text);border:1px solid var(--border2);padding:4px 8px;min-width:180px;">'+
       '<option value="">Todos os usuários</option>'+
-      todosEvs.map(function(e){return'<option value="'+esc(e)+'"'+(e===_administracaoEventoFiltro?' selected':'')+'>'+esc(e)+'</option>';}).join('')+
+      todosEvs.map(function(e){return'<option value="'+esc(e)+'"'+(e===_equipeEventoFiltro?' selected':'')+'>'+esc(e)+'</option>';}).join('')+
     '</select>'+
-    (_administracaoEventoFiltro?'<span style="font-family:var(--mono);font-size:10px;color:var(--text-muted);">'+usersVisiveis.length+' usuário'+(usersVisiveis.length!==1?'s':'')+' com acesso</span>':'')+
+    (_equipeEventoFiltro?'<span style="font-family:var(--mono);font-size:10px;color:var(--text-muted);">'+usersVisiveis.length+' usuário'+(usersVisiveis.length!==1?'s':'')+' com acesso</span>':'')+
   '</div>';
 
   var usuariosHtml='';
   if(!usersVisiveis.length){
-    usuariosHtml='<div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:12px 0;">Nenhum usuário'+(  _administracaoEventoFiltro?' com acesso a este evento':' cadastrado')+'.</div>';
+    usuariosHtml='<div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:12px 0;">Nenhum usuário'+(  _equipeEventoFiltro?' com acesso a este evento':' cadastrado')+'.</div>';
   }else{
     var rows=usersVisiveis.map(function(u){
       var d=u.data;
       var ativo=d.ativo!==false;
       var role=d.role||'—';
-      var modCount=(d.modulos&&d.modulos.length)?d.modulos.length:_ADMINISTRACAO_MODULOS.length;
+      var modCount=(d.modulos&&d.modulos.length)?d.modulos.length:_EQUIPE_MODULOS.length;
       var evCount=(d.eventos&&d.eventos.length)?d.eventos.length+' evento'+(d.eventos.length!==1?'s':''):'todos os eventos';
       var cxCount=(d.complexos&&d.complexos.length)?d.complexos.join(', '):'todos os complexos';
       return '<tr style="'+(ativo?'':'opacity:0.45;')+'">'+
@@ -6427,7 +6427,7 @@ function renderAdministracaoTable(){
           (d.name?'<div style="font-size:10px;color:var(--text-dim);margin-top:2px;">'+esc(d.name)+'</div>':'')+
         '</td>'+
         '<td style="padding:10px 12px;font-family:var(--mono);font-size:10px;">'+
-          '<span class="administracao-role-pill">'+esc(role)+'</span>'+
+          '<span class="equipe-role-pill">'+esc(role)+'</span>'+
         '</td>'+
         '<td style="padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--text-dim);">'+modCount+' módulos · '+evCount+'<br><span style="font-size:9px;color:var(--text-muted);">'+cxCount+'</span></td>'+
         '<td style="padding:10px 12px;">'+
@@ -6435,19 +6435,19 @@ function renderAdministracaoTable(){
             (ativo?'ativo':'inativo')+'</span>'+
         '</td>'+
         '<td style="padding:10px 12px;text-align:right;white-space:nowrap;">'+
-          '<button onclick="openAdministracaoEdit(\''+esc(u.id)+'\')" style="'+_administracaoBtn()+'">editar</button> '+
-          '<button onclick="openAdministracaoDup(\''+esc(u.id)+'\')" style="'+_administracaoBtn('dup')+'">duplicar</button> '+
-          '<button onclick="openAdministracaoDelete(\''+esc(u.id)+'\')" style="'+_administracaoBtn('del')+'">excluir</button>'+
+          '<button onclick="openEquipeEdit(\''+esc(u.id)+'\')" style="'+_equipeBtn()+'">editar</button> '+
+          '<button onclick="openEquipeDup(\''+esc(u.id)+'\')" style="'+_equipeBtn('dup')+'">duplicar</button> '+
+          '<button onclick="openEquipeDelete(\''+esc(u.id)+'\')" style="'+_equipeBtn('del')+'">excluir</button>'+
         '</td>'+
       '</tr>';
     }).join('');
     usuariosHtml='<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);">'+
       '<thead><tr style="background:var(--surface2);border-bottom:1px solid var(--accent);">'+
-        '<th style="'+_administracaoTh()+'">Email / Nome</th>'+
-        '<th style="'+_administracaoTh()+'">Papel</th>'+
-        '<th style="'+_administracaoTh()+'">Acesso</th>'+
-        '<th style="'+_administracaoTh()+'">Status</th>'+
-        '<th style="'+_administracaoTh()+'text-align:right">Ações</th>'+
+        '<th style="'+_equipeTh()+'">Email / Nome</th>'+
+        '<th style="'+_equipeTh()+'">Papel</th>'+
+        '<th style="'+_equipeTh()+'">Acesso</th>'+
+        '<th style="'+_equipeTh()+'">Status</th>'+
+        '<th style="'+_equipeTh()+'text-align:right">Ações</th>'+
       '</tr></thead>'+
       '<tbody>'+rows+'</tbody>'+
     '</table>';
@@ -6470,17 +6470,17 @@ function renderAdministracaoTable(){
         '<td style="padding:9px 12px;">'+estados+'</td>'+
         '<td style="padding:9px 12px;font-family:var(--mono);font-size:10px;color:var(--text-muted);">'+esc(datas)+'</td>'+
         '<td style="padding:9px 12px;text-align:right;white-space:nowrap;">'+
-          '<button onclick="openEventoModal(\''+esc(ev.id)+'\')" style="'+_administracaoBtn()+'">editar</button> '+
-          '<button onclick="deleteEvento(\''+esc(ev.id)+'\',\''+esc(ev.id)+'\')" style="'+_administracaoBtn('del')+'">excluir</button>'+
+          '<button onclick="openEventoModal(\''+esc(ev.id)+'\')" style="'+_equipeBtn()+'">editar</button> '+
+          '<button onclick="deleteEvento(\''+esc(ev.id)+'\',\''+esc(ev.id)+'\')" style="'+_equipeBtn('del')+'">excluir</button>'+
         '</td>'+
       '</tr>';
     }).join('');
     evHtml='<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);">'+
       '<thead><tr style="background:var(--surface2);border-bottom:1px solid var(--accent);">'+
-        '<th style="'+_administracaoTh()+'">Código / Nome</th>'+
-        '<th style="'+_administracaoTh()+'">Estados</th>'+
-        '<th style="'+_administracaoTh()+'">Duração</th>'+
-        '<th style="'+_administracaoTh()+'text-align:right">Ações</th>'+
+        '<th style="'+_equipeTh()+'">Código / Nome</th>'+
+        '<th style="'+_equipeTh()+'">Estados</th>'+
+        '<th style="'+_equipeTh()+'">Duração</th>'+
+        '<th style="'+_equipeTh()+'text-align:right">Ações</th>'+
       '</tr></thead>'+
       '<tbody>'+evRows+'</tbody>'+
     '</table>';
@@ -6494,8 +6494,8 @@ function renderAdministracaoTable(){
     '<div style="margin-top:32px;">'+secHdr('Eventos')+evHtml+'</div>';
 }
 
-function _administracaoTh(){return 'font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);padding:9px 12px;text-align:left;white-space:nowrap;';}
-function _administracaoBtn(t){
+function _equipeTh(){return 'font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);padding:9px 12px;text-align:left;white-space:nowrap;';}
+function _equipeBtn(t){
   var base='font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 9px;border:1px solid;border-radius:2px;background:transparent;cursor:pointer;';
   if(t==='dup')return base+'color:var(--accent);border-color:rgba(232,160,32,0.3);';
   if(t==='del')return base+'color:var(--warn);border-color:rgba(255,96,85,0.25);';
@@ -6546,7 +6546,7 @@ async function saveEvento(){
   try{
     await window._olgaEventos.save(id,data);
     closeEventoModal();
-    renderAdministracao();
+    renderEquipe();
   }catch(e){
     document.getElementById('eventoModalErr').textContent='Erro: '+e.message;
     document.getElementById('eventoModalErr').style.display='block';
@@ -6556,7 +6556,7 @@ async function saveEvento(){
 }
 async function deleteEvento(id,label){
   if(!confirm('Excluir o evento "'+label+'"?\n\nOs filmes que já carregam esse código de evento na planilha continuarão exibindo-o.'))return;
-  try{await window._olgaEventos.remove(id);renderAdministracao();}
+  try{await window._olgaEventos.remove(id);renderEquipe();}
   catch(e){alert('Erro ao excluir: '+e.message);}
 }
 async function importarEventosExistentes(){
@@ -6587,7 +6587,7 @@ async function importarEventosExistentes(){
     }catch(e){erros.push(ev+': '+e.message);}
   }
   if(erros.length)alert('Concluído com erros:\n'+erros.join('\n'));
-  renderAdministracao();
+  renderEquipe();
 }
 function _fmtDateISO(d){
   if(!d)return'';
@@ -6595,18 +6595,18 @@ function _fmtDateISO(d){
   return y+'-'+m+'-'+dd;
 }
 
-function openAdministracaoNewUser(){_openAdministracaoForm(null,null);}
-function openAdministracaoEdit(id){_openAdministracaoForm(id,false);}
-function openAdministracaoDup(id){_openAdministracaoForm(id,true);}
+function openEquipeNewUser(){_openEquipeForm(null,null);}
+function openEquipeEdit(id){_openEquipeForm(id,false);}
+function openEquipeDup(id){_openEquipeForm(id,true);}
 
-function _openAdministracaoForm(id,isDup){
-  _administracaoEditId=(isDup||id===null)?null:id;
-  var u=id?_administracaoUsers.find(function(x){return x.id===id;}):null;
+function _openEquipeForm(id,isDup){
+  _equipeEditId=(isDup||id===null)?null:id;
+  var u=id?_equipeUsers.find(function(x){return x.id===id;}):null;
   var d=u?u.data:{};
-  document.getElementById('administracaoModalTitle').textContent=isDup?'Duplicar · '+id:(id?'Editar · '+id:'Novo Usuário');
-  document.getElementById('administracaoModalErr').style.display='none';
+  document.getElementById('equipeModalTitle').textContent=isDup?'Duplicar · '+id:(id?'Editar · '+id:'Novo Usuário');
+  document.getElementById('equipeModalErr').style.display='none';
 
-  var modulos=d.modulos&&d.modulos.length?d.modulos:_ADMINISTRACAO_MODULOS.slice();
+  var modulos=d.modulos&&d.modulos.length?d.modulos:_EQUIPE_MODULOS.slice();
   var eventos=d.eventos||[];
   var complexos=d.complexos||[];
   var restricoes=d.restricoes||[];
@@ -6622,7 +6622,7 @@ function _openAdministracaoForm(id,isDup){
       '<input type="checkbox" name="eq_complexo" value="'+esc(cx)+'" '+chk+' style="accent-color:var(--accent);">'+esc(cx)+'</label>';
   }).join('')||'<span style="font-family:var(--mono);font-size:10px;color:var(--text-muted);">Nenhum complexo cadastrado na planilha.</span>';
 
-  var modChk=_ADMINISTRACAO_MODULOS.map(function(m){
+  var modChk=_EQUIPE_MODULOS.map(function(m){
     var chk=modulos.indexOf(m)!==-1?'checked':'';
     return '<label style="display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;color:var(--text-dim);cursor:pointer;padding:2px 0;">'+
       '<input type="checkbox" name="eq_mod" value="'+m+'" '+chk+' style="accent-color:var(--accent);">'+m+'</label>';
@@ -6636,10 +6636,10 @@ function _openAdministracaoForm(id,isDup){
 
   var evChips=eventos.map(function(ev,i){
     return '<span style="display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border2);padding:3px 8px;border-radius:2px;">'+
-      esc(ev)+'<button onclick="administracaoRemoveEv('+i+')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0;">×</button></span>';
+      esc(ev)+'<button onclick="equipeRemoveEv('+i+')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0;">×</button></span>';
   }).join(' ');
 
-  document.getElementById('administracaoModalBody').innerHTML=
+  document.getElementById('equipeModalBody').innerHTML=
     _eqField('Email (ID do documento)','<input id="eq_email" type="email" value="'+esc(isDup?'':(id||''))+'" placeholder="email@exemplo.com" '+(id&&!isDup?'readonly style="opacity:0.5;cursor:not-allowed;"':'')+' style="'+_eqInpStyle()+'">')+
     _eqField('Nome de exibição','<input id="eq_name" value="'+esc(d.name||'')+'" placeholder="Nome completo" style="'+_eqInpStyle()+'">')+
     _eqField('Papel','<select id="eq_role" style="'+_eqInpStyle()+'min-width:180px;">'+
@@ -6652,8 +6652,8 @@ function _openAdministracaoForm(id,isDup){
     _eqSep('Eventos permitidos — vazio = todos')+
     '<div id="eq_ev_chips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;">'+evChips+'</div>'+
     '<div style="display:flex;gap:6px;margin-bottom:16px;">'+
-      '<input id="eq_ev_new" placeholder="código do evento…" onkeydown="if(event.key===\'Enter\'){event.preventDefault();administracaoAddEv();}" style="'+_eqInpStyle()+'flex:1;min-width:0;">'+
-      '<button onclick="administracaoAddEv()" style="'+_administracaoBtn()+'padding:5px 12px;">+ adicionar</button>'+
+      '<input id="eq_ev_new" placeholder="código do evento…" onkeydown="if(event.key===\'Enter\'){event.preventDefault();equipeAddEv();}" style="'+_eqInpStyle()+'flex:1;min-width:0;">'+
+      '<button onclick="equipeAddEv()" style="'+_equipeBtn()+'padding:5px 12px;">+ adicionar</button>'+
     '</div>'+
 
     _eqSep('Restrições ativas — marque para bloquear')+
@@ -6666,7 +6666,7 @@ function _openAdministracaoForm(id,isDup){
 
   // armazena eventos em memória para manipulação
   window._equipeEvArr = eventos.slice();
-  document.getElementById('administracaoModal').style.display='block';
+  document.getElementById('equipeModal').style.display='block';
 }
 
 function _eqField(label,inner){
@@ -6681,45 +6681,45 @@ function _eqInpStyle(){
   return 'width:100%;font-family:var(--mono);font-size:11px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:7px 10px;outline:none;';
 }
 
-window.administracaoRemoveEv=function(idx){
+window.equipeRemoveEv=function(idx){
   window._equipeEvArr.splice(idx,1);
   var chips=window._equipeEvArr.map(function(ev,i){
     return '<span style="display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border2);padding:3px 8px;border-radius:2px;">'+
-      esc(ev)+'<button onclick="administracaoRemoveEv('+i+')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0;">×</button></span>';
+      esc(ev)+'<button onclick="equipeRemoveEv('+i+')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0;">×</button></span>';
   }).join(' ');
   document.getElementById('eq_ev_chips').innerHTML=chips;
 };
-window.administracaoAddEv=function(){
+window.equipeAddEv=function(){
   var inp=document.getElementById('eq_ev_new');
   var val=inp.value.trim();
   if(!val)return;
   window._equipeEvArr.push(val);
   var chips=window._equipeEvArr.map(function(ev,i){
     return '<span style="display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border2);padding:3px 8px;border-radius:2px;">'+
-      esc(ev)+'<button onclick="administracaoRemoveEv('+i+')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0;">×</button></span>';
+      esc(ev)+'<button onclick="equipeRemoveEv('+i+')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0;">×</button></span>';
   }).join(' ');
   document.getElementById('eq_ev_chips').innerHTML=chips;
   inp.value='';
 };
 
-window.closeAdministracaoModal=function(){
-  document.getElementById('administracaoModal').style.display='none';
+window.closeEquipeModal=function(){
+  document.getElementById('equipeModal').style.display='none';
 };
 
-window.saveAdministracaoUser=async function(){
-  var errEl=document.getElementById('administracaoModalErr');
-  var btn=document.getElementById('administracaoModalSave');
+window.saveEquipeUser=async function(){
+  var errEl=document.getElementById('equipeModalErr');
+  var btn=document.getElementById('equipeModalSave');
   errEl.style.display='none';
   var email=(document.getElementById('eq_email').value||'').trim().toLowerCase();
   if(!email||!email.includes('@')){errEl.textContent='Email inválido.';errEl.style.display='block';return;}
-  if(!_administracaoEditId&&_administracaoUsers.find(function(u){return u.id===email;})){errEl.textContent='Já existe um usuário com esse email.';errEl.style.display='block';return;}
+  if(!_equipeEditId&&_equipeUsers.find(function(u){return u.id===email;})){errEl.textContent='Já existe um usuário com esse email.';errEl.style.display='block';return;}
   var modulos=Array.from(document.querySelectorAll('input[name="eq_mod"]:checked')).map(function(x){return x.value;});
   var complexosSel=Array.from(document.querySelectorAll('input[name="eq_complexo"]:checked')).map(function(x){return x.value;});
   var restricoes=Array.from(document.querySelectorAll('input[name="eq_res"]:checked')).map(function(x){return x.value;});
   var data={
     name:document.getElementById('eq_name').value.trim(),
     role:document.getElementById('eq_role').value,
-    modulos:modulos.length===_ADMINISTRACAO_MODULOS.length?[]:modulos,
+    modulos:modulos.length===_EQUIPE_MODULOS.length?[]:modulos,
     complexos:complexosSel,
     eventos:window._equipeEvArr||[],
     restricoes:restricoes,
@@ -6728,24 +6728,24 @@ window.saveAdministracaoUser=async function(){
   btn.disabled=true;btn.textContent='Salvando…';
   try{
     await window._olgaUsuarios.save(email,data);
-    closeAdministracaoModal();
-    renderAdministracao();
+    closeEquipeModal();
+    renderEquipe();
   }catch(e){errEl.textContent='Erro ao salvar: '+e.message;errEl.style.display='block';}
   btn.disabled=false;btn.textContent='Salvar';
 };
 
-window.openAdministracaoDelete=function(id){
-  _administracaoDeleteId=id;
-  document.getElementById('administracaoDeleteEmail').textContent=id;
-  document.getElementById('administracaoDeleteModal').style.display='flex';
+window.openEquipeDelete=function(id){
+  _equipeDeleteId=id;
+  document.getElementById('equipeDeleteEmail').textContent=id;
+  document.getElementById('equipeDeleteModal').style.display='flex';
 };
-window.confirmAdministracaoDelete=async function(){
-  var btn=document.getElementById('administracaoDeleteConfirm');
+window.confirmEquipeDelete=async function(){
+  var btn=document.getElementById('equipeDeleteConfirm');
   btn.disabled=true;btn.textContent='Excluindo…';
   try{
-    await window._olgaUsuarios.remove(_administracaoDeleteId);
-    document.getElementById('administracaoDeleteModal').style.display='none';
-    renderAdministracao();
+    await window._olgaUsuarios.remove(_equipeDeleteId);
+    document.getElementById('equipeDeleteModal').style.display='none';
+    renderEquipe();
   }catch(e){alert('Erro ao excluir: '+e.message);}
   btn.disabled=false;btn.textContent='Excluir';
 };
@@ -7072,9 +7072,9 @@ function openCatDetail(codigo){
   renderCatDetail();
 }
 function goToBuscaCod(codigo){
-  switchMode('acervo');
+  switchMode('busca');
   var inp=document.getElementById('searchInput');
-  if(inp){inp.value=codigo;buscaQuery=codigo;renderAcervoResults();}
+  if(inp){inp.value=codigo;buscaQuery=codigo;renderBuscaResults();}
 }
 function renderCatDetail(){
   var cont=document.getElementById('catalogo-container');if(!cont||!_catCode)return;
@@ -7313,8 +7313,8 @@ window.addEventListener('popstate',function(e){
       // ensure we're in cinemas mode first, then open detail
       if(currentMode!=='cinemas'){
         currentMode='cinemas';
-        ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','administracao'].forEach(function(m){
-          var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
+        ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','equipe'].forEach(function(m){
+          var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
           document.getElementById('tab'+cap).classList.toggle('active',m==='cinemas');
           document.getElementById('bar'+cap).classList.toggle('hidden',m!=='cinemas');
           document.getElementById(m+'-panel').classList.toggle('active',m==='cinemas');
@@ -7332,8 +7332,8 @@ window.addEventListener('popstate',function(e){
     if(currentMode!=='catalogo'){
       // re-enter module without resetting (back button)
       currentMode='catalogo';
-      ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','administracao','catalogo'].forEach(function(m){
-        var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
+      ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','equipe','catalogo'].forEach(function(m){
+        var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m.charAt(0).toUpperCase()+m.slice(1);
         document.getElementById('tab'+cap).classList.toggle('active',m==='catalogo');
         document.getElementById('bar'+cap).classList.toggle('hidden',m!=='catalogo');
         document.getElementById(m+'-panel').classList.toggle('active',m==='catalogo');
@@ -7389,27 +7389,27 @@ window.addEventListener('popstate',function(e){
     </div>
   </div>
 </div>
-<div id="administracaoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;overflow-y:auto;padding:40px 20px;" onclick="if(event.target===this)closeAdministracaoModal()">
+<div id="equipeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;overflow-y:auto;padding:40px 20px;" onclick="if(event.target===this)closeEquipeModal()">
   <div style="background:var(--surface);border:1px solid var(--border);width:100%;max-width:580px;margin:0 auto;display:flex;flex-direction:column;">
     <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <span id="administracaoModalTitle" style="font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);"></span>
-      <button onclick="closeAdministracaoModal()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;line-height:1;">×</button>
+      <span id="equipeModalTitle" style="font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);"></span>
+      <button onclick="closeEquipeModal()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;line-height:1;">×</button>
     </div>
-    <div id="administracaoModalBody" style="padding:20px 22px;overflow-y:auto;max-height:70vh;"></div>
-    <div id="administracaoModalErr" style="display:none;font-family:var(--mono);font-size:10px;color:var(--warn);padding:8px 22px;background:rgba(255,96,85,0.06);border-top:1px solid rgba(255,96,85,0.15);"></div>
+    <div id="equipeModalBody" style="padding:20px 22px;overflow-y:auto;max-height:70vh;"></div>
+    <div id="equipeModalErr" style="display:none;font-family:var(--mono);font-size:10px;color:var(--warn);padding:8px 22px;background:rgba(255,96,85,0.06);border-top:1px solid rgba(255,96,85,0.15);"></div>
     <div style="padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;">
-      <button onclick="closeAdministracaoModal()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;">Cancelar</button>
-      <button id="administracaoModalSave" onclick="saveAdministracaoUser()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 20px;background:var(--accent);color:#000;border:none;cursor:pointer;">Salvar</button>
+      <button onclick="closeEquipeModal()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;">Cancelar</button>
+      <button id="equipeModalSave" onclick="saveEquipeUser()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 20px;background:var(--accent);color:#000;border:none;cursor:pointer;">Salvar</button>
     </div>
   </div>
 </div>
-<div id="administracaoDeleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:600;align-items:center;justify-content:center;">
+<div id="equipeDeleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:600;align-items:center;justify-content:center;">
   <div style="background:var(--surface);border:1px solid rgba(255,96,85,0.3);padding:28px;max-width:380px;width:100%;">
     <div style="font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--warn);margin-bottom:10px;">Excluir usuário</div>
-    <p style="font-family:var(--sans);font-size:12px;color:var(--text-dim);line-height:1.5;margin-bottom:20px;">Tem certeza que deseja excluir <strong id="administracaoDeleteEmail" style="font-family:var(--mono);color:var(--text);"></strong>?</p>
+    <p style="font-family:var(--sans);font-size:12px;color:var(--text-dim);line-height:1.5;margin-bottom:20px;">Tem certeza que deseja excluir <strong id="equipeDeleteEmail" style="font-family:var(--mono);color:var(--text);"></strong>?</p>
     <div style="display:flex;gap:8px;justify-content:flex-end;">
-      <button onclick="document.getElementById('administracaoDeleteModal').style.display='none'" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;">Cancelar</button>
-      <button id="administracaoDeleteConfirm" onclick="confirmAdministracaoDelete()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;background:var(--warn);color:#fff;border:none;cursor:pointer;">Excluir</button>
+      <button onclick="document.getElementById('equipeDeleteModal').style.display='none'" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;">Cancelar</button>
+      <button id="equipeDeleteConfirm" onclick="confirmEquipeDelete()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;background:var(--warn);color:#fff;border:none;cursor:pointer;">Excluir</button>
     </div>
   </div>
 </div>
