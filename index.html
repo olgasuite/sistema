@@ -2230,7 +2230,9 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
           resolucao: fs(r['dcp_resolution']),  duracao:   fs(r['dcp_duration']),
           gb:     fs(r['dcp_size']),           fps:       fs(r['dcp_fps']),
           cplOV:  fs(r['ov_cpl_id']),          acessibilidade: fs(r['accessibility_features']),
-          dcp_uuid: fs(r['dcp_uuid'])
+          dcp_uuid: fs(r['dcp_uuid']),
+          dcp_link: fs(r['dcp_link']),
+          file_link: fs(r['file_link'])
         };
         filmesMap2[codigo] = f;
         filmesArr2.push(f);
@@ -2505,7 +2507,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <button class="nav-tab" id="tabGrade" disabled onclick="switchMode('grade')"><span class="tab-icon"><i data-lucide="layout-dashboard"></i></span> Grade</button>
     <button class="nav-tab" id="tabGrade2" disabled onclick="switchMode('grade2')" style="display:none"></button>
     <button class="nav-tab" id="tabSessoes" disabled onclick="switchMode('sessoes')"><span class="tab-icon"><i data-lucide="calendar-clock"></i></span> Sessões</button>
-    <button class="nav-tab" id="tabBusca" disabled onclick="switchMode('busca')"><span class="tab-icon"><i data-lucide="search"></i></span> Acervo</button>
+    <button class="nav-tab" id="tabBusca" disabled onclick="switchMode('busca')" style="display:none"><span class="tab-icon"><i data-lucide="search"></i></span> Acervo</button>
     <button class="nav-tab" id="tabVinhetas" disabled onclick="switchMode('vinhetas')"><span class="tab-icon"><i data-lucide="film"></i></span> Vinhetas</button>
     <button class="nav-tab" id="tabIngest" disabled onclick="switchMode('ingest')" style="display:none"></button>
     <button class="nav-tab" id="tabCinemas" disabled onclick="switchMode('cinemas')"><span class="tab-icon"><i data-lucide="clapperboard"></i></span> Cinemas</button>
@@ -2525,6 +2527,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 
 <div class="mode-bar hidden" id="barProjecao">
   <div class="event-filters" id="projecaoEventFilters"></div>
+  <button class="print-btn" onclick="switchMode('busca')" style="margin-left:auto;">Acervo Técnico</button>
 </div>
 <div class="mode-bar hidden" id="barFicha">
   <select id="sessionSelect" disabled><option value="">— selecionar sessão —</option></select>
@@ -2667,7 +2670,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       <div class="module-name">Sessões</div>
       <div class="module-desc">Lista de sessões por dia com filtro por sala</div>
     </div>
-    <div class="module-card disabled" id="modCardBusca" onclick="moduleCardClick('busca')">
+    <div class="module-card disabled" id="modCardBusca" onclick="moduleCardClick('busca')" style="display:none">
       <div class="module-icon"><i data-lucide="search"></i></div>
       <div class="module-name">Acervo</div>
       <div class="module-desc">Busca e filtragem de filmes na base de dados</div>
@@ -2852,7 +2855,7 @@ self.onmessage=function(e){
     for(var i=0;i<rows.length;i++){
       var r=rows[i];var codigo=(r['festival_code']||'').toString().trim();
       if(!codigo||codigo==='-'||codigo==='0')continue;
-      var f={evento:r['event_name']||'',codigo:codigo,hd:r['storage_location']||'',titulo:r['title']||'',idioma:r['original_language']||'',legenda:r['dcp_subtitle_code']||'',col_g:r['program_section']||'',vf:r['vf_subtitle_code']||'',lente:r['projection_lens']||'',som:r['audio_format']||'',col_k:r['dcp_creator']||'',kdm:r['has_kdm']||'',status:r['status']||'',col_n:r['subtitle_status']||'',obs:r['notes']||'',cpl:r['cpl_id']||'',resolucao:r['dcp_resolution']||'',duracao:r['dcp_duration']||'',gb:r['dcp_size']||'',fps:r['dcp_fps']||'',cplOV:r['ov_cpl_id']||'',acessibilidade:(r['accessibility_features']||'').toString().trim(),dcp_uuid:r['dcp_uuid']||''};
+      var f={evento:r['event_name']||'',codigo:codigo,hd:r['storage_location']||'',titulo:r['title']||'',idioma:r['original_language']||'',legenda:r['dcp_subtitle_code']||'',col_g:r['program_section']||'',vf:r['vf_subtitle_code']||'',lente:r['projection_lens']||'',som:r['audio_format']||'',col_k:r['dcp_creator']||'',kdm:r['has_kdm']||'',status:r['status']||'',col_n:r['subtitle_status']||'',obs:r['notes']||'',cpl:r['cpl_id']||'',resolucao:r['dcp_resolution']||'',duracao:r['dcp_duration']||'',gb:r['dcp_size']||'',fps:r['dcp_fps']||'',cplOV:r['ov_cpl_id']||'',acessibilidade:(r['accessibility_features']||'').toString().trim(),dcp_uuid:r['dcp_uuid']||'',dcp_link:r['dcp_link']||'',file_link:r['file_link']||''};
       filmesMap[codigo]=f;filmesArr.push(f);
     }
   }
@@ -3027,7 +3030,7 @@ function parseWorkbook(data,filename){
     for(var i=0;i<rows.length;i++){
       var r=rows[i];var codigo=(r['festival_code']||'').toString().trim();
       if(!codigo||codigo==='-'||codigo==='0')continue;
-      var f={evento:r['event_name']||'',codigo:codigo,hd:r['storage_location']||'',titulo:r['title']||'',idioma:r['original_language']||'',legenda:r['dcp_subtitle_code']||'',col_g:r['program_section']||'',vf:r['vf_subtitle_code']||'',lente:r['projection_lens']||'',som:r['audio_format']||'',col_k:r['dcp_creator']||'',kdm:r['has_kdm']||'',status:r['status']||'',col_n:r['subtitle_status']||'',obs:r['notes']||'',cpl:r['cpl_id']||'',resolucao:r['dcp_resolution']||'',duracao:r['dcp_duration']||'',gb:r['dcp_size']||'',fps:r['dcp_fps']||'',cplOV:r['ov_cpl_id']||'',acessibilidade:(r['accessibility_features']||'').toString().trim(),dcp_uuid:r['dcp_uuid']||''};
+      var f={evento:r['event_name']||'',codigo:codigo,hd:r['storage_location']||'',titulo:r['title']||'',idioma:r['original_language']||'',legenda:r['dcp_subtitle_code']||'',col_g:r['program_section']||'',vf:r['vf_subtitle_code']||'',lente:r['projection_lens']||'',som:r['audio_format']||'',col_k:r['dcp_creator']||'',kdm:r['has_kdm']||'',status:r['status']||'',col_n:r['subtitle_status']||'',obs:r['notes']||'',cpl:r['cpl_id']||'',resolucao:r['dcp_resolution']||'',duracao:r['dcp_duration']||'',gb:r['dcp_size']||'',fps:r['dcp_fps']||'',cplOV:r['ov_cpl_id']||'',acessibilidade:(r['accessibility_features']||'').toString().trim(),dcp_uuid:r['dcp_uuid']||'',dcp_link:r['dcp_link']||'',file_link:r['file_link']||''};
       filmesMap[codigo]=f;filmesArr.push(f);
     }
   }
@@ -5214,6 +5217,12 @@ function toggleExpand(idx){
         var v=efv(value);if(v==='—'&&!value)return'';
         return'<div class="expand-field"><div class="expand-label">'+label+'</div><div class="expand-value'+(cls?' '+cls:'')+'">'+v+'</div></div>';
       }
+      function efLink(label,value){
+        if(!value||value==='-'||value==='0')return'';
+        var isUrl=/^https?:\/\//i.test(value);
+        var display=isUrl?'<a href="'+value+'" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all;">'+value+'</a>':efv(value);
+        return'<div class="expand-field"><div class="expand-label">'+label+'</div><div class="expand-value">'+display+'</div></div>';
+      }
       var expandContent=[
         ef('Evento',f.evento),
         ef('Código',f.codigo),
@@ -5238,6 +5247,8 @@ function toggleExpand(idx){
         ef('Acessibilidade',f.acessibilidade),
         ef('FPS',f.fps),
         ef('DCP UUID',f.dcp_uuid),
+        efLink('DCP Link',f.dcp_link),
+        efLink('File Link',f.file_link),
       ].filter(Boolean).join('');
       expandDiv.innerHTML='<div class="expand-grid">'+expandContent+'</div>';
       delete expandDiv.dataset.lazy;
