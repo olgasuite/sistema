@@ -7491,8 +7491,8 @@ window.addEventListener('popstate',function(e){
       <span class="mob-header-logo" id="mobLogo">OLGA</span>
     </div>
     <span class="mob-header-user" id="mobUserName"></span>
-    <button class="mob-btn" onclick="toggleTheme()" style="padding:5px 8px;" title="Alternar tema">◑</button>
-    <button class="mob-btn" onclick="_mobIrParaWeb()" title="Versão web">⊞</button>
+    <button class="mob-btn" onclick="toggleTheme()">TEMA</button>
+    <button class="mob-btn" onclick="_mobIrParaWeb()">MODO WEB</button>
     <button class="mob-btn" onclick="_olgaSignOut()">sair</button>
   </div>
   <div class="mob-content" id="mobContent"></div>
@@ -7703,11 +7703,10 @@ function olgaMobileHome(noStack){
   var CARDS=[
     {mod:'projecao', icon:'projector',        label:'Projeção',    sub:'Sessões e fichas',    fn:'olgaMobileProjecao()'},
     {mod:'sessoes',  icon:'calendar-clock',   label:'Sessões',     sub:'Calendário do dia',   fn:'olgaMobileProjecao()'},
-    {mod:'receptivo',icon:'monitor',          label:'Receptivo',   sub:'Dados de sala',       fn:'olgaMobileReceptivo()'},
+    {mod:'receptivo',icon:'monitor',          label:'Receptivo',   sub:'Gestão de convidados',fn:'olgaMobileReceptivo()'},
     {mod:'vinhetas', icon:'film',             label:'vinhetas',    sub:'Por sessão',          fn:'olgaMobileVinhetas()'},
     {mod:'busca',    icon:'file-text',        label:'Acervo',      sub:'Busca por título',    fn:'olgaMobileAcervo()'},
     {mod:'catalogo', icon:'library',          label:'Catálogo',    sub:'Ficha curatorial',    fn:'olgaMobileCatalogo()'},
-    {mod:'dash',     icon:'bar-chart-2',      label:'Dashboard',   sub:'Indicadores',         fn:'olgaMobileDash()'},
     {mod:'ingest',   icon:'download',         label:'Ingest',      sub:'Checklist de DCP',    fn:'olgaMobileIngest()'},
     {mod:'grade',    icon:'layout-dashboard', label:'Grade',       sub:'Programação do dia',  fn:'olgaMobileGrade()'},
   ];
@@ -7821,10 +7820,23 @@ function _mobRenderSessaoFicha(params){
   var extraParts=[];
   if(s.convidados)extraParts.push('Convidados: '+s.convidados);
   if(s.ingressos)extraParts.push('Ingressos reservados: '+s.ingressos);
-  if(s.apresentacao&&s.apresentacao.toLowerCase().indexOf('sim')!==-1)extraParts.push('Apresentação');
-  if(s.leg_eletronica&&s.leg_eletronica.toLowerCase().indexOf('sim')!==-1)extraParts.push('Leg. eletrônica');
-  if(s.col_ag&&s.col_ag.toLowerCase().indexOf('sim')!==-1)extraParts.push('Debate');
   if(extraParts.length)html+='<div style="font-family:var(--mono);font-size:10px;color:var(--accent);background:rgba(232,160,32,0.07);border:1px solid rgba(232,160,32,0.2);border-radius:2px;padding:7px 10px;margin-bottom:10px;">'+extraParts.map(_mobEsc).join(' · ')+'</div>';
+
+  // boxes apresentação / leg. eletrônica / debate
+  var boxItems=[
+    {label:'Apresentação', val:s.apresentacao},
+    {label:'Leg. eletrônica', val:s.leg_eletronica},
+    {label:'Debate', val:s.col_ag},
+  ];
+  html+='<div style="display:flex;gap:8px;margin-bottom:14px;">';
+  boxItems.forEach(function(b){
+    var checked=b.val&&b.val.toLowerCase().indexOf('sim')!==-1;
+    html+='<div style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:'+(checked?'var(--ok)':'var(--text-muted)')+';">'+
+      '<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border:1px solid '+(checked?'var(--ok)':'var(--border)')+';border-radius:2px;font-size:10px;font-weight:700;">'+(checked?'✕':'')+'</span>'+
+      _mobEsc(b.label)+
+    '</div>';
+  });
+  html+='</div>';
 
   // vinhetas
   if(s.vinhetas&&s.vinhetas.length){
@@ -7960,47 +7972,44 @@ function olgaMobileReceptivo(){
   _mobRenderReceptivo({});
 }
 
-function _mobRenderReceptivo(params,noScroll){
-  params=params||{};
-  if(!dataLoaded){_mobSetContent('<div class="mob-empty">Dados não carregados.</div>');return;}
-  var filtroEvs=_mobActiveEvs;
-  var dias=_mobGetDias(filtroEvs,null);
-  if(!dias.length){_mobSetContent(_mobEventFilterHtml(filtroEvs)+'<div class="mob-empty">Sem sessões.</div>');return;}
-  var r=_mobDayTabsHtml(dias,params.dia,'_mobReceptivoSelDia');
-  if(!params.dia)params.dia=r.selDia;
-  var u=window._olgaUser;
-  var userEvs=u&&u.eventos&&u.eventos.length?new Set(u.eventos):null;
-  var sessoes=sessoesArr.filter(function(s){
-    if(!s.date||s.date.getTime()!==params.dia)return false;
-    if(userEvs&&!userEvs.has(s.evento))return false;
-    if(filtroEvs&&!filtroEvs.has(s.evento))return false;
-    return true;
-  }).sort(function(a,b){return(a.time?a.time.h*60+a.time.m:0)-(b.time?b.time.h*60+b.time.m:0);});
-  var cards=sessoes.map(function(s){
-    var ev=eventColors[s.evento]||{bg:'var(--border2)',text:'var(--text)'};
-    var filmes=s.filmes.map(function(cod){var f=filmesMap[cod];return f?f.titulo||cod:cod;}).filter(Boolean);
-    var extras=[];
-    if(s.convidados)extras.push('Convidados: '+s.convidados);
-    if(s.ingressos)extras.push('Ingressos: '+s.ingressos);
-    if(s.apresentacao&&s.apresentacao.toLowerCase().indexOf('sim')!==-1)extras.push('Apresentação');
-    if(s.acessibilidades)extras.push(s.acessibilidades);
-    return'<div class="mob-sessao-card">'+
-      '<div class="mob-sessao-header">'+
-        '<span class="mob-sessao-hora">'+(s.hora||'?')+'</span>'+
-        '<div style="flex:1;min-width:0;">'+
-          '<div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);">'+_mobEsc(s.cinema)+'</div>'+
-          '<span class="mob-sessao-pill" style="background:'+ev.bg+';color:'+ev.text+';">'+_mobEsc(s.evento||'')+'</span>'+
-        '</div>'+
+function _mobRenderReceptivo(params){
+  var AREAS=[
+    {nome:'Convidados',desc:'Cadastro e gestão de convidados, acreditações e participações nos eventos',
+     icon:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/>'},
+    {nome:'Hotéis',desc:'Controle de hospedagem, quartos e estadias por convidado e período',
+     icon:'<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>'},
+    {nome:'Vôos',desc:'Registro de chegadas e partidas, companhias e horários de voo',
+     icon:'<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>'},
+    {nome:'Transporte',desc:'Roteamento e agendamento de transfers, rotas e veículos',
+     icon:'<path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/>'},
+  ];
+  var html='<div style="padding:16px;">';
+  html+='<div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-bottom:16px;">Gestão de convidados, hospedagem, deslocamentos e logística de transporte.</div>';
+  html+=AREAS.map(function(a){
+    return'<div onclick="_mobReceptivoWip(\''+_mobEsc(a.nome)+'\')" style="display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:16px;margin-bottom:10px;cursor:pointer;">'+
+      '<svg style="width:26px;height:26px;stroke:var(--accent);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;" viewBox="0 0 24 24">'+a.icon+'</svg>'+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text-dim);margin-bottom:3px;">'+_mobEsc(a.nome)+'</div>'+
+        '<div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);line-height:1.4;">'+_mobEsc(a.desc)+'</div>'+
       '</div>'+
-      '<div class="mob-sessao-body">'+
-        filmes.map(function(t){return'<div class="mob-sessao-filme">'+_mobEsc(t)+'</div>';}).join('')+
-        (extras.length?'<div style="font-family:var(--mono);font-size:9px;color:var(--accent);margin-top:4px;">'+extras.map(_mobEsc).join(' · ')+'</div>':'')+
-      '</div>'+
+      '<svg style="width:14px;height:14px;stroke:var(--text-muted);stroke-width:2;fill:none;flex-shrink:0;" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>'+
     '</div>';
   }).join('');
-  _mobSetContent(_mobEventFilterHtml(filtroEvs)+r.html+'<div style="height:12px;"></div>'+(sessoes.length?cards:'<div class="mob-empty">Sem sessões neste dia.</div>'));
+  html+='</div>';
+  _mobSetContent(html);
 }
-window._mobReceptivoSelDia=function(t){var cur=_mobStack[_mobStack.length-1];if(cur)cur.params.dia=t;_mobRenderReceptivo(cur?cur.params:{dia:t},true);};
+
+window._mobReceptivoWip=function(nome){
+  _mobPush({view:'receptivo-wip',params:{nome:nome}});
+  _mobSetContent(
+    '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;">'+
+    '<div style="font-size:40px;margin-bottom:16px;">🚧</div>'+
+    '<div style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);background:rgba(232,160,32,0.1);border:1px solid rgba(232,160,32,0.25);padding:4px 12px;border-radius:2px;margin-bottom:14px;">Em construção</div>'+
+    '<div style="font-family:var(--mono);font-size:16px;font-weight:600;color:var(--text);margin-bottom:10px;">'+_mobEsc(nome)+'</div>'+
+    '<div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);line-height:1.6;max-width:280px;">Este módulo está em desenvolvimento e estará disponível em breve.</div>'+
+    '</div>'
+  );
+};
 
 /* ── vinhetas ───────────────────────────────────────────────────── */
 function olgaMobileVinhetas(){
