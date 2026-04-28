@@ -3512,7 +3512,7 @@ function printGradeTable(){
 function buildPills(container,evColors,activeSet,onToggle){
   container.innerHTML='';if(!Object.keys(evColors).length)return;
   var events=Object.keys(evColors);
-  var evLocked=!!(window._olgaUser&&window._olgaUser.eventos_locked);
+  var evLocked=!!(window._olgaHasRestricao&&window._olgaHasRestricao('eventos.locked'));
   function allActive(){return events.every(function(ev){return activeSet.has(ev);});}
   function updateLbl(){
     var all=allActive();
@@ -6329,7 +6329,8 @@ var _EQUIPE_RESTRICOES=[
   {k:'dashboard.publico_dias',label:'Dashboard · Público por dia'},
   {k:'vinhetas.sessoes',label:'Vinhetas · Contador de sessões'},
   {k:'vinhetas.cinemas',label:'Vinhetas · Contador de cinemas'},
-  {k:'vinhetas.publico',label:'Vinhetas · Contador de público'}
+  {k:'vinhetas.publico',label:'Vinhetas · Contador de público'},
+  {k:'eventos.locked',label:'Eventos · Bloquear seleção de eventos (usuário vê, não altera)'}
 ];
 
 function renderEquipe(){
@@ -6459,11 +6460,7 @@ function _openEquipeForm(id,isDup){
       '<input id="eq_ev_new" placeholder="código do evento…" onkeydown="if(event.key===\'Enter\'){event.preventDefault();equipeAddEv();}" style="'+_eqInpStyle()+'flex:1;min-width:0;">'+
       '<button onclick="equipeAddEv()" style="'+_equipeBtn()+'padding:5px 12px;">+ adicionar</button>'+
     '</div>'+
-    _eqSep('Eventos: bloquear seleção pelo usuário')+
-    '<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:16px;">'+
-      '<input type="checkbox" id="eq_ev_locked" '+(d.eventos_locked?'checked':'')+' style="accent-color:var(--accent);width:14px;height:14px;">'+
-      'Bloquear pills de evento (usuário vê mas não pode alterar)'+
-    '</label>'+
+
     _eqSep('Restrições ativas — marque para bloquear')+
     '<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:16px;">'+resChk+'</div>'+
     _eqSep('Status')+
@@ -6530,7 +6527,6 @@ window.saveEquipeUser=async function(){
     modulos:modulos.length===_EQUIPE_MODULOS.length?[]:modulos,
     complexos:complexosSel,
     eventos:window._equipeEvArr||[],
-    eventos_locked:!!(document.getElementById('eq_ev_locked')&&document.getElementById('eq_ev_locked').checked),
     restricoes:restricoes,
     ativo:document.getElementById('eq_ativo').checked
   };
@@ -6587,7 +6583,7 @@ function buildCatalogoFilters(){
   lbl.className='filter-label';lbl.textContent='EVENTO:';
   lbl.style.cssText='cursor:pointer;padding:3px 8px;transition:background 0.15s,color 0.15s;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;border-radius:2px;white-space:nowrap;border:none;outline:none;';
   var updateLbl=function(){var all=allActive();lbl.style.background=all?'#fff':'#000';lbl.style.color=all?'#000':'#fff';lbl.title=all?'Desmarcar todos':'Marcar todos';};
-  var evLocked=!!(window._olgaUser&&window._olgaUser.eventos_locked);
+  var evLocked=!!(window._olgaHasRestricao&&window._olgaHasRestricao('eventos.locked'));
   if(evLocked){lbl.style.cursor='default';lbl.style.opacity='0.5';lbl.title='Seleção de eventos bloqueada';}
   else lbl.addEventListener('click',function(){
     var activate=!allActive();
