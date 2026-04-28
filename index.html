@@ -2120,19 +2120,19 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   // ── Aplica visibilidade de abas/cards conforme perfil ───────────
   function applyModulePermissions(modulos) {
     // modulos: null = tudo liberado; [] ou lista = só esses
-    var ALL = ['projecao','grade','sessoes','busca','vinhetas','cinemas','dash','receptivo','catalogo'];
+    var ALL = ['projecao','grade','sessoes','vinhetas','cinemas','dash','receptivo','catalogo'];
     var allowed = modulos && modulos.length ? new Set(modulos) : null;
 
     // Tabs do nav (tabProjecao, tabGrade, etc.)
     var tabMap = {
       projecao:'tabProjecao', grade:'tabGrade', sessoes:'tabSessoes',
-      busca:'tabBusca', vinhetas:'tabVinhetas', cinemas:'tabCinemas',
+      vinhetas:'tabVinhetas', cinemas:'tabCinemas',
       dash:'tabDash', receptivo:'tabReceptivo', catalogo:'tabCatalogo'
     };
     // Module cards na landing
     var cardMap = {
       projecao:'modCardProjecao', grade:'modCardGrade', sessoes:'modCardSessoes',
-      busca:'modCardBusca', vinhetas:'modCardVinhetas', cinemas:'modCardCinemas',
+      vinhetas:'modCardVinhetas', cinemas:'modCardCinemas',
       dash:'modCardDash', receptivo:'modCardReceptivo', catalogo:'modCardCatalogo'
     };
 
@@ -3008,9 +3008,9 @@ function applyParsedData(d,filename){
   var initEvs=currentEvs.size>0?currentEvs:new Set(events);
   activeEventsGrade=new Set(initEvs);activeEventsBusca=new Set(initEvs);activeEventsIngest=new Set(initEvs);activeEventsFicha=new Set(initEvs);activeEventsCinemas=new Set(initEvs);activeEventsDash=new Set(initEvs);activeEventsGrade2=new Set(initEvs);activeEventsSessoes=new Set(initEvs);activeEventsProjecao=new Set(initEvs);activeEventsVinhetas=new Set(initEvs);activeEventsCatalogo=new Set(initEvs);
   dataLoaded=true;
-  ['tabProjecao','tabFicha','tabGrade','tabGrade2','tabSessoes','tabBusca','tabVinhetas','tabIngest','tabCinemas','tabDash','tabReceptivo','tabCatalogo'].forEach(function(id){document.getElementById(id).disabled=false;});
+  ['tabProjecao','tabFicha','tabGrade','tabGrade2','tabSessoes','tabVinhetas','tabIngest','tabCinemas','tabDash','tabReceptivo','tabCatalogo'].forEach(function(id){document.getElementById(id).disabled=false;});
   if(window._olgaUser&&window._olgaUser.role==='admin'){document.getElementById('tabEquipe').disabled=false;}
-  ['modCardProjecao','modCardGrade','modCardSessoes','modCardBusca','modCardVinhetas','modCardCinemas','modCardDash','modCardReceptivo','modCardCatalogo'].forEach(function(id){document.getElementById(id).classList.remove('disabled');});
+  ['modCardProjecao','modCardGrade','modCardSessoes','modCardVinhetas','modCardCinemas','modCardDash','modCardReceptivo','modCardCatalogo'].forEach(function(id){document.getElementById(id).classList.remove('disabled');});
   buildGradeDays();window._gradeYearsOpen=null;window._grade2YearsOpen=null;window._dashYearsOpen=null;buildFichaFilters();buildGradeFilters();buildGrade2Filters();buildSessoesFilters();buildProjecaoFilters();buildVinhetasFilters();buildBuscaFilters();buildIngestDays();buildIngestFilters();buildBuscaFilterPanel();buildCinemasFilters();buildDashFilters();buildCatalogoFilters();
   fileNameEl.textContent=filename||'arquivo carregado';
   fileNameEl.classList.add('loaded');
@@ -6320,7 +6320,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 28/04/2026 às 23:00';
+  var sysUpdate='última atualização do sistema · 28/04/2026 às 23:30';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -7441,7 +7441,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 28/04/2026 às 23:00</span></div>
+<div id="page-footer"><span>última atualização · 28/04/2026 às 23:30</span></div>
 
 </div>
 
