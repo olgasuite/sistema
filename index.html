@@ -3054,10 +3054,7 @@ function switchMode(mode,noPush){
   // always collapse the busca filter panel when leaving busca
   if(mode!=='busca'&&_fpOpen){_fpOpen=false;document.getElementById('filterPanel').classList.remove('open');document.getElementById('filterToggleBtn').classList.remove('active');}
   // reset catalogo search state when leaving the module
-  if(currentMode==='catalogo'&&mode!=='catalogo'){
-    _catSearch={texto:'',texto_neg:false,director:'',director_neg:false,selecao:'',selecao_neg:false,ftype:'',ftype_neg:false,kdm:'',kdm_neg:false,stat:'',stat_neg:false,idioma:'',idioma_neg:false,genre:'',genre_neg:false,pais:'',pais_neg:false,prod:'',prod_neg:false,dist:'',dist_neg:false,syn:'',syn_neg:false,scr:'',scr_neg:false,email:'',email_neg:false};
-    _catSlots=[];_catRan=false;_catShowAll=false;_catView='search';_catCode=null;
-  }
+  if(currentMode==='catalogo'&&mode!=='catalogo'){_catResetState();}
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='block';
   ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','equipe','catalogo'].forEach(function(m){
@@ -3077,7 +3074,7 @@ function switchMode(mode,noPush){
   if(mode==='dash')renderDash();
   if(mode==='receptivo')renderReceptivo();
   if(mode==='equipe')renderEquipe();
-  if(mode==='catalogo')renderCatalogo();
+  if(mode==='catalogo'){_catResetState();renderCatalogo();}
   if(mode==='busca'){
     var bl=document.getElementById('buscaLoading'),be2=document.getElementById('buscaEmpty'),br=document.getElementById('busca-results');
     bl.style.display='flex';be2.style.display='none';br.style.display='none';
@@ -6735,10 +6732,18 @@ function catShowAll(){
   _catShowAll=true;_catRan=false;_catSlots=[];
   renderCatalogo();
 }
-function clearCatSearch(){
+function _catResetState(){
   _catSearch={texto:'',texto_neg:false,director:'',director_neg:false,selecao:'',selecao_neg:false,ftype:'',ftype_neg:false,kdm:'',kdm_neg:false,stat:'',stat_neg:false,idioma:'',idioma_neg:false,genre:'',genre_neg:false,pais:'',pais_neg:false,prod:'',prod_neg:false,dist:'',dist_neg:false,syn:'',syn_neg:false,scr:'',scr_neg:false,email:'',email_neg:false};
+  _catSlots=[];_catRan=false;_catShowAll=false;_catView='search';_catCode=null;
+}
+function clearCatSearch(){_catResetState();renderCatalogo();}
+function clearCatResults(){
+  // limpa só os resultados, preserva os campos preenchidos
   _catSlots=[];_catRan=false;_catShowAll=false;
-  renderCatalogo();
+  _catRenderResults();
+  // atualiza visibilidade do botão de limpar busca se necessário
+  var slotsEl=document.getElementById('cat-slots-bar');
+  if(slotsEl)slotsEl.style.display='none';
 }
 function clearCatForm(){
   // clear fields without touching results
@@ -6833,7 +6838,7 @@ function renderCatalogo(){
   html+='<button class="cat-run-btn" onclick="runCatSearch()">⊞ Buscar</button>';
   html+='<button class="cat-add-btn" onclick="addCatSlot()">+ Adicionar ao conjunto</button>';
   html+='<button class="cat-clear-btn" onclick="clearCatForm()">↺ Limpar busca</button>';
-  if(_catRan||_catSlots.length||_catShowAll)html+='<button class="cat-clear-btn" onclick="clearCatSearch()">✕ Limpar resultados</button>';
+  html+='<button class="cat-clear-btn" onclick="clearCatResults()">✕ Limpar resultados</button>';
   html+='<button class="cat-all-btn" onclick="catShowAll()">Mostrar todos</button>';
   html+='</div>';
   // slots bar
