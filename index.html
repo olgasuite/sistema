@@ -2332,7 +2332,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       filmesArr2.forEach(function(f)  { if (f.evento) evSet.add(f.evento); });
       sessoesArr2.forEach(function(s) { if (s.evento) evSet.add(s.evento); });
       cinemasArr2.forEach(function(c) {
-        if (c.evento) c.evento.split(';').forEach(function(e){ var t=e.trim(); if(t) evSet.add(t); });
+        if (c.evento) c.evento.split(';').forEach(function(e){ var t=e.trim(); if(t&&allowedEvento(t)) evSet.add(t); });
       });
       vinhetasArr2.forEach(function(v){ if (v.evento) evSet.add(v.evento); });
 
@@ -3512,26 +3512,29 @@ function printGradeTable(){
 function buildPills(container,evColors,activeSet,onToggle){
   container.innerHTML='';if(!Object.keys(evColors).length)return;
   var events=Object.keys(evColors);
+  var evLocked=!!(window._olgaUser&&window._olgaUser.eventos_locked);
   function allActive(){return events.every(function(ev){return activeSet.has(ev);});}
   function updateLbl(){
     var all=allActive();
     lbl.style.background=all?'#fff':'#000';
     lbl.style.color=all?'#000':'#fff';
-    lbl.title=all?'Desmarcar todos':'Marcar todos';
+    lbl.title=evLocked?'Seleção de eventos bloqueada':(all?'Desmarcar todos':'Marcar todos');
   }
   var lbl=document.createElement('button');
   lbl.className='filter-label';
   lbl.textContent='EVENTO:';
-  lbl.style.cssText='cursor:pointer;padding:3px 8px;transition:background 0.15s,color 0.15s;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;border-radius:2px;white-space:nowrap;border:none;outline:none;box-shadow:none;';
-  lbl.addEventListener('click',function(){
-    var activate=!allActive();
-    pills.forEach(function(p,i){
-      var ev=events[i],col=evColors[ev];
-      if(activate){activeSet.add(ev);p.style.background=col.bg;p.style.color=col.text;p.style.borderColor='transparent';p.classList.add('active');}
-      else{activeSet.delete(ev);p.style.background='transparent';p.style.color='#555';p.style.borderColor='transparent';p.classList.remove('active');}
+  lbl.style.cssText='cursor:'+(evLocked?'default':'pointer')+';padding:3px 8px;transition:background 0.15s,color 0.15s;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;border-radius:2px;white-space:nowrap;border:none;outline:none;box-shadow:none;'+(evLocked?'opacity:0.5;':'');
+  if(!evLocked){
+    lbl.addEventListener('click',function(){
+      var activate=!allActive();
+      pills.forEach(function(p,i){
+        var ev=events[i],col=evColors[ev];
+        if(activate){activeSet.add(ev);p.style.background=col.bg;p.style.color=col.text;p.style.borderColor='transparent';p.classList.add('active');}
+        else{activeSet.delete(ev);p.style.background='transparent';p.style.color='#555';p.style.borderColor='transparent';p.classList.remove('active');}
+      });
+      lbl.blur();updateLbl();onToggle();
     });
-    lbl.blur();updateLbl();onToggle();
-  });
+  }
   container.appendChild(lbl);
   var pills=[];
   events.forEach(function(ev){var col=evColors[ev];
@@ -3541,11 +3544,14 @@ function buildPills(container,evColors,activeSet,onToggle){
     pill.textContent=ev;
     if(isActive){pill.style.background=col.bg;pill.style.color=col.text;pill.style.borderColor='transparent';}
     else{pill.style.background='transparent';pill.style.color='#555';pill.style.borderColor='transparent';}
-    pill.addEventListener('click',function(){
-      if(activeSet.has(ev)){activeSet.delete(ev);pill.style.background='transparent';pill.style.color='#555';pill.style.borderColor='transparent';pill.classList.remove('active');}
-      else{activeSet.add(ev);pill.style.background=col.bg;pill.style.color=col.text;pill.style.borderColor='transparent';pill.classList.add('active');}
-      pill.blur();updateLbl();onToggle();
-    });
+    if(evLocked){pill.style.cursor='default';pill.style.opacity='0.75';}
+    else{
+      pill.addEventListener('click',function(){
+        if(activeSet.has(ev)){activeSet.delete(ev);pill.style.background='transparent';pill.style.color='#555';pill.style.borderColor='transparent';pill.classList.remove('active');}
+        else{activeSet.add(ev);pill.style.background=col.bg;pill.style.color=col.text;pill.style.borderColor='transparent';pill.classList.add('active');}
+        pill.blur();updateLbl();onToggle();
+      });
+    }
     container.appendChild(pill);pills.push(pill);
   });
   updateLbl();
@@ -6453,6 +6459,11 @@ function _openEquipeForm(id,isDup){
       '<input id="eq_ev_new" placeholder="código do evento…" onkeydown="if(event.key===\'Enter\'){event.preventDefault();equipeAddEv();}" style="'+_eqInpStyle()+'flex:1;min-width:0;">'+
       '<button onclick="equipeAddEv()" style="'+_equipeBtn()+'padding:5px 12px;">+ adicionar</button>'+
     '</div>'+
+    _eqSep('Eventos: bloquear seleção pelo usuário')+
+    '<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:16px;">'+
+      '<input type="checkbox" id="eq_ev_locked" '+(d.eventos_locked?'checked':'')+' style="accent-color:var(--accent);width:14px;height:14px;">'+
+      'Bloquear pills de evento (usuário vê mas não pode alterar)'+
+    '</label>'+
     _eqSep('Restrições ativas — marque para bloquear')+
     '<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:16px;">'+resChk+'</div>'+
     _eqSep('Status')+
@@ -6519,6 +6530,7 @@ window.saveEquipeUser=async function(){
     modulos:modulos.length===_EQUIPE_MODULOS.length?[]:modulos,
     complexos:complexosSel,
     eventos:window._equipeEvArr||[],
+    eventos_locked:!!(document.getElementById('eq_ev_locked')&&document.getElementById('eq_ev_locked').checked),
     restricoes:restricoes,
     ativo:document.getElementById('eq_ativo').checked
   };
@@ -6575,7 +6587,9 @@ function buildCatalogoFilters(){
   lbl.className='filter-label';lbl.textContent='EVENTO:';
   lbl.style.cssText='cursor:pointer;padding:3px 8px;transition:background 0.15s,color 0.15s;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;border-radius:2px;white-space:nowrap;border:none;outline:none;';
   var updateLbl=function(){var all=allActive();lbl.style.background=all?'#fff':'#000';lbl.style.color=all?'#000':'#fff';lbl.title=all?'Desmarcar todos':'Marcar todos';};
-  lbl.addEventListener('click',function(){
+  var evLocked=!!(window._olgaUser&&window._olgaUser.eventos_locked);
+  if(evLocked){lbl.style.cursor='default';lbl.style.opacity='0.5';lbl.title='Seleção de eventos bloqueada';}
+  else lbl.addEventListener('click',function(){
     var activate=!allActive();
     events.forEach(function(ev){if(activate)activeEventsCatalogo.add(ev);else activeEventsCatalogo.delete(ev);});
     lbl.blur();updateLbl();buildCatalogoFilters();renderCatalogo();
@@ -6587,7 +6601,8 @@ function buildCatalogoFilters(){
     var pill=document.createElement('button');
     pill.className='event-pill'+(isActive?' active':'');
     pill.setAttribute('data-ev',ev);pill.style.cssText=style;pill.textContent=ev;
-    pill.addEventListener('click',function(){catToggleEvent(this.getAttribute('data-ev'));});
+    if(!evLocked)pill.addEventListener('click',function(){catToggleEvent(this.getAttribute('data-ev'));});
+    else{pill.style.cursor='default';pill.style.opacity='0.75';}
     bar.appendChild(pill);
   });
 }
