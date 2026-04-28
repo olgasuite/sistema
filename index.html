@@ -5451,8 +5451,8 @@ function buildBuscaFilterPanel(){
   fieldMap.forEach(function(fd){
     var valCount={};
     filmesArr.forEach(function(f){
-      // for evento, only include values active in the busca pills
-      if(fd.key==='evento'&&!activeEventsBusca.has(f[fd.field]))return;
+      // for evento and status, only include values active in the busca pills
+      if((fd.key==='evento'||fd.key==='status')&&!activeEventsBusca.has(f[fd.field==='status'?'evento':fd.field]))return;
       var v=(f[fd.field]||'').toString().trim();
       if(v&&v!=='-'&&v!=='0'){valCount[v]=(valCount[v]||0)+1;}
     });
@@ -7023,8 +7023,9 @@ function renderCatalogo(){
   _catView='search';_catCode=null;_catEditing=false;
   var cont=document.getElementById('catalogo-container');if(!cont)return;
   var s=_catSearch;
-  var statVals=Array.from(new Set(filmesArr.map(function(f){return f.status;}).filter(Boolean))).sort();
-  var idiomaVals=Array.from(new Set(filmesArr.map(function(f){return f.idioma;}).filter(Boolean))).sort();
+  var statVals=Array.from(new Set(filmesArr.filter(function(f){return activeEventsCatalogo.has(f.evento);}).map(function(f){return f.status;}).filter(Boolean))).sort();
+  var _idiomaCount={};filmesArr.filter(function(f){return activeEventsCatalogo.has(f.evento);}).forEach(function(f){if(f.idioma)_idiomaCount[f.idioma]=(_idiomaCount[f.idioma]||0)+1;});
+  var idiomaVals=Object.keys(_idiomaCount).sort(function(a,b){return _idiomaCount[b]-_idiomaCount[a];}).slice(0,20).sort(function(a,b){return a.localeCompare(b,'pt');});
   var html='<div class="cat-sf-form">';
   // row 1: texto + director
   html+='<div class="cat-sf-row">';
