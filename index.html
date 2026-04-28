@@ -2018,6 +2018,22 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     }
   };
 
+  // API eventos (coleção eventos)
+  window._olgaEventos = {
+    list: async function() {
+      var snap = await getDocs(collection(db, 'eventos'));
+      var arr = [];
+      snap.forEach(function(d) { arr.push({ id: d.id, data: d.data() }); });
+      return arr.sort(function(a,b){return(a.data.nome||a.id).localeCompare(b.data.nome||b.id,'pt-BR');});
+    },
+    save: async function(id, data) {
+      await setDoc(doc(db, 'eventos', id), data);
+    },
+    remove: async function(id) {
+      await deleteDoc(doc(db, 'eventos', id));
+    }
+  };
+
   // API catálogo (coleção filmes)
   window._olgaCatalogo = {
     load: async function() {
@@ -2182,11 +2198,12 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     }
 
     try {
-      const [filmesSnap, sessoesSnap, cinemasSnap, vinhetasSnap] = await Promise.all([
+      const [filmesSnap, sessoesSnap, cinemasSnap, vinhetasSnap, eventosSnap] = await Promise.all([
         getDocs(collection(db, 'copias')),
         getDocs(collection(db, 'sessoes')),
         getDocs(collection(db, 'cinemas')),
         getDocs(collection(db, 'vinhetas')),
+        getDocs(collection(db, 'eventos')),
       ]);
       // Catálogo (filmes) — carregado em paralelo, não bloqueia
       if(window._olgaCatalogo){
@@ -2340,6 +2357,17 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
       var label = 'Firestore · ' + now.toLocaleDateString('pt-BR') + ' ' +
                   now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 
+      // eventos cadastrados no Firestore (fonte de verdade para cores e eventos sem filmes)
+      var eventosFirestore2 = [];
+      eventosSnap.forEach(function(doc) {
+        var r = doc.data();
+        var nome = (r.nome || doc.id || '').trim();
+        if (!nome) return;
+        if (!allowedEvento(nome)) return;
+        eventosFirestore2.push({ nome: nome, cor_bg: r.cor_bg || '', cor_text: r.cor_text || '' });
+      });
+      window._olgaEventosCache = eventosFirestore2;
+
       if (typeof applyParsedData === 'function') {
         applyParsedData({
           filmesMap: filmesMap2, filmesArr: filmesArr2,
@@ -2347,7 +2375,8 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
           buscaReverseSessoes: buscaRev2,
           cinemasArr: cinemasArr2,
           vinhetasArr: vinhetasArr2, vinhetaReverseSessoes: vinhetaRev2,
-          events: Array.from(evSet)
+          events: Array.from(evSet),
+          eventosFirestore: eventosFirestore2
         }, label);
       }
 
@@ -2472,7 +2501,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <button class="nav-tab" id="tabIngest" disabled onclick="switchMode('ingest')" style="display:none"></button>
     <button class="nav-tab" id="tabCinemas" disabled onclick="switchMode('cinemas')"><span class="tab-icon"><i data-lucide="clapperboard"></i></span> Cinemas</button>
     <button class="nav-tab" id="tabReceptivo" disabled onclick="switchMode('receptivo')"><span class="tab-icon"><i data-lucide="users"></i></span> Receptivo</button>
-    <button class="nav-tab" id="tabEquipe" disabled onclick="switchMode('equipe')" style="display:none"><span class="tab-icon"><i data-lucide="shield"></i></span> Usuários</button>
+    <button class="nav-tab" id="tabEquipe" disabled onclick="switchMode('equipe')" style="display:none"><span class="tab-icon"><i data-lucide="shield"></i></span> Administração</button>
   </nav>
   <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar esquema de cores">Tema</button>
   <div id="olga-userbar"></div>
@@ -2579,6 +2608,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 <div class="mode-bar hidden" id="barReceptivo"></div>
 <div class="mode-bar hidden" id="barEquipe">
   <button class="print-btn" onclick="openEquipeNewUser()">+ novo usuário</button>
+  <button class="print-btn" onclick="openEventoModal(null)" style="margin-left:6px;">+ novo evento</button>
   <span class="result-count" id="equipeCount"></span>
 </div>
 <div class="mode-bar hidden" id="barVinhetas">
@@ -2948,6 +2978,15 @@ function applyParsedData(d,filename){
     if(!s.evento||!s.date)return;
     if(!evFirstDate[s.evento]||s.date<evFirstDate[s.evento])evFirstDate[s.evento]=s.date;
   });
+  // merge eventos do Firestore: adiciona eventos sem filmes + registra cores explícitas
+  var firestoreColors={};
+  var eventosFS=d.eventosFirestore||window._olgaEventosCache||[];
+  eventosFS.forEach(function(ev){
+    if(ev.nome){
+      if(ev.cor_bg)firestoreColors[ev.nome]={bg:ev.cor_bg,text:ev.cor_text||'#000'};
+      if(d.events.indexOf(ev.nome)===-1)d.events.push(ev.nome);
+    }
+  });
   var events=d.events.slice().sort(function(a,b){
     var da=evFirstDate[a],db=evFirstDate[b];
     if(da&&db)return da-db;
@@ -2955,7 +2994,9 @@ function applyParsedData(d,filename){
     if(db)return 1;
     return a.localeCompare(b,'pt-BR');
   });
-  events.forEach(function(ev,i){eventColors[ev]=PALETTE[i%PALETTE.length];});
+  events.forEach(function(ev,i){
+    eventColors[ev]=firestoreColors[ev]||PALETTE[i%PALETTE.length];
+  });
   var currentEvs=currentEventsFromDates(d.sessoesArr);
   var initEvs=currentEvs.size>0?currentEvs:new Set(events);
   activeEventsGrade=new Set(initEvs);activeEventsBusca=new Set(initEvs);activeEventsIngest=new Set(initEvs);activeEventsFicha=new Set(initEvs);activeEventsCinemas=new Set(initEvs);activeEventsDash=new Set(initEvs);activeEventsGrade2=new Set(initEvs);activeEventsSessoes=new Set(initEvs);activeEventsProjecao=new Set(initEvs);activeEventsVinhetas=new Set(initEvs);activeEventsCatalogo=new Set(initEvs);
@@ -6319,7 +6360,7 @@ function goToCinemaFromDash(sala){
 }
 
 /* ─── EQUIPE ─────────────────────────────────────────────────────── */
-var _equipeUsers=[], _equipeEditId=null, _equipeDeleteId=null;
+var _equipeUsers=[], _equipeEditId=null, _equipeDeleteId=null, _adminEventos=[];
 var _EQUIPE_MODULOS=['projecao','grade','sessoes','busca','vinhetas','cinemas','dash','receptivo','catalogo'];
 var _EQUIPE_ROLES=['admin','editor','projecao','programacao','producao','viewer'];
 var _EQUIPE_RESTRICOES=[
@@ -6335,10 +6376,15 @@ var _EQUIPE_RESTRICOES=[
 
 function renderEquipe(){
   var el=document.getElementById('equipe-container');
-  el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:20px 0;">Carregando usuários…</div>';
+  el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:20px 0;">Carregando…</div>';
   if(!window._olgaUsuarios){el.innerHTML='<div style="color:var(--warn);font-family:var(--mono);font-size:11px;">API de usuários não disponível.</div>';return;}
-  window._olgaUsuarios.list().then(function(users){
-    _equipeUsers=users.sort(function(a,b){return a.id.localeCompare(b.id);});
+  Promise.all([
+    window._olgaUsuarios.list(),
+    window._olgaEventos ? window._olgaEventos.list() : Promise.resolve([])
+  ]).then(function(results){
+    _equipeUsers=results[0].sort(function(a,b){return a.id.localeCompare(b.id);});
+    _adminEventos=results[1];
+    window._olgaEventosCache=results[1].map(function(e){return{nome:e.data.nome||e.id,cor_bg:e.data.cor_bg||'',cor_text:e.data.cor_text||''};});
     renderEquipeTable();
   }).catch(function(e){
     el.innerHTML='<div style="color:var(--warn);font-family:var(--mono);font-size:11px;">Erro ao carregar: '+e.message+'</div>';
@@ -6349,47 +6395,83 @@ function renderEquipeTable(){
   var el=document.getElementById('equipe-container');
   var countEl=document.getElementById('equipeCount');
   if(countEl)countEl.textContent=_equipeUsers.length+' usuário'+(_equipeUsers.length!==1?'s':'');
+  var usuariosHtml='';
   if(!_equipeUsers.length){
-    el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:20px 0;">Nenhum usuário cadastrado.</div>';
-    return;
+    usuariosHtml='<div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:20px 0;">Nenhum usuário cadastrado.</div>';
+  }else{
+    var rows=_equipeUsers.map(function(u){
+      var d=u.data;
+      var ativo=d.ativo!==false;
+      var role=d.role||'—';
+      var modCount=(d.modulos&&d.modulos.length)?d.modulos.length:_EQUIPE_MODULOS.length;
+      var evCount=(d.eventos&&d.eventos.length)?d.eventos.length+' evento'+(d.eventos.length!==1?'s':''):'todos os eventos';
+      var cxCount=(d.complexos&&d.complexos.length)?d.complexos.join(', '):'todos os complexos';
+      return '<tr style="'+(ativo?'':'opacity:0.45;')+'">'+
+        '<td style="padding:10px 12px;font-family:var(--mono);">'+
+          '<div style="font-size:12px;color:var(--text);">'+esc(u.id)+'</div>'+
+          (d.name?'<div style="font-size:10px;color:var(--text-dim);margin-top:2px;">'+esc(d.name)+'</div>':'')+
+        '</td>'+
+        '<td style="padding:10px 12px;font-family:var(--mono);font-size:10px;">'+
+          '<span class="equipe-role-pill">'+esc(role)+'</span>'+
+        '</td>'+
+        '<td style="padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--text-dim);">'+modCount+' módulos · '+evCount+'<br><span style="font-size:9px;color:var(--text-muted);">'+cxCount+'</span></td>'+
+        '<td style="padding:10px 12px;">'+
+          '<span style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.08em;padding:2px 7px;border-radius:2px;text-transform:uppercase;border:1px solid;'+(ativo?'color:var(--ok);border-color:rgba(61,186,110,0.3);background:rgba(61,186,110,0.07);':'color:var(--text-muted);border-color:var(--border);')+'">'+
+            (ativo?'ativo':'inativo')+'</span>'+
+        '</td>'+
+        '<td style="padding:10px 12px;text-align:right;white-space:nowrap;">'+
+          '<button onclick="openEquipeEdit(\''+esc(u.id)+'\')" style="'+_equipeBtn()+'">editar</button> '+
+          '<button onclick="openEquipeDup(\''+esc(u.id)+'\')" style="'+_equipeBtn('dup')+'">duplicar</button> '+
+          '<button onclick="openEquipeDelete(\''+esc(u.id)+'\')" style="'+_equipeBtn('del')+'">excluir</button>'+
+        '</td>'+
+      '</tr>';
+    }).join('');
+    usuariosHtml='<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);">'+
+      '<thead><tr style="background:var(--surface2);border-bottom:1px solid var(--accent);">'+
+        '<th style="'+_equipeTh()+'">Email / Nome</th>'+
+        '<th style="'+_equipeTh()+'">Papel</th>'+
+        '<th style="'+_equipeTh()+'">Acesso</th>'+
+        '<th style="'+_equipeTh()+'">Status</th>'+
+        '<th style="'+_equipeTh()+'text-align:right">Ações</th>'+
+      '</tr></thead>'+
+      '<tbody>'+rows+'</tbody>'+
+    '</table>';
   }
-  var rows=_equipeUsers.map(function(u){
-    var d=u.data;
-    var ativo=d.ativo!==false;
-    var role=d.role||'—';
-    var modCount=(d.modulos&&d.modulos.length)?d.modulos.length:_EQUIPE_MODULOS.length;
-    var evCount=(d.eventos&&d.eventos.length)?d.eventos.length+' evento'+(d.eventos.length!==1?'s':''):'todos os eventos';
-    var cxCount=(d.complexos&&d.complexos.length)?d.complexos.join(', '):'todos os complexos';
-    return '<tr style="'+(ativo?'':'opacity:0.45;')+'">'+
-      '<td style="padding:10px 12px;font-family:var(--mono);">'+
-        '<div style="font-size:12px;color:var(--text);">'+esc(u.id)+'</div>'+
-        (d.name?'<div style="font-size:10px;color:var(--text-dim);margin-top:2px;">'+esc(d.name)+'</div>':'')+
-      '</td>'+
-      '<td style="padding:10px 12px;font-family:var(--mono);font-size:10px;">'+
-        '<span class="equipe-role-pill">'+esc(role)+'</span>'+
-      '</td>'+
-      '<td style="padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--text-dim);">'+modCount+' módulos · '+evCount+'<br><span style="font-size:9px;color:var(--text-muted);">'+cxCount+'</span></td>'+
-      '<td style="padding:10px 12px;">'+
-        '<span style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.08em;padding:2px 7px;border-radius:2px;text-transform:uppercase;border:1px solid;'+(ativo?'color:var(--ok);border-color:rgba(61,186,110,0.3);background:rgba(61,186,110,0.07);':'color:var(--text-muted);border-color:var(--border);')+'">'+
-          (ativo?'ativo':'inativo')+'</span>'+
-      '</td>'+
-      '<td style="padding:10px 12px;text-align:right;white-space:nowrap;">'+
-        '<button onclick="openEquipeEdit(\''+esc(u.id)+'\')" style="'+_equipeBtn()+'">editar</button> '+
-        '<button onclick="openEquipeDup(\''+esc(u.id)+'\')" style="'+_equipeBtn('dup')+'">duplicar</button> '+
-        '<button onclick="openEquipeDelete(\''+esc(u.id)+'\')" style="'+_equipeBtn('del')+'">excluir</button>'+
-      '</td>'+
-    '</tr>';
-  }).join('');
-  el.innerHTML='<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);">'+
-    '<thead><tr style="background:var(--surface2);border-bottom:1px solid var(--accent);">'+
-      '<th style="'+_equipeTh()+'">Email / Nome</th>'+
-      '<th style="'+_equipeTh()+'">Papel</th>'+
-      '<th style="'+_equipeTh()+'">Acesso</th>'+
-      '<th style="'+_equipeTh()+'">Status</th>'+
-      '<th style="'+_equipeTh()+'text-align:right">Ações</th>'+
-    '</tr></thead>'+
-    '<tbody>'+rows+'</tbody>'+
-  '</table>';
+
+  // ── Seção Eventos ───────────────────────────────────────────────
+  var evHtml='';
+  if(_adminEventos.length){
+    var evRows=_adminEventos.map(function(ev){
+      var d=ev.data; var nome=d.nome||ev.id;
+      var bg=d.cor_bg||'var(--border2)'; var txt=d.cor_text||'var(--text)';
+      return '<tr>'+
+        '<td style="padding:9px 12px;font-family:var(--mono);font-size:12px;color:var(--text);">'+
+          '<span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:'+esc(bg)+';border:1px solid rgba(255,255,255,0.15);vertical-align:middle;margin-right:8px;"></span>'+
+          esc(nome)+
+        '</td>'+
+        '<td style="padding:9px 12px;font-family:var(--mono);font-size:10px;color:var(--text-muted);">'+esc(bg)+'</td>'+
+        '<td style="padding:9px 12px;text-align:right;white-space:nowrap;">'+
+          '<button onclick="openEventoModal(\''+esc(ev.id)+'\')" style="'+_equipeBtn()+'">editar</button> '+
+          '<button onclick="deleteEvento(\''+esc(ev.id)+'\',\''+esc(nome)+'\')" style="'+_equipeBtn('del')+'">excluir</button>'+
+        '</td>'+
+      '</tr>';
+    }).join('');
+    evHtml='<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);">'+
+      '<thead><tr style="background:var(--surface2);border-bottom:1px solid var(--accent);">'+
+        '<th style="'+_equipeTh()+'">Nome</th>'+
+        '<th style="'+_equipeTh()+'">Cor</th>'+
+        '<th style="'+_equipeTh()+'text-align:right">Ações</th>'+
+      '</tr></thead>'+
+      '<tbody>'+evRows+'</tbody>'+
+    '</table>';
+  }else{
+    evHtml='<div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:12px 0;">Nenhum evento cadastrado.</div>';
+  }
+
+  var secHdr=function(label){return'<div style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);padding:8px 0 6px;border-bottom:1px solid var(--border);margin-bottom:12px;">'+label+'</div>';};
+  el.innerHTML=
+    secHdr('Usuários')+usuariosHtml+
+    '<div style="margin-top:32px;">'+secHdr('Eventos')+evHtml+'</div>';
 }
 
 function _equipeTh(){return 'font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);padding:9px 12px;text-align:left;white-space:nowrap;';}
@@ -6398,6 +6480,61 @@ function _equipeBtn(t){
   if(t==='dup')return base+'color:var(--accent);border-color:rgba(232,160,32,0.3);';
   if(t==='del')return base+'color:var(--warn);border-color:rgba(255,96,85,0.25);';
   return base+'color:var(--text-dim);border-color:var(--border);';
+}
+
+/* ── Evento CRUD ──────────────────────────────────────────────── */
+var _eventoEditId=null;
+function openEventoModal(id){
+  _eventoEditId=id||null;
+  var ev=id?(_adminEventos.find(function(e){return e.id===id;})):null;
+  var d=ev?ev.data:{};
+  var nome=d.nome||'';
+  var bg=d.cor_bg||'#e8a020';
+  var txt=d.cor_text||'#000000';
+  var modal=document.getElementById('eventoModal');
+  document.getElementById('eventoModalTitle').textContent=id?'Editar evento':'Novo evento';
+  document.getElementById('eventoNome').value=nome;
+  document.getElementById('eventoCorBg').value=bg;
+  document.getElementById('eventoCorText').value=txt;
+  document.getElementById('eventoPreview').style.background=bg;
+  document.getElementById('eventoPreview').style.color=txt;
+  document.getElementById('eventoPreview').textContent=nome||'EVENTO';
+  document.getElementById('eventoModalErr').style.display='none';
+  modal.style.display='flex';
+}
+function closeEventoModal(){document.getElementById('eventoModal').style.display='none';}
+function _eventoUpdatePreview(){
+  var nome=document.getElementById('eventoNome').value||'EVENTO';
+  var bg=document.getElementById('eventoCorBg').value||'#e8a020';
+  var txt=document.getElementById('eventoCorText').value||'#000000';
+  var prev=document.getElementById('eventoPreview');
+  prev.textContent=nome;prev.style.background=bg;prev.style.color=txt;
+}
+async function saveEvento(){
+  var nome=(document.getElementById('eventoNome').value||'').trim();
+  if(!nome){document.getElementById('eventoModalErr').textContent='O nome é obrigatório.';document.getElementById('eventoModalErr').style.display='block';return;}
+  var bg=document.getElementById('eventoCorBg').value||'#e8a020';
+  var txt=document.getElementById('eventoCorText').value||'#000000';
+  var id=_eventoEditId||nome;
+  var saveBtn=document.getElementById('eventoModalSave');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Salvando…';}
+  try{
+    await window._olgaEventos.save(id,{nome:nome,cor_bg:bg,cor_text:txt});
+    closeEventoModal();
+    renderEquipe();
+  }catch(e){
+    document.getElementById('eventoModalErr').textContent='Erro: '+e.message;
+    document.getElementById('eventoModalErr').style.display='block';
+  }finally{
+    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='Salvar';}
+  }
+}
+async function deleteEvento(id,nome){
+  if(!confirm('Excluir o evento "'+nome+'"?\n\nO evento será removido do catálogo, mas os filmes que já carregam esse nome de evento na planilha continuarão exibindo-o.'))return;
+  try{
+    await window._olgaEventos.remove(id);
+    renderEquipe();
+  }catch(e){alert('Erro ao excluir: '+e.message);}
 }
 
 function openEquipeNewUser(){_openEquipeForm(null,null);}
@@ -7156,6 +7293,39 @@ window.addEventListener('popstate',function(e){
   _browserNav=false;
 });
 </script>
+<div id="eventoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;align-items:center;justify-content:center;" onclick="if(event.target===this)closeEventoModal()">
+  <div style="background:var(--surface);border:1px solid var(--border);width:100%;max-width:400px;margin:0 auto;display:flex;flex-direction:column;">
+    <div style="padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span id="eventoModalTitle" style="font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);"></span>
+      <button onclick="closeEventoModal()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;line-height:1;">×</button>
+    </div>
+    <div style="padding:20px 22px;display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <label style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);">Nome do evento</label>
+        <input id="eventoNome" type="text" oninput="_eventoUpdatePreview()" style="font-family:var(--sans);font-size:12px;background:var(--bg);color:var(--text);border:1px solid var(--border2);padding:6px 10px;outline:none;" placeholder="ex: RIO 2025">
+      </div>
+      <div style="display:flex;gap:14px;">
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1;">
+          <label style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);">Cor de fundo</label>
+          <input id="eventoCorBg" type="color" onchange="_eventoUpdatePreview()" style="width:100%;height:32px;border:1px solid var(--border2);background:var(--bg);cursor:pointer;padding:2px;" value="#e8a020">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1;">
+          <label style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);">Cor do texto</label>
+          <input id="eventoCorText" type="color" onchange="_eventoUpdatePreview()" style="width:100%;height:32px;border:1px solid var(--border2);background:var(--bg);cursor:pointer;padding:2px;" value="#000000">
+        </div>
+      </div>
+      <div>
+        <div style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Preview</div>
+        <span id="eventoPreview" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;padding:3px 10px;border-radius:2px;display:inline-block;">EVENTO</span>
+      </div>
+    </div>
+    <div id="eventoModalErr" style="display:none;font-family:var(--mono);font-size:10px;color:var(--warn);padding:8px 22px;background:rgba(255,96,85,0.06);border-top:1px solid rgba(255,96,85,0.15);"></div>
+    <div style="padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeEventoModal()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;">Cancelar</button>
+      <button id="eventoModalSave" onclick="saveEvento()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 20px;background:var(--accent);color:#000;border:none;cursor:pointer;">Salvar</button>
+    </div>
+  </div>
+</div>
 <div id="equipeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;overflow-y:auto;padding:40px 20px;" onclick="if(event.target===this)closeEquipeModal()">
   <div style="background:var(--surface);border:1px solid var(--border);width:100%;max-width:580px;margin:0 auto;display:flex;flex-direction:column;">
     <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
