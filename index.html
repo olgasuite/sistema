@@ -3053,6 +3053,11 @@ function switchMode(mode,noPush){
   if(!noPush&&!_browserNav)history.pushState({olga:mode},'');
   // always collapse the busca filter panel when leaving busca
   if(mode!=='busca'&&_fpOpen){_fpOpen=false;document.getElementById('filterPanel').classList.remove('open');document.getElementById('filterToggleBtn').classList.remove('active');}
+  // reset catalogo search state when leaving the module
+  if(currentMode==='catalogo'&&mode!=='catalogo'){
+    _catSearch={texto:'',texto_neg:false,director:'',director_neg:false,selecao:'',selecao_neg:false,ftype:'',ftype_neg:false,kdm:'',kdm_neg:false,stat:'',stat_neg:false,idioma:'',idioma_neg:false,genre:'',genre_neg:false,pais:'',pais_neg:false,prod:'',prod_neg:false,dist:'',dist_neg:false,syn:'',syn_neg:false,scr:'',scr_neg:false,email:'',email_neg:false};
+    _catSlots=[];_catRan=false;_catShowAll=false;_catView='search';_catCode=null;
+  }
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='block';
   ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','equipe','catalogo'].forEach(function(m){
@@ -5738,7 +5743,7 @@ function renderBuscaResults(){
             (f.evento&&col?'<span class="card-evento" style="background:'+col.bg+';color:'+col.text+'">'+f.evento+'</span>':'')+
             statusBadge(f.status)+
             kdmTag+
-            '<button class="cat-card-btn" data-cod="'+f.codigo.replace(/"/g,'&quot;')+'" onclick="event.stopPropagation();switchMode(\'catalogo\');openCatDetail(this.dataset.cod)" title="Ver no Catálogo">⊞</button>'+
+            '<button class="cat-card-btn" data-cod="'+f.codigo.replace(/"/g,'&quot;')+'" onclick="event.stopPropagation();switchMode(\'catalogo\');openCatDetail(this.dataset.cod)" title="Ver no Catálogo">Ver no Catálogo</button>'+
           '</div>'+
           '<div class="card-meta">'+
             lenteBadge(clean(f.lente))+' '+somBadge(clean(f.som))+
@@ -6548,7 +6553,7 @@ window.confirmEquipeDelete=async function(){
    CATÁLOGO MODULE — JS
    ============================================================ */
 var _catView='search',_catCode=null,_catEditing=false,catQuery='';
-var _catSearch={texto:'',texto_neg:false,director:'',director_neg:false,selecao:'',selecao_neg:false,ftype:'',ftype_neg:false,kdm:'',kdm_neg:false,stat:'',stat_neg:false,idioma:'',idioma_neg:false,genre:'',genre_neg:false,pais:'',pais_neg:false,prod:'',prod_neg:false,dist:'',dist_neg:false,syn_pres:'',scr_pres:'',email_pres:''};
+var _catSearch={texto:'',texto_neg:false,director:'',director_neg:false,selecao:'',selecao_neg:false,ftype:'',ftype_neg:false,kdm:'',kdm_neg:false,stat:'',stat_neg:false,idioma:'',idioma_neg:false,genre:'',genre_neg:false,pais:'',pais_neg:false,prod:'',prod_neg:false,dist:'',dist_neg:false,syn:'',syn_neg:false,scr:'',scr_neg:false,email:'',email_neg:false};
 var _catSlots=[],_catShowAll=false,_catRan=false;
 
 function fmtDurMin(str){
@@ -6567,13 +6572,26 @@ function catStatusCls(st){
 function buildCatalogoFilters(){
   var bar=document.getElementById('catEventFilters');if(!bar)return;
   var events=Array.from(new Set(filmesArr.map(function(f){return f.evento;}).filter(Boolean))).sort();
-  var html='<span class="filter-label">Evento</span>';
+  var allActive=function(){return events.every(function(ev){return activeEventsCatalogo.has(ev);});};
+  var lbl=document.createElement('button');
+  lbl.className='filter-label';lbl.textContent='EVENTO:';
+  lbl.style.cssText='cursor:pointer;padding:3px 8px;transition:background 0.15s,color 0.15s;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;border-radius:2px;white-space:nowrap;border:none;outline:none;';
+  var updateLbl=function(){var all=allActive();lbl.style.background=all?'#fff':'#000';lbl.style.color=all?'#000':'#fff';lbl.title=all?'Desmarcar todos':'Marcar todos';};
+  lbl.addEventListener('click',function(){
+    var activate=!allActive();
+    events.forEach(function(ev){if(activate)activeEventsCatalogo.add(ev);else activeEventsCatalogo.delete(ev);});
+    lbl.blur();updateLbl();buildCatalogoFilters();renderCatalogo();
+  });
+  bar.innerHTML='';bar.appendChild(lbl);updateLbl();
   events.forEach(function(ev){
     var col=eventColors[ev]||null;var isActive=activeEventsCatalogo.has(ev);
     var style=isActive&&col?'background:'+col.bg+';color:'+col.text+';border-color:'+col.bg+';':'';
-    html+='<button class="event-pill'+(isActive?' active':'')+'" data-ev="'+ev.replace(/"/g,'&quot;')+'" style="'+style+'" onclick="catToggleEvent(this.dataset.ev)">'+ev+'</button>';
+    var pill=document.createElement('button');
+    pill.className='event-pill'+(isActive?' active':'');
+    pill.setAttribute('data-ev',ev);pill.style.cssText=style;pill.textContent=ev;
+    pill.addEventListener('click',function(){catToggleEvent(this.getAttribute('data-ev'));});
+    bar.appendChild(pill);
   });
-  bar.innerHTML=html;
 }
 function catToggleEvent(ev){
   if(activeEventsCatalogo.has(ev))activeEventsCatalogo.delete(ev);else activeEventsCatalogo.add(ev);
@@ -6585,10 +6603,10 @@ function _catReadForm(){
   function v(id){var el=document.getElementById('catsf_'+id);return el?(el.value||'').trim():'';}
   function neg(id){var el=document.getElementById('catneg_'+id);return el?el.classList.contains('neg'):false;}
   function pres(id){var a=document.querySelector('.cat-pres-btn[data-field="'+id+'"].active-pos');var b=document.querySelector('.cat-pres-btn[data-field="'+id+'"].active-neg');return a?'sim':b?'nao':'';}
-  _catSearch={texto:v('texto'),texto_neg:neg('texto'),director:v('director'),director_neg:neg('director'),selecao:v('selecao'),selecao_neg:neg('selecao'),ftype:v('ftype'),ftype_neg:neg('ftype'),kdm:v('kdm'),kdm_neg:neg('kdm'),stat:v('stat'),stat_neg:neg('stat'),idioma:v('idioma'),idioma_neg:neg('idioma'),genre:v('genre'),genre_neg:neg('genre'),pais:v('pais'),pais_neg:neg('pais'),prod:v('prod'),prod_neg:neg('prod'),dist:v('dist'),dist_neg:neg('dist'),syn_pres:pres('syn'),scr_pres:pres('scr'),email_pres:pres('email')};
+  _catSearch={texto:v('texto'),texto_neg:neg('texto'),director:v('director'),director_neg:neg('director'),selecao:v('selecao'),selecao_neg:neg('selecao'),ftype:v('ftype'),ftype_neg:neg('ftype'),kdm:v('kdm'),kdm_neg:neg('kdm'),stat:v('stat'),stat_neg:neg('stat'),idioma:v('idioma'),idioma_neg:neg('idioma'),genre:v('genre'),genre_neg:neg('genre'),pais:v('pais'),pais_neg:neg('pais'),prod:v('prod'),prod_neg:neg('prod'),dist:v('dist'),dist_neg:neg('dist'),syn:v('syn'),syn_neg:neg('syn'),scr:v('scr'),scr_neg:neg('scr'),email:v('email'),email_neg:neg('email')};
 }
 function _catHasCriteria(s){
-  return s.texto||s.director||s.selecao||s.ftype||s.kdm||s.stat||s.idioma||s.genre||s.pais||s.prod||s.dist||s.syn_pres||s.scr_pres||s.email_pres;
+  return s.texto||s.director||s.selecao||s.ftype||s.kdm||s.stat||s.idioma||s.genre||s.pais||s.prod||s.dist||s.syn||s.scr||s.email;
 }
 function _catSlotDesc(s){
   var parts=[];
@@ -6603,20 +6621,33 @@ function _catSlotDesc(s){
   if(s.pais)parts.push((s.pais_neg?'≠':'')+'país:'+s.pais);
   if(s.prod)parts.push((s.prod_neg?'≠':'')+'prod:'+s.prod);
   if(s.dist)parts.push((s.dist_neg?'≠':'')+'dist:'+s.dist);
-  if(s.syn_pres)parts.push('sinopse:'+(s.syn_pres==='sim'?'✓':'✗'));
-  if(s.scr_pres)parts.push('screener:'+(s.scr_pres==='sim'?'✓':'✗'));
-  if(s.email_pres)parts.push('email:'+(s.email_pres==='sim'?'✓':'✗'));
+  if(s.syn)parts.push((s.syn_neg?'≠':'')+'sinopse:'+s.syn);
+  if(s.scr)parts.push((s.scr_neg?'≠':'')+'screener:'+s.scr);
+  if(s.email)parts.push((s.email_neg?'≠':'')+'email:'+s.email);
   return parts.join(' · ')||'conjunto';
 }
 
 /* ── filter logic ── */
 function _catMatch(f,s){
   var copia=filmesMap[f.codigo]||{};var meta=catalogoFilmesMap[f.codigo]||{};
-  function strMatch(hay,q){return(hay||'').toLowerCase().includes(q.toLowerCase());}
-  function arrMatch(arr,q){return(Array.isArray(arr)?arr:(arr?[arr]:[])).some(function(v){return strMatch(v,q);});}
+  function strMatch(hay,q){if(q==='*')return!!(hay&&String(hay).trim());return(hay||'').toLowerCase().includes(q.toLowerCase());}
+  function arrMatch(arr,q){var a=Array.isArray(arr)?arr:(arr?[arr]:[]);if(q==='*')return a.length>0;return a.some(function(v){return strMatch(v,q);});}
   function check(matches,neg){return neg?!matches:matches;}
   if(s.texto){var hay=[f.codigo,f.titulo,meta.title,meta.title_pt,meta.original_title,meta.english_title].join(' ');if(!check(strMatch(hay,s.texto),s.texto_neg))return false;}
-  if(s.director){if(!check(arrMatch(meta.director,s.director),s.director_neg))return false;}
+  if(s.director){
+    var crew=meta.crew||{};
+    var crewVals=[].concat(
+      Array.isArray(meta.director)?meta.director:(meta.director?[meta.director]:[]),
+      Array.isArray(crew.cinematography)?crew.cinematography:(crew.cinematography?[crew.cinematography]:[]),
+      Array.isArray(crew.screenplay)?crew.screenplay:(crew.screenplay?[crew.screenplay]:[]),
+      Array.isArray(crew.editing)?crew.editing:(crew.editing?[crew.editing]:[]),
+      Array.isArray(crew.sound)?crew.sound:(crew.sound?[crew.sound]:[]),
+      Array.isArray(crew.art_direction)?crew.art_direction:(crew.art_direction?[crew.art_direction]:[]),
+      Array.isArray(crew.costume_design)?crew.costume_design:(crew.costume_design?[crew.costume_design]:[]),
+      Array.isArray(crew.cast)?crew.cast:(crew.cast?[crew.cast]:[])
+    );
+    if(!check(crewVals.some(function(v){return strMatch(v,s.director);}),s.director_neg))return false;
+  }
   if(s.selecao){if(!check((meta.selecao||'')===s.selecao,s.selecao_neg))return false;}
   if(s.ftype){if(!check(strMatch(meta.film_type,s.ftype),s.ftype_neg))return false;}
   if(s.kdm){if(!check((copia.kdm||'').toUpperCase()==='SIM',s.kdm_neg))return false;}
@@ -6626,12 +6657,9 @@ function _catMatch(f,s){
   if(s.pais){if(!check(arrMatch(meta.countries,s.pais),s.pais_neg))return false;}
   if(s.prod){if(!check(arrMatch(meta.production_company,s.prod),s.prod_neg))return false;}
   if(s.dist){if(!check(arrMatch(meta.distribution_company,s.dist),s.dist_neg))return false;}
-  if(s.syn_pres==='sim'&&!meta.synopsis)return false;
-  if(s.syn_pres==='nao'&&meta.synopsis)return false;
-  if(s.scr_pres==='sim'&&!meta.screener)return false;
-  if(s.scr_pres==='nao'&&meta.screener)return false;
-  if(s.email_pres==='sim'&&!meta.contact_email)return false;
-  if(s.email_pres==='nao'&&meta.contact_email)return false;
+  if(s.syn){var synMatch=s.syn==='*'?!!(meta.synopsis):strMatch(meta.synopsis,s.syn);if(!check(synMatch,s.syn_neg))return false;}
+  if(s.scr){var scrMatch=s.scr==='*'?!!(meta.screener):strMatch(meta.screener,s.scr);if(!check(scrMatch,s.scr_neg))return false;}
+  if(s.email){var emailMatch=s.email==='*'?!!(meta.contact_email):strMatch(meta.contact_email,s.email);if(!check(emailMatch,s.email_neg))return false;}
   return true;
 }
 
@@ -6694,7 +6722,7 @@ function addCatSlot(){
   _catReadForm();
   if(!_catHasCriteria(_catSearch))return;
   _catSlots.push(JSON.parse(JSON.stringify(_catSearch)));
-  _catSearch={texto:'',texto_neg:false,director:'',director_neg:false,selecao:'',selecao_neg:false,ftype:'',ftype_neg:false,kdm:'',kdm_neg:false,stat:'',stat_neg:false,idioma:'',idioma_neg:false,genre:'',genre_neg:false,pais:'',pais_neg:false,prod:'',prod_neg:false,dist:'',dist_neg:false,syn_pres:'',scr_pres:'',email_pres:''};
+  _catSearch={texto:'',texto_neg:false,director:'',director_neg:false,selecao:'',selecao_neg:false,ftype:'',ftype_neg:false,kdm:'',kdm_neg:false,stat:'',stat_neg:false,idioma:'',idioma_neg:false,genre:'',genre_neg:false,pais:'',pais_neg:false,prod:'',prod_neg:false,dist:'',dist_neg:false,syn:'',syn_neg:false,scr:'',scr_neg:false,email:'',email_neg:false};
   _catRan=true;_catShowAll=false;
   renderCatalogo();
 }
@@ -6708,9 +6736,20 @@ function catShowAll(){
   renderCatalogo();
 }
 function clearCatSearch(){
-  _catSearch={texto:'',texto_neg:false,director:'',director_neg:false,selecao:'',selecao_neg:false,ftype:'',ftype_neg:false,kdm:'',kdm_neg:false,stat:'',stat_neg:false,idioma:'',idioma_neg:false,genre:'',genre_neg:false,pais:'',pais_neg:false,prod:'',prod_neg:false,dist:'',dist_neg:false,syn_pres:'',scr_pres:'',email_pres:''};
+  _catSearch={texto:'',texto_neg:false,director:'',director_neg:false,selecao:'',selecao_neg:false,ftype:'',ftype_neg:false,kdm:'',kdm_neg:false,stat:'',stat_neg:false,idioma:'',idioma_neg:false,genre:'',genre_neg:false,pais:'',pais_neg:false,prod:'',prod_neg:false,dist:'',dist_neg:false,syn:'',syn_neg:false,scr:'',scr_neg:false,email:'',email_neg:false};
   _catSlots=[];_catRan=false;_catShowAll=false;
   renderCatalogo();
+}
+function clearCatForm(){
+  // clear fields without touching results
+  var fields=['texto','director','selecao','ftype','kdm','stat','idioma','genre','pais','prod','dist','syn','scr','email'];
+  fields.forEach(function(f){
+    var inp=document.getElementById('catsf_'+f);if(inp)inp.value='';
+    var neg=document.getElementById('catneg_'+f);
+    if(neg){neg.classList.remove('neg');neg.textContent='±';}
+    if(inp)inp.classList.remove('neg-on');
+  });
+  document.querySelectorAll('.cat-pres-btn').forEach(function(b){b.classList.remove('active-pos','active-neg');});
 }
 
 function _catRenderResults(){
@@ -6765,7 +6804,7 @@ function renderCatalogo(){
   // row 1: texto + director
   html+='<div class="cat-sf-row">';
   html+='<div class="cat-sf-cell wide"><div class="cat-sf-lbl">Título / Código</div><div class="cat-sf-wrap">'+_catInp('texto','busca em todos os títulos e código',s.texto)+_catNegBtn('texto')+'</div></div>';
-  html+='<div class="cat-sf-cell"><div class="cat-sf-lbl">Direção</div><div class="cat-sf-wrap">'+_catInp('director','nome do(a) diretor(a)',s.director)+_catNegBtn('director')+'</div></div>';
+  html+='<div class="cat-sf-cell"><div class="cat-sf-lbl">Direção / Equipe</div><div class="cat-sf-wrap">'+_catInp('director','nome de diretor(a) ou membro da equipe',s.director)+_catNegBtn('director')+'</div></div>';
   html+='</div>';
   // row 2: seleção + metragem + kdm
   html+='<div class="cat-sf-row">';
@@ -6784,16 +6823,17 @@ function renderCatalogo(){
   html+='</div>';
   // row 4: presence toggles
   html+='<div class="cat-sf-row">';
-  html+='<div class="cat-sf-cell narrow"><div class="cat-sf-lbl">Sinopse</div>'+_catPresGroup('syn')+'</div>';
-  html+='<div class="cat-sf-cell narrow"><div class="cat-sf-lbl">Screener</div>'+_catPresGroup('scr')+'</div>';
-  html+='<div class="cat-sf-cell narrow"><div class="cat-sf-lbl">Email</div>'+_catPresGroup('email')+'</div>';
+  html+='<div class="cat-sf-cell"><div class="cat-sf-lbl">Sinopse</div><div class="cat-sf-wrap">'+_catInp('syn','busca no texto · * para qualquer valor',s.syn)+_catNegBtn('syn')+'</div></div>';
+  html+='<div class="cat-sf-cell"><div class="cat-sf-lbl">Screener</div><div class="cat-sf-wrap">'+_catInp('scr','URL ou * para qualquer valor',s.scr)+_catNegBtn('scr')+'</div></div>';
+  html+='<div class="cat-sf-cell"><div class="cat-sf-lbl">Email de contato</div><div class="cat-sf-wrap">'+_catInp('email','endereço ou * para qualquer valor',s.email)+_catNegBtn('email')+'</div></div>';
   html+='</div>';
   html+='</div>'; // /cat-sf-form
   // actions
   html+='<div class="cat-sf-actions">';
   html+='<button class="cat-run-btn" onclick="runCatSearch()">⊞ Buscar</button>';
   html+='<button class="cat-add-btn" onclick="addCatSlot()">+ Adicionar ao conjunto</button>';
-  if(_catRan||_catSlots.length)html+='<button class="cat-clear-btn" onclick="clearCatSearch()">✕ Limpar</button>';
+  html+='<button class="cat-clear-btn" onclick="clearCatForm()">↺ Limpar busca</button>';
+  if(_catRan||_catSlots.length||_catShowAll)html+='<button class="cat-clear-btn" onclick="clearCatSearch()">✕ Limpar resultados</button>';
   html+='<button class="cat-all-btn" onclick="catShowAll()">Mostrar todos</button>';
   html+='</div>';
   // slots bar
@@ -6806,12 +6846,17 @@ function renderCatalogo(){
   // restore neg/pres state from _catSearch
   function maybeNeg(field,val){if(val){var btn=document.getElementById('catneg_'+field);var inp=document.getElementById('catsf_'+field);if(btn){btn.classList.add('neg');btn.textContent='≠';}if(inp)inp.classList.add('neg-on');}}
   maybeNeg('texto',s.texto_neg);maybeNeg('director',s.director_neg);maybeNeg('selecao',s.selecao_neg);maybeNeg('ftype',s.ftype_neg);maybeNeg('kdm',s.kdm_neg);maybeNeg('stat',s.stat_neg);maybeNeg('idioma',s.idioma_neg);maybeNeg('genre',s.genre_neg);maybeNeg('pais',s.pais_neg);maybeNeg('prod',s.prod_neg);maybeNeg('dist',s.dist_neg);
-  function restorePres(field,val){if(val){var cls=val==='sim'?'active-pos':'active-neg';var btn=document.querySelector('.cat-pres-btn[data-field="'+field+'"][data-val="'+val+'"]');if(btn)btn.classList.add(cls);}}
-  restorePres('syn',s.syn_pres);restorePres('scr',s.scr_pres);restorePres('email',s.email_pres);
+  // pres fields are now text inputs — neg state restored by maybeNeg below
+  maybeNeg('syn',s.syn_neg);maybeNeg('scr',s.scr_neg);maybeNeg('email',s.email_neg);
   if(_catRan||_catShowAll||_catSlots.length)_catRenderResults();
 }
 
 function openCatDetail(codigo){_catView='detail';_catCode=codigo;_catEditing=false;renderCatDetail();}
+function goToBuscaCod(codigo){
+  switchMode('busca');
+  var inp=document.getElementById('searchInput');
+  if(inp){inp.value=codigo;buscaQuery=codigo;renderBuscaResults();}
+}
 function renderCatDetail(){
   var cont=document.getElementById('catalogo-container');if(!cont||!_catCode)return;
   var copia=filmesMap[_catCode]||{};var meta=catalogoFilmesMap[_catCode]||{};
@@ -6830,10 +6875,13 @@ function renderCatDetail(){
   var kdmBadge=(copia.kdm&&copia.kdm.toUpperCase()==='SIM')?'<span class="cat-status-badge warn">⚠ KDM</span>':'';
   var html='<div class="cat-detail">';
   html+='<button class="cat-back" onclick="renderCatalogo()">← Catálogo</button>';
+  var acervoBtn='<button class="cat-card-btn" style="margin-left:0;" onclick="goToBuscaCod(\''+_catCode.replace(/'/g,"\\'")+'\')">Ver no Acervo Técnico</button>';
   if(canEdit&&!_catEditing)
-    html+='<div class="cat-actions"><button class="cat-edit-btn" onclick="startCatEdit()">✎ Editar</button></div>';
+    html+='<div class="cat-actions">'+acervoBtn+'<button class="cat-edit-btn" onclick="startCatEdit()">✎ Editar</button></div>';
   else if(_catEditing)
     html+='<div class="cat-actions"><span class="cat-msg" id="catSaveMsg"></span><button class="cat-cancel-btn" onclick="cancelCatEdit()">Cancelar</button><button class="cat-save-btn" onclick="doSaveCat()">Salvar</button></div>';
+  else
+    html+='<div class="cat-actions">'+acervoBtn+'</div>';
   html+='<div class="cat-header">';
   html+='<div class="cat-header-code">'+_catCode+(copia.status?'<span class="cat-status-badge '+sCls+'">'+copia.status+'</span>':'')+kdmBadge+selBadge+'</div>';
   if(_catEditing){
