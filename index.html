@@ -2364,7 +2364,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
         var nome = (r.nome || doc.id || '').trim();
         if (!nome) return;
         if (!allowedEvento(nome)) return;
-        eventosFirestore2.push({ nome: nome, cor_bg: r.cor_bg || '', cor_text: r.cor_text || '' });
+        eventosFirestore2.push({ nome: nome });
       });
       window._olgaEventosCache = eventosFirestore2;
 
@@ -2609,6 +2609,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 <div class="mode-bar hidden" id="barEquipe">
   <button class="print-btn" onclick="openEquipeNewUser()">+ novo usuário</button>
   <button class="print-btn" onclick="openEventoModal(null)" style="margin-left:6px;">+ novo evento</button>
+  <button class="print-btn" onclick="importarEventosExistentes()" style="margin-left:6px;">↓ importar eventos</button>
   <span class="result-count" id="equipeCount"></span>
 </div>
 <div class="mode-bar hidden" id="barVinhetas">
@@ -2978,14 +2979,10 @@ function applyParsedData(d,filename){
     if(!s.evento||!s.date)return;
     if(!evFirstDate[s.evento]||s.date<evFirstDate[s.evento])evFirstDate[s.evento]=s.date;
   });
-  // merge eventos do Firestore: adiciona eventos sem filmes + registra cores explícitas
-  var firestoreColors={};
+  // merge eventos do Firestore: adiciona eventos sem filmes ainda
   var eventosFS=d.eventosFirestore||window._olgaEventosCache||[];
   eventosFS.forEach(function(ev){
-    if(ev.nome){
-      if(ev.cor_bg)firestoreColors[ev.nome]={bg:ev.cor_bg,text:ev.cor_text||'#000'};
-      if(d.events.indexOf(ev.nome)===-1)d.events.push(ev.nome);
-    }
+    if(ev.nome&&d.events.indexOf(ev.nome)===-1)d.events.push(ev.nome);
   });
   var events=d.events.slice().sort(function(a,b){
     var da=evFirstDate[a],db=evFirstDate[b];
@@ -2994,9 +2991,7 @@ function applyParsedData(d,filename){
     if(db)return 1;
     return a.localeCompare(b,'pt-BR');
   });
-  events.forEach(function(ev,i){
-    eventColors[ev]=firestoreColors[ev]||PALETTE[i%PALETTE.length];
-  });
+  events.forEach(function(ev,i){eventColors[ev]=PALETTE[i%PALETTE.length];});
   var currentEvs=currentEventsFromDates(d.sessoesArr);
   var initEvs=currentEvs.size>0?currentEvs:new Set(events);
   activeEventsGrade=new Set(initEvs);activeEventsBusca=new Set(initEvs);activeEventsIngest=new Set(initEvs);activeEventsFicha=new Set(initEvs);activeEventsCinemas=new Set(initEvs);activeEventsDash=new Set(initEvs);activeEventsGrade2=new Set(initEvs);activeEventsSessoes=new Set(initEvs);activeEventsProjecao=new Set(initEvs);activeEventsVinhetas=new Set(initEvs);activeEventsCatalogo=new Set(initEvs);
@@ -6360,7 +6355,7 @@ function goToCinemaFromDash(sala){
 }
 
 /* ─── EQUIPE ─────────────────────────────────────────────────────── */
-var _equipeUsers=[], _equipeEditId=null, _equipeDeleteId=null, _adminEventos=[];
+var _equipeUsers=[], _equipeEditId=null, _equipeDeleteId=null, _adminEventos=[], _equipeEventoFiltro='';
 var _EQUIPE_MODULOS=['projecao','grade','sessoes','busca','vinhetas','cinemas','dash','receptivo','catalogo'];
 var _EQUIPE_ROLES=['admin','editor','projecao','programacao','producao','viewer'];
 var _EQUIPE_RESTRICOES=[
@@ -6384,7 +6379,7 @@ function renderEquipe(){
   ]).then(function(results){
     _equipeUsers=results[0].sort(function(a,b){return a.id.localeCompare(b.id);});
     _adminEventos=results[1];
-    window._olgaEventosCache=results[1].map(function(e){return{nome:e.data.nome||e.id,cor_bg:e.data.cor_bg||'',cor_text:e.data.cor_text||''};});
+    window._olgaEventosCache=results[1].map(function(e){return{nome:e.data.nome||e.id};});
     renderEquipeTable();
   }).catch(function(e){
     el.innerHTML='<div style="color:var(--warn);font-family:var(--mono);font-size:11px;">Erro ao carregar: '+e.message+'</div>';
@@ -6394,12 +6389,32 @@ function renderEquipe(){
 function renderEquipeTable(){
   var el=document.getElementById('equipe-container');
   var countEl=document.getElementById('equipeCount');
+
+  // filtro de evento nos usuários
+  var usersVisiveis=_equipeUsers.filter(function(u){
+    if(!_equipeEventoFiltro)return true;
+    var evs=u.data.eventos;
+    if(!evs||!evs.length)return false;
+    return evs.indexOf(_equipeEventoFiltro)!==-1;
+  });
   if(countEl)countEl.textContent=_equipeUsers.length+' usuário'+(_equipeUsers.length!==1?'s':'');
+
+  // dropdown de eventos para filtro (todos os eventos conhecidos)
+  var todosEvs=(function(){var s=new Set();_equipeUsers.forEach(function(u){(u.data.eventos||[]).forEach(function(e){s.add(e);});});return Array.from(s).sort();})();
+  var filtroHtml='<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">'+
+    '<label style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap;">Filtrar por evento</label>'+
+    '<select onchange="_equipeEventoFiltro=this.value;renderEquipeTable();" style="font-family:var(--mono);font-size:11px;background:var(--bg);color:var(--text);border:1px solid var(--border2);padding:4px 8px;min-width:180px;">'+
+      '<option value="">Todos os usuários</option>'+
+      todosEvs.map(function(e){return'<option value="'+esc(e)+'"'+(e===_equipeEventoFiltro?' selected':'')+'>'+esc(e)+'</option>';}).join('')+
+    '</select>'+
+    (_equipeEventoFiltro?'<span style="font-family:var(--mono);font-size:10px;color:var(--text-muted);">'+usersVisiveis.length+' usuário'+(usersVisiveis.length!==1?'s':'')+' com acesso</span>':'')+
+  '</div>';
+
   var usuariosHtml='';
-  if(!_equipeUsers.length){
-    usuariosHtml='<div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:20px 0;">Nenhum usuário cadastrado.</div>';
+  if(!usersVisiveis.length){
+    usuariosHtml='<div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:12px 0;">Nenhum usuário'+(  _equipeEventoFiltro?' com acesso a este evento':' cadastrado')+'.</div>';
   }else{
-    var rows=_equipeUsers.map(function(u){
+    var rows=usersVisiveis.map(function(u){
       var d=u.data;
       var ativo=d.ativo!==false;
       var role=d.role||'—';
@@ -6442,35 +6457,40 @@ function renderEquipeTable(){
   var evHtml='';
   if(_adminEventos.length){
     var evRows=_adminEventos.map(function(ev){
-      var d=ev.data; var nome=d.nome||ev.id;
-      var bg=d.cor_bg||'var(--border2)'; var txt=d.cor_text||'var(--text)';
+      var d=ev.data;
+      var label=d.nome_exibicao?esc(d.nome_exibicao)+' <span style="color:var(--text-muted);font-size:9px;">('+esc(ev.id)+')</span>':esc(ev.id);
+      var pill=eventColors&&eventColors[ev.id]?'background:'+eventColors[ev.id].bg+';color:'+eventColors[ev.id].text+';':'background:var(--border2);color:var(--text);';
+      var estados=(d.estados&&d.estados.length)?d.estados.map(function(e){return'<span style="font-family:var(--mono);font-size:9px;padding:1px 6px;border:1px solid var(--border);border-radius:2px;margin-right:3px;">'+esc(e)+'</span>';}).join(''):'<span style="color:var(--text-muted);font-size:9px;">—</span>';
+      var datas=(d.data_inicio||d.data_fim)?[d.data_inicio,d.data_fim].filter(Boolean).join(' → '):'—';
       return '<tr>'+
-        '<td style="padding:9px 12px;font-family:var(--mono);font-size:12px;color:var(--text);">'+
-          '<span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:'+esc(bg)+';border:1px solid rgba(255,255,255,0.15);vertical-align:middle;margin-right:8px;"></span>'+
-          esc(nome)+
+        '<td style="padding:9px 12px;font-family:var(--mono);font-size:12px;">'+
+          '<span style="display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.08em;padding:2px 8px;border-radius:2px;margin-right:8px;'+pill+'">'+esc(ev.id)+'</span>'+
+          (d.nome_exibicao?'<span style="color:var(--text-dim);">'+esc(d.nome_exibicao)+'</span>':'')+
         '</td>'+
-        '<td style="padding:9px 12px;font-family:var(--mono);font-size:10px;color:var(--text-muted);">'+esc(bg)+'</td>'+
+        '<td style="padding:9px 12px;">'+estados+'</td>'+
+        '<td style="padding:9px 12px;font-family:var(--mono);font-size:10px;color:var(--text-muted);">'+esc(datas)+'</td>'+
         '<td style="padding:9px 12px;text-align:right;white-space:nowrap;">'+
           '<button onclick="openEventoModal(\''+esc(ev.id)+'\')" style="'+_equipeBtn()+'">editar</button> '+
-          '<button onclick="deleteEvento(\''+esc(ev.id)+'\',\''+esc(nome)+'\')" style="'+_equipeBtn('del')+'">excluir</button>'+
+          '<button onclick="deleteEvento(\''+esc(ev.id)+'\',\''+esc(ev.id)+'\')" style="'+_equipeBtn('del')+'">excluir</button>'+
         '</td>'+
       '</tr>';
     }).join('');
     evHtml='<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);">'+
       '<thead><tr style="background:var(--surface2);border-bottom:1px solid var(--accent);">'+
-        '<th style="'+_equipeTh()+'">Nome</th>'+
-        '<th style="'+_equipeTh()+'">Cor</th>'+
+        '<th style="'+_equipeTh()+'">Código / Nome</th>'+
+        '<th style="'+_equipeTh()+'">Estados</th>'+
+        '<th style="'+_equipeTh()+'">Duração</th>'+
         '<th style="'+_equipeTh()+'text-align:right">Ações</th>'+
       '</tr></thead>'+
       '<tbody>'+evRows+'</tbody>'+
     '</table>';
   }else{
-    evHtml='<div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:12px 0;">Nenhum evento cadastrado.</div>';
+    evHtml='<div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:12px 0;">Nenhum evento cadastrado. Use "↓ importar eventos" para criar a partir dos dados existentes.</div>';
   }
 
   var secHdr=function(label){return'<div style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);padding:8px 0 6px;border-bottom:1px solid var(--border);margin-bottom:12px;">'+label+'</div>';};
   el.innerHTML=
-    secHdr('Usuários')+usuariosHtml+
+    secHdr('Usuários')+filtroHtml+usuariosHtml+
     '<div style="margin-top:32px;">'+secHdr('Eventos')+evHtml+'</div>';
 }
 
@@ -6488,38 +6508,43 @@ function openEventoModal(id){
   _eventoEditId=id||null;
   var ev=id?(_adminEventos.find(function(e){return e.id===id;})):null;
   var d=ev?ev.data:{};
-  var nome=d.nome||'';
-  var bg=d.cor_bg||'#e8a020';
-  var txt=d.cor_text||'#000000';
-  var modal=document.getElementById('eventoModal');
-  document.getElementById('eventoModalTitle').textContent=id?'Editar evento':'Novo evento';
-  document.getElementById('eventoNome').value=nome;
-  document.getElementById('eventoCorBg').value=bg;
-  document.getElementById('eventoCorText').value=txt;
-  document.getElementById('eventoPreview').style.background=bg;
-  document.getElementById('eventoPreview').style.color=txt;
-  document.getElementById('eventoPreview').textContent=nome||'EVENTO';
+  // estados disponíveis: únicos de cinemasArr
+  var todosEstados=(function(){var s=new Set();(cinemasArr||[]).forEach(function(c){if(c.estado)s.add(c.estado);});return Array.from(s).sort();})();
+  var selEstados=d.estados||[];
+  var estadosHtml=todosEstados.length?todosEstados.map(function(e){
+    var chk=selEstados.indexOf(e)!==-1?'checked':'';
+    return '<label style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--text-dim);cursor:pointer;padding:3px 0;">'+
+      '<input type="checkbox" value="'+esc(e)+'" '+chk+' style="accent-color:var(--accent);">'+esc(e)+'</label>';
+  }).join(''):'<span style="font-family:var(--mono);font-size:10px;color:var(--text-muted);">Nenhum estado disponível nos cinemas cadastrados.</span>';
+
+  document.getElementById('eventoModalTitle').textContent=id?'Editar evento · '+id:'Novo evento';
+  document.getElementById('eventoCodigoWrap').style.display=id?'none':'flex';
+  document.getElementById('eventoCodigo').value='';
+  document.getElementById('eventoNomeExib').value=d.nome_exibicao||'';
+  document.getElementById('eventoDataInicio').value=d.data_inicio||'';
+  document.getElementById('eventoDataFim').value=d.data_fim||'';
+  document.getElementById('eventoEstadosList').innerHTML=estadosHtml;
   document.getElementById('eventoModalErr').style.display='none';
-  modal.style.display='flex';
+  document.getElementById('eventoModal').style.display='flex';
 }
 function closeEventoModal(){document.getElementById('eventoModal').style.display='none';}
-function _eventoUpdatePreview(){
-  var nome=document.getElementById('eventoNome').value||'EVENTO';
-  var bg=document.getElementById('eventoCorBg').value||'#e8a020';
-  var txt=document.getElementById('eventoCorText').value||'#000000';
-  var prev=document.getElementById('eventoPreview');
-  prev.textContent=nome;prev.style.background=bg;prev.style.color=txt;
+function _eventoGetEstados(){
+  var checks=document.querySelectorAll('#eventoEstadosList input[type=checkbox]');
+  var arr=[];checks.forEach(function(c){if(c.checked)arr.push(c.value);});return arr;
 }
 async function saveEvento(){
-  var nome=(document.getElementById('eventoNome').value||'').trim();
-  if(!nome){document.getElementById('eventoModalErr').textContent='O nome é obrigatório.';document.getElementById('eventoModalErr').style.display='block';return;}
-  var bg=document.getElementById('eventoCorBg').value||'#e8a020';
-  var txt=document.getElementById('eventoCorText').value||'#000000';
-  var id=_eventoEditId||nome;
+  var id=_eventoEditId||(document.getElementById('eventoCodigo').value||'').trim();
+  if(!id){document.getElementById('eventoModalErr').textContent='O código é obrigatório.';document.getElementById('eventoModalErr').style.display='block';return;}
+  var data={
+    nome_exibicao:(document.getElementById('eventoNomeExib').value||'').trim(),
+    estados:_eventoGetEstados(),
+    data_inicio:document.getElementById('eventoDataInicio').value||'',
+    data_fim:document.getElementById('eventoDataFim').value||''
+  };
   var saveBtn=document.getElementById('eventoModalSave');
   if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Salvando…';}
   try{
-    await window._olgaEventos.save(id,{nome:nome,cor_bg:bg,cor_text:txt});
+    await window._olgaEventos.save(id,data);
     closeEventoModal();
     renderEquipe();
   }catch(e){
@@ -6529,12 +6554,45 @@ async function saveEvento(){
     if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='Salvar';}
   }
 }
-async function deleteEvento(id,nome){
-  if(!confirm('Excluir o evento "'+nome+'"?\n\nO evento será removido do catálogo, mas os filmes que já carregam esse nome de evento na planilha continuarão exibindo-o.'))return;
-  try{
-    await window._olgaEventos.remove(id);
-    renderEquipe();
-  }catch(e){alert('Erro ao excluir: '+e.message);}
+async function deleteEvento(id,label){
+  if(!confirm('Excluir o evento "'+label+'"?\n\nOs filmes que já carregam esse código de evento na planilha continuarão exibindo-o.'))return;
+  try{await window._olgaEventos.remove(id);renderEquipe();}
+  catch(e){alert('Erro ao excluir: '+e.message);}
+}
+async function importarEventosExistentes(){
+  if(!confirm('Criar registros no Firestore para todos os eventos ainda não cadastrados?\n\nOs eventos serão criados com os estados e datas derivados dos cinemas e sessões existentes. O nome de exibição ficará em branco para você preencher depois.'))return;
+  var existentes=new Set(_adminEventos.map(function(e){return e.id;}));
+  // todos os eventos nas sessões + filmes
+  var evSet2=new Set();
+  (sessoesArr||[]).forEach(function(s){if(s.evento)evSet2.add(s.evento);});
+  (filmesArr||[]).forEach(function(f){if(f.evento)evSet2.add(f.evento);});
+  var novos=Array.from(evSet2).filter(function(ev){return!existentes.has(ev);});
+  if(!novos.length){alert('Todos os eventos já estão cadastrados.');return;}
+  var erros=[];
+  for(var i=0;i<novos.length;i++){
+    var ev=novos[i];
+    // estados: cinemas com esse evento
+    var estadosSet=new Set();
+    (cinemasArr||[]).forEach(function(c){if(c.evento===ev&&c.estado)estadosSet.add(c.estado);});
+    // datas: primeira e última sessão
+    var datas=(sessoesArr||[]).filter(function(s){return s.evento===ev&&s.date;}).map(function(s){return s.date;});
+    var dataInicio='',dataFim='';
+    if(datas.length){
+      datas.sort(function(a,b){return a-b;});
+      dataInicio=_fmtDateISO(datas[0]);
+      dataFim=_fmtDateISO(datas[datas.length-1]);
+    }
+    try{
+      await window._olgaEventos.save(ev,{nome_exibicao:'',estados:Array.from(estadosSet),data_inicio:dataInicio,data_fim:dataFim});
+    }catch(e){erros.push(ev+': '+e.message);}
+  }
+  if(erros.length)alert('Concluído com erros:\n'+erros.join('\n'));
+  renderEquipe();
+}
+function _fmtDateISO(d){
+  if(!d)return'';
+  var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+dd;
 }
 
 function openEquipeNewUser(){_openEquipeForm(null,null);}
@@ -7294,33 +7352,38 @@ window.addEventListener('popstate',function(e){
 });
 </script>
 <div id="eventoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;align-items:center;justify-content:center;" onclick="if(event.target===this)closeEventoModal()">
-  <div style="background:var(--surface);border:1px solid var(--border);width:100%;max-width:400px;margin:0 auto;display:flex;flex-direction:column;">
-    <div style="padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+  <div style="background:var(--surface);border:1px solid var(--border);width:100%;max-width:440px;margin:0 auto;display:flex;flex-direction:column;max-height:90vh;">
+    <div style="padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <span id="eventoModalTitle" style="font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);"></span>
       <button onclick="closeEventoModal()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;line-height:1;">×</button>
     </div>
-    <div style="padding:20px 22px;display:flex;flex-direction:column;gap:14px;">
+    <div style="padding:20px 22px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;">
+      <div id="eventoCodigoWrap" style="display:flex;flex-direction:column;gap:4px;">
+        <label style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);">event_name <span style="color:var(--warn);">*</span></label>
+        <input id="eventoCodigo" type="text" style="font-family:var(--mono);font-size:12px;background:var(--bg);color:var(--text);border:1px solid var(--border2);padding:6px 10px;outline:none;" placeholder="ex: RIO 2025 — exatamente como aparece na planilha">
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text-muted);">Deve ser idêntico ao valor event_name nas abas filmes, sessoes e cinemas. Imutável após criação.</span>
+      </div>
       <div style="display:flex;flex-direction:column;gap:4px;">
-        <label style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);">Nome do evento</label>
-        <input id="eventoNome" type="text" oninput="_eventoUpdatePreview()" style="font-family:var(--sans);font-size:12px;background:var(--bg);color:var(--text);border:1px solid var(--border2);padding:6px 10px;outline:none;" placeholder="ex: RIO 2025">
+        <label style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);">Nome de exibição</label>
+        <input id="eventoNomeExib" type="text" style="font-family:var(--sans);font-size:12px;background:var(--bg);color:var(--text);border:1px solid var(--border2);padding:6px 10px;outline:none;" placeholder="ex: Festival do Rio 2025">
       </div>
       <div style="display:flex;gap:14px;">
         <div style="display:flex;flex-direction:column;gap:4px;flex:1;">
-          <label style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);">Cor de fundo</label>
-          <input id="eventoCorBg" type="color" onchange="_eventoUpdatePreview()" style="width:100%;height:32px;border:1px solid var(--border2);background:var(--bg);cursor:pointer;padding:2px;" value="#e8a020">
+          <label style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);">Data início</label>
+          <input id="eventoDataInicio" type="date" style="font-family:var(--mono);font-size:11px;background:var(--bg);color:var(--text);border:1px solid var(--border2);padding:6px 10px;outline:none;width:100%;box-sizing:border-box;">
         </div>
         <div style="display:flex;flex-direction:column;gap:4px;flex:1;">
-          <label style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);">Cor do texto</label>
-          <input id="eventoCorText" type="color" onchange="_eventoUpdatePreview()" style="width:100%;height:32px;border:1px solid var(--border2);background:var(--bg);cursor:pointer;padding:2px;" value="#000000">
+          <label style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);">Data fim</label>
+          <input id="eventoDataFim" type="date" style="font-family:var(--mono);font-size:11px;background:var(--bg);color:var(--text);border:1px solid var(--border2);padding:6px 10px;outline:none;width:100%;box-sizing:border-box;">
         </div>
       </div>
-      <div>
-        <div style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Preview</div>
-        <span id="eventoPreview" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;padding:3px 10px;border-radius:2px;display:inline-block;">EVENTO</span>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);">Estados de realização</label>
+        <div id="eventoEstadosList" style="display:flex;flex-direction:column;gap:2px;max-height:140px;overflow-y:auto;border:1px solid var(--border);padding:8px 10px;background:var(--bg);"></div>
       </div>
     </div>
-    <div id="eventoModalErr" style="display:none;font-family:var(--mono);font-size:10px;color:var(--warn);padding:8px 22px;background:rgba(255,96,85,0.06);border-top:1px solid rgba(255,96,85,0.15);"></div>
-    <div style="padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;">
+    <div id="eventoModalErr" style="display:none;font-family:var(--mono);font-size:10px;color:var(--warn);padding:8px 22px;background:rgba(255,96,85,0.06);border-top:1px solid rgba(255,96,85,0.15);flex-shrink:0;"></div>
+    <div style="padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;">
       <button onclick="closeEventoModal()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;">Cancelar</button>
       <button id="eventoModalSave" onclick="saveEvento()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 20px;background:var(--accent);color:#000;border:none;cursor:pointer;">Salvar</button>
     </div>
