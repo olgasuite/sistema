@@ -6327,7 +6327,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 28/04/2026 às 22:02';
+  var sysUpdate='última atualização do sistema · 28/04/2026 às 22:04';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -6422,7 +6422,7 @@ function renderEquipeTable(){
   var usersVisiveis=_equipeUsers.filter(function(u){
     if(!_equipeEventoFiltro)return true;
     var evs=u.data.eventos;
-    if(!evs||!evs.length)return false;
+    if(!evs||!evs.length)return true; // sem restrição = acesso a todos os eventos
     return evs.indexOf(_equipeEventoFiltro)!==-1;
   });
   if(countEl)countEl.textContent=_equipeUsers.length+' usuário'+(_equipeUsers.length!==1?'s':'');
@@ -7453,7 +7453,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 28/04/2026 às 22:02</span></div>
+<div id="page-footer"><span>última atualização · 28/04/2026 às 22:04</span></div>
 
 </div>
 
