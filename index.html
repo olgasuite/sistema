@@ -176,6 +176,9 @@ select:disabled{opacity:0.35;cursor:not-allowed;}
 .prog-modal-check-row{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--text-dim);cursor:pointer;}
 .prog-modal-check-row input{accent-color:var(--accent);}
 .prog-films-list{border:1px solid var(--border);max-height:180px;overflow-y:auto;padding:4px 8px;background:var(--bg);}
+.prog-sala-group{margin-bottom:4px;}
+.prog-sala-header{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);padding:5px 14px;background:var(--surface);border-bottom:1px solid var(--border);border-top:1px solid var(--border);}
+.prog-day-subheader{font-family:var(--mono);font-size:8px;color:var(--text-muted);padding:3px 14px;background:var(--bg);border-bottom:1px dotted var(--border);letter-spacing:0.06em;}
 
 /* APP */
 #app{display:none;}
@@ -6588,7 +6591,11 @@ function renderProgramacao(){
   var c=document.getElementById('programacao-container');
   c.innerHTML='<div style="padding:40px;text-align:center;color:var(--text-muted);font-family:var(--mono);font-size:11px;">Carregando…</div>';
   if(!window._olgaPrograms){c.innerHTML='<div style="padding:40px;color:var(--warn);font-family:var(--mono);font-size:11px;">Módulo indisponível (sem Firebase).</div>';return;}
-  Promise.all([window._olgaPrograms.list(),window._olgaSubprograms.list()]).then(function(r){
+  // Garante que catalogoFilmesMap está carregado para exibir títulos PT e países
+  var catLoad=(catalogoFilmesMap&&Object.keys(catalogoFilmesMap).length>0)
+    ?Promise.resolve()
+    :(window._olgaCatalogo?window._olgaCatalogo.load().then(function(m){catalogoFilmesMap=m||{};}):Promise.resolve());
+  Promise.all([window._olgaPrograms.list(),window._olgaSubprograms.list(),catLoad]).then(function(r){
     _progData.programs=r[0];_progData.subprograms=r[1];_progRender();
   }).catch(function(e){c.innerHTML='<div style="padding:40px;color:var(--warn);font-family:var(--mono);font-size:11px;">Erro: '+esc(e.message)+'</div>';});
 }
@@ -6602,8 +6609,16 @@ function _progBack(){
   if(_progView.level==='sessao'){_progView.level='program';_progView.sessaoNome=null;_progRender();}
   else{_progView={level:'landing',programId:null,sessaoNome:null};_progRender();}
 }
-function _progGoProgram(id){_progView={level:'program',programId:id,sessaoNome:null};_progRender();}
-function _progGoSessao(nome,programId){_progView={level:'sessao',programId:programId,sessaoNome:nome};_progRender();}
+function _progGoProgram(id){
+  _progView={level:'program',programId:id,sessaoNome:null};
+  if(!_browserNav)history.pushState({olga:'programacao',progLevel:'program',progProgramId:id},'');
+  _progRender();
+}
+function _progGoSessao(nome,programId){
+  _progView={level:'sessao',programId:programId,sessaoNome:nome};
+  if(!_browserNav)history.pushState({olga:'programacao',progLevel:'sessao',progProgramId:programId,progSessaoNome:nome},'');
+  _progRender();
+}
 
 /* ── Landing ── */
 function _progRenderLanding(){
@@ -6650,6 +6665,42 @@ function _progRenderLanding(){
   c.innerHTML=html+'</div>';
 }
 
+function _progRenderSessionsGrouped(sessions,programId,canEdit){
+  if(!sessions.length)return'<div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);padding:10px 16px;">Nenhuma sessão.</div>';
+  // Agrupar por sala
+  var bySala={},salaOrder=[];
+  sessions.forEach(function(s){
+    var sala=s.cinema||'—';
+    if(!bySala[sala]){bySala[sala]=[];salaOrder.push(sala);}
+    bySala[sala].push(s);
+  });
+  salaOrder.sort(function(a,b){return a.localeCompare(b,'pt-BR');});
+  var html='';
+  salaOrder.forEach(function(sala){
+    var sessSala=bySala[sala];
+    // Agrupar por dia
+    var byDay={},dayOrder=[];
+    sessSala.forEach(function(s){
+      var k=s.date?s.date.toISOString().slice(0,10):'0000-00-00';
+      if(!byDay[k]){byDay[k]=[];dayOrder.push(k);}
+      byDay[k].push(s);
+    });
+    dayOrder.sort();
+    // Ordenar por hora dentro de cada dia
+    dayOrder.forEach(function(dk){
+      byDay[dk].sort(function(a,b){return(a.time?a.time.h*60+a.time.m:0)-(b.time?b.time.h*60+b.time.m:0);});
+    });
+    html+='<div class="prog-sala-group">';
+    html+='<div class="prog-sala-header">'+esc(sala)+'</div>';
+    dayOrder.forEach(function(dk){
+      html+='<div class="prog-day-subheader">'+(byDay[dk][0].dia||dk)+'</div>';
+      byDay[dk].forEach(function(s){html+=_progSessRowHtml(s,programId,canEdit);});
+    });
+    html+='</div>';
+  });
+  return html;
+}
+
 function _progGoOrphans(ev){
   var autoP=_progData.programs.find(function(p){return p.data.event_id===ev&&p.data.auto;});
   if(autoP){_progGoProgram(autoP.id);return;}
@@ -6672,7 +6723,8 @@ function _progRenderProgram(programId){
   var subs=_progData.subprograms.filter(function(s){return s.data.program_id===programId;});
   var sessSemSub=sessoesArr.filter(function(s){
     var matchProg=s.program_id===programId||(isAuto&&(!s.program_id)&&s.evento===ev);
-    return matchProg&&!s.subprogram_id&&activeEventsProgramacao.has(s.evento||'');
+    var matchEvento=activeEventsProgramacao.has(s.evento||ev);
+    return matchProg&&!s.subprogram_id&&matchEvento;
   });
   var safePid=programId.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
   var html='<div class="prog-module-wrap">';
@@ -6701,14 +6753,13 @@ function _progRenderProgram(programId){
   html+='</div>';
   // Subprogram boxes
   subs.forEach(function(sub){
-    var sessSub=sessoesArr.filter(function(s){return s.subprogram_id===sub.id&&activeEventsProgramacao.has(s.evento||'');});
+    var sessSub=sessoesArr.filter(function(s){return s.subprogram_id===sub.id&&activeEventsProgramacao.has(s.evento||ev);});
     var safeSid=sub.id.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     html+='<div class="prog-sub-block"><div class="prog-sub-header"><span class="prog-sub-name">'+esc(sub.data.name||sub.id)+'</span><span class="prog-sub-count">'+sessSub.length+' '+(sessSub.length===1?'sessão':'sessões')+'</span>';
     if(canEdit){html+='<div class="prog-sub-actions"><button class="prog-btn-icon" title="Editar" onclick="openProgSubprogramModal(\''+safeSid+'\',\''+safePid+'\')">✎</button><button class="prog-btn-icon" title="Duplicar" onclick="duplicateSubprogram(\''+safeSid+'\')">⧉</button><button class="prog-btn-icon prog-btn-del" title="Excluir" onclick="deleteSubprogram(\''+safeSid+'\',\''+esc(sub.data.name||sub.id)+'\')">×</button><button class="prog-btn-icon" title="Adicionar sessão" onclick="openProgSessaoModal(null,\''+safePid+'\',\''+safeSid+'\')">＋</button></div>';}
     html+='</div>';
     if(sub.data.subprogram_description)html+='<div class="prog-sub-desc">'+esc(sub.data.subprogram_description)+'</div>';
-    sessSub.forEach(function(s){html+=_progSessRowHtml(s,programId,canEdit);});
-    if(!sessSub.length)html+='<div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);padding:10px 16px;">Nenhuma sessão nesta submostra.</div>';
+    html+=_progRenderSessionsGrouped(sessSub,programId,canEdit);
     html+='</div>';
   });
   // Sessões sem submostra
@@ -6719,7 +6770,7 @@ function _progRenderProgram(programId){
     html+='<span class="prog-sub-count">'+sessSemSub.length+' '+(sessSemSub.length===1?'sessão':'sessões')+'</span>';
     if(canEdit)html+='<div class="prog-sub-actions"><button class="prog-btn-icon" title="Adicionar sessão" onclick="openProgSessaoModal(null,\''+safePid+'\',\'\')">＋</button></div>';
     html+='</div>';
-    sessSemSub.forEach(function(s){html+=_progSessRowHtml(s,programId,canEdit);});
+    html+=_progRenderSessionsGrouped(sessSemSub,programId,canEdit);
     html+='</div>';
   }
   c.innerHTML=html+'</div>';
@@ -6800,8 +6851,10 @@ function _progRenderSessao(sessaoNome){
   if(canEdit)html+='<button class="prog-btn-sm" style="margin-left:auto;" onclick="openProgSessaoModal(\''+safeNome+'\',\''+safePid+'\',null)">✎ editar sessão</button>';
   html+='</div>';
   html+='<div class="ficha"><div class="ficha-header"><div class="ficha-header-main">';
-  html+='<div class="ficha-session-wrap"><div class="ficha-session-name">'+esc(sessaoNome)+'</div>';
+  html+='<div class="ficha-session-wrap">';
+  html+='<div class="ficha-session-name">'+esc(sessaoNome)+'</div>';
   if(s.name)html+='<div class="prog-sess-display-name">'+esc(s.name)+'</div>';
+  html+='<span style="font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;padding:2px 7px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent);border-radius:2px;flex-shrink:0;">PROGRAMAÇÃO</span>';
   html+=eventoBadge+'</div>';
   html+='<div class="ficha-meta"><div class="meta-item"><div class="meta-label">Cinema</div><div class="meta-value">'+(s.cinema||'—')+'</div></div><div class="meta-item"><div class="meta-label">Data</div><div class="meta-value">'+s.dia+'</div></div><div class="meta-item"><div class="meta-label">Hora</div><div class="meta-value">'+s.hora+'</div></div><div class="meta-item"><div class="meta-label">Filmes</div><div class="meta-value highlight">'+films.length+'</div></div></div>';
   html+='</div>'+extraHtml+'</div>';
@@ -8179,6 +8232,26 @@ window.addEventListener('popstate',function(e){
     // always go back to search page (not detail)
     _catView='search';_catCode=null;_catEditing=false;
     renderCatalogo();
+  }else if(target==='programacao'){
+    if(currentMode!=='programacao'){
+      currentMode='programacao';
+      ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','equipe','catalogo','programacao'].forEach(function(m){
+        var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m==='programacao'?'Programacao':m.charAt(0).toUpperCase()+m.slice(1);
+        document.getElementById('tab'+cap).classList.toggle('active',m==='programacao');
+        document.getElementById('bar'+cap).classList.toggle('hidden',m!=='programacao');
+        document.getElementById(m+'-panel').classList.toggle('active',m==='programacao');
+      });
+      document.getElementById('landing').style.display='none';
+      document.getElementById('app').style.display='block';
+      rebuildPillsForMode('programacao');
+    }
+    var lvl=e.state&&e.state.progLevel;
+    _progView={
+      level:lvl||'landing',
+      programId:(e.state&&e.state.progProgramId)||null,
+      sessaoNome:(e.state&&e.state.progSessaoNome)||null
+    };
+    if(_progData.programs.length||!lvl){_progRender();}else{renderProgramacao();}
   }else{
     switchMode(target,true);
   }
