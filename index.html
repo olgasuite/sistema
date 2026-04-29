@@ -6327,7 +6327,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 28/04/2026 às 00:15';
+  var sysUpdate='última atualização do sistema · 28/04/2026 às 22:00';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -7448,7 +7448,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 28/04/2026 às 00:15</span></div>
+<div id="page-footer"><span>última atualização · 28/04/2026 às 22:00</span></div>
 
 </div>
 
@@ -7663,11 +7663,19 @@ window._mobToggleEv=function(ev){
 function _mobSalaSelectHtml(selSala,onchangeFn,filtroEvs){
   var u=window._olgaUser;
   var userEvs=u&&u.eventos&&u.eventos.length?new Set(u.eventos):null;
+  var userCxs=u&&u.complexos&&u.complexos.length?new Set(u.complexos):null;
+  // salas permitidas pelo complexo do usuário
+  var salasDoCx=userCxs?(function(){
+    var s=new Set();
+    (cinemasArr||[]).forEach(function(c){if(c.sala&&userCxs.has(c.complexo))s.add(c.sala);});
+    return s;
+  }()):null;
   var salas=[];
   sessoesArr.forEach(function(s){
     if(!s.cinema)return;
     if(userEvs&&!userEvs.has(s.evento))return;
     if(filtroEvs&&!filtroEvs.has(s.evento))return;
+    if(salasDoCx&&!salasDoCx.has(s.cinema))return;
     if(salas.indexOf(s.cinema)===-1)salas.push(s.cinema);
   });
   salas.sort();
@@ -7726,7 +7734,7 @@ function olgaMobileHome(noStack){
     {mod:'vinhetas', icon:'film',             label:'vinhetas',    sub:'Por sessão',          fn:'olgaMobileVinhetas()'},
     {mod:'busca',    icon:'file-text',        label:'Acervo',      sub:'Busca por título',    fn:'olgaMobileAcervo()'},
     {mod:'catalogo', icon:'library',          label:'Catálogo',    sub:'Ficha curatorial',    fn:'olgaMobileCatalogo()'},
-    {mod:'ingest',   icon:'download',         label:'Ingest',      sub:'Checklist de DCP',    fn:'olgaMobileIngest()'},
+    {mod:'projecao', icon:'download',         label:'Ingest',      sub:'Checklist de DCP',    fn:'olgaMobileIngest()'},
     {mod:'grade',    icon:'layout-dashboard', label:'Grade',       sub:'Programação do dia',  fn:'olgaMobileGrade()'},
   ];
 
