@@ -2148,6 +2148,12 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     save: async function(id, data) { await setDoc(doc(db, 'copias', id), data); }
   };
 
+  // API vinhetas — CRUD completo
+  window._olgaVinhetas = {
+    save: async function(id, data) { await setDoc(doc(db, 'vinhetas', id), data); },
+    remove: async function(id) { await deleteDoc(doc(db, 'vinhetas', id)); }
+  };
+
   // API catálogo (coleção filmes)
   window._olgaCatalogo = {
     load: async function() {
@@ -2769,6 +2775,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
     <option value="">Todos os dias</option>
   </select>
   <button class="print-btn" onclick="printVinhetas()" style="margin-left:8px;">⎙ Imprimir lista</button>
+  <button class="cat-edit-btn" id="btnNovaVinheta" onclick="openVinhetaModal(null)" style="margin-left:8px;display:none;">+ Nova vinheta</button>
 </div>
 
 <div id="landing">
@@ -3241,11 +3248,6 @@ function goHome(){
 function moduleCardClick(mode){if(dataLoaded)switchMode(mode);}
 
 function switchMode(mode,noPush){
-  // sync event filters from the current module to all others, then rebuild pills for new module
-  if(currentMode&&currentMode!==mode){
-    var src=activeEventsForMode(currentMode);
-    if(src)syncEventFiltersFrom(src);
-  }
   currentMode=mode;
   if(!noPush&&!_browserNav)history.pushState({olga:mode},'');
   // always collapse the busca filter panel when leaving busca
@@ -5086,6 +5088,8 @@ function buildVinhetasFilters(){
     renderVinhetas();
   });
   rebuildVinhetasCinemaSelect();rebuildVinhetasDaySelect();
+  var btn=document.getElementById('btnNovaVinheta');
+  if(btn)btn.style.display=(window._olgaUser&&(window._olgaUser.role==='admin'||window._olgaUser.role==='editor')&&window._olgaVinhetas)?'':'none';
 }
 
 function filteredSessoesForVinhetas(){
@@ -5148,7 +5152,9 @@ function renderVinhetas(){
       return'<span class="vinheta-cinema-chip">'+c+' <span class="vinheta-cinema-chip-count">×'+byCinema[c]+'</span></span>';
     }).join('');
     var badges=(info?lenteBadge(info.lente)+somBadge(info.som):'');
-    html+='<div class="vinheta-card" onclick="openVinhetaDetail(\''+cod.replace(/'/g,"\\'")+'\')">'+
+    var canEditV=!!(window._olgaUser&&(window._olgaUser.role==='admin'||window._olgaUser.role==='editor')&&window._olgaVinhetas);
+    var safeCod=cod.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    html+='<div class="vinheta-card" onclick="openVinhetaDetail(\''+safeCod+'\')">'+
       '<div class="vinheta-card-top">'+
         '<span class="vinheta-card-code">'+cod+'</span>'+
         '<div style="flex:1;min-width:0;">'+
@@ -5161,7 +5167,11 @@ function renderVinhetas(){
           (!window._olgaHasRestricao('vinhetas.cinemas')?'<div class="vinheta-count-item"><span class="vinheta-count-num">'+Object.keys(byCinema).length+'</span><span class="vinheta-count-label">cinemas</span></div>':'')+
           (!window._olgaHasRestricao('vinhetas.publico')&&hasPubData?'<div class="vinheta-count-item"><span class="vinheta-count-num">'+pubTotal.toLocaleString('pt-BR')+'</span><span class="vinheta-count-label">público</span></div>':'')+
         '</div>'+
-      '</div>'+
+        (canEditV?'<div onclick="event.stopPropagation()" style="display:flex;gap:4px;flex-shrink:0;margin-left:6px;">'
+          +'<button class="prog-btn-icon" title="Editar" onclick="openVinhetaModal(\''+safeCod+'\')">✎</button>'
+          +'<button class="prog-btn-icon" title="Duplicar" onclick="duplicateVinheta(\''+safeCod+'\')">⧉</button>'
+          +'</div>':'')
+      +'</div>'+
       (cinemaChips?'<div class="vinheta-cinema-bar">'+cinemaChips+'</div>':'')+
     '</div>';
   });
@@ -5219,6 +5229,87 @@ function openVinhetaDetail(cod){
       '<div class="vinheta-sessions-header">'+allSessions.length+' '+(allSessions.length===1?'sessão':'sessões')+' programadas</div>'+
       (sessRows||'<div style="padding:16px;font-family:var(--mono);font-size:11px;color:var(--text-muted);">Nenhuma sessão encontrada.</div>')+
     '</div>';
+}
+
+/* ═══ VINHETAS — CRUD ═══ */
+var _vinhetaEditCod=null;
+
+function openVinhetaModal(cod){
+  _vinhetaEditCod=cod||null;
+  var v=cod?vinhetasArr.find(function(x){return x.codigo===cod;}):null;
+  var activeEvs=Object.keys(eventColors);
+  var evOpts='<option value="">— selecionar —</option>'+activeEvs.map(function(e){return'<option value="'+esc(e)+'"'+(v&&v.evento===e?' selected':'')+'>'+esc(e)+'</option>';}).join('');
+  var lentes=[...new Set(filmesArr.map(function(f){return f.lente;}).filter(Boolean))].sort();
+  var sons=[...new Set(filmesArr.map(function(f){return f.som;}).filter(Boolean))].sort();
+  function listOpts(arr){return arr.map(function(x){return'<option value="'+esc(x)+'">';}).join('');}
+  var body=
+    '<div style="display:flex;flex-direction:column;gap:12px;">'
+    +'<div class="prog-modal-field"><label class="prog-modal-label">Evento</label><select class="prog-modal-input" id="vm_event">'+evOpts+'</select></div>'
+    +'<div style="display:flex;gap:10px;">'
+    +'<div class="prog-modal-field" style="flex:1;"><label class="prog-modal-label">Código'+(cod?'':' *')+'</label>'
+    +(cod?'<input class="prog-modal-input" id="vm_code" value="'+esc(cod)+'" readonly style="opacity:0.6;">'
+        :'<input class="prog-modal-input" id="vm_code" autocomplete="off">')
+    +'</div>'
+    +'<div class="prog-modal-field" style="flex:2;"><label class="prog-modal-label">Título *</label><input class="prog-modal-input" id="vm_nome" value="'+esc(v?v.nome:'')+'"></div>'
+    +'</div>'
+    +'<div style="display:flex;gap:10px;">'
+    +'<div class="prog-modal-field" style="flex:1;"><label class="prog-modal-label">Lente</label><input class="prog-modal-input" id="vm_lente" value="'+esc(v?v.lente:'')+'\" list="vm_lente_list"><datalist id="vm_lente_list">'+listOpts(lentes)+'</datalist></div>'
+    +'<div class="prog-modal-field" style="flex:1;"><label class="prog-modal-label">Som</label><input class="prog-modal-input" id="vm_som" value="'+esc(v?v.som:'')+'\" list="vm_som_list"><datalist id="vm_som_list">'+listOpts(sons)+'</datalist></div>'
+    +'</div>'
+    +'<div class="prog-modal-field"><label class="prog-modal-label">CPL</label><input class="prog-modal-input" id="vm_cpl" value="'+esc(v?v.cpl:'')+'"></div>'
+    +'<div class="prog-modal-field"><label class="prog-modal-label">Duração (H:MM:SS)</label><input class="prog-modal-input" id="vm_duracao" value="'+esc(v?v.duracao:'')+'" placeholder="Ex: 0:02:30"></div>'
+    +'<div class="prog-modal-field"><label class="prog-modal-label">Link do arquivo</label><input class="prog-modal-input" id="vm_link" type="url" value="'+esc(v?v.link:'')+'"></div>'
+    +'<div class="prog-modal-field"><label class="prog-modal-label">Observações</label><input class="prog-modal-input" id="vm_obs" value="'+esc(v?v.obs:'')+'"></div>'
+    +'</div>';
+  document.getElementById('vinhetaModalTitle').textContent=cod?'Editar vinheta · '+cod:'Nova vinheta';
+  document.getElementById('vinhetaModalBody').innerHTML=body;
+  document.getElementById('vinhetaModalErr').style.display='none';
+  document.getElementById('vinhetaModalErr').textContent='';
+  document.getElementById('vinhetaModal').style.display='flex';
+}
+function closeVinhetaModal(){document.getElementById('vinhetaModal').style.display='none';}
+
+async function saveVinhetaModal(){
+  if(!window._olgaVinhetas)return;
+  var code=(document.getElementById('vm_code').value||'').trim();
+  var nome=(document.getElementById('vm_nome').value||'').trim();
+  if(!code){_vinhetaErr('Código obrigatório.');return;}
+  if(!nome){_vinhetaErr('Título obrigatório.');return;}
+  // Se criação, verificar duplicata
+  if(!_vinhetaEditCod&&vinhetasArr.find(function(v){return v.codigo===code;})){_vinhetaErr('Código já existe: '+code);return;}
+  var data={
+    event_name:(document.getElementById('vm_event').value||'').trim(),
+    bumper_code:code,title:nome,
+    projection_lens:(document.getElementById('vm_lente').value||'').trim(),
+    audio_format:(document.getElementById('vm_som').value||'').trim(),
+    cpl_id:(document.getElementById('vm_cpl').value||'').trim(),
+    duration:(document.getElementById('vm_duracao').value||'').trim(),
+    file_link:(document.getElementById('vm_link').value||'').trim(),
+    notes:(document.getElementById('vm_obs').value||'').trim()
+  };
+  var btn=document.getElementById('vinhetaModalSave');btn.disabled=true;btn.textContent='Salvando…';
+  try{
+    await window._olgaVinhetas.save(code,data);
+    await window._olgaLoadFirestore();
+    closeVinhetaModal();renderVinhetas();
+  }catch(e){_vinhetaErr('Erro: '+e.message);}
+  finally{btn.disabled=false;btn.textContent='Salvar';}
+}
+function _vinhetaErr(msg){var el=document.getElementById('vinhetaModalErr');el.textContent=msg;el.style.display='block';}
+
+async function duplicateVinheta(cod){
+  var v=vinhetasArr.find(function(x){return x.codigo===cod;});if(!v)return;
+  var newCod=prompt('Código para a cópia:',cod+'_copia');
+  if(!newCod)return;newCod=newCod.trim();if(!newCod)return;
+  if(vinhetasArr.find(function(x){return x.codigo===newCod;})){alert('Código já existe: '+newCod);return;}
+  try{
+    await window._olgaVinhetas.save(newCod,{
+      event_name:v.evento,bumper_code:newCod,title:v.nome+' (cópia)',
+      projection_lens:v.lente,audio_format:v.som,cpl_id:v.cpl,
+      duration:v.duracao,file_link:v.link,notes:v.obs
+    });
+    await window._olgaLoadFirestore();renderVinhetas();
+  }catch(e){alert('Erro: '+e.message);}
 }
 
 function printVinhetas(){
@@ -5624,8 +5715,8 @@ function buildBuscaFilterPanel(){
   fieldMap.forEach(function(fd){
     var valCount={};
     filmesArr.forEach(function(f){
-      // for evento and status, only include values active in the busca pills
-      if((fd.key==='evento'||fd.key==='status')&&!activeEventsBusca.has(f[fd.field==='status'?'evento':fd.field]))return;
+      // Todos os campos filtram apenas pelos filmes dos eventos ativos no busca
+      if(f.evento&&!activeEventsBusca.has(f.evento))return;
       var v=(f[fd.field]||'').toString().trim();
       if(v&&v!=='-'&&v!=='0'){valCount[v]=(valCount[v]||0)+1;}
     });
@@ -6482,7 +6573,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 29/04/2026 às 16:00';
+  var sysUpdate='última atualização do sistema · 29/04/2026 às 18:00';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -8251,7 +8342,7 @@ function renderCatCreate(){
   );
   html+=catBlock('Técnico',
     row2(
-      catFld('Duração','<input class="cat-input" id="catc_duracao_min" type="number" min="0" placeholder="Em minutos · ex: 95 → 1:35:00">'),
+      catFld('Duração','<input class="cat-input" id="catc_duracao_min" type="number" min="0" placeholder="Em minutos ex: 95">'),
       catFld('Ano','<input class="cat-input" id="catc_year" type="number" min="1900" max="2100" placeholder="Ex: 2025">')
     )
     +row2(
@@ -8750,11 +8841,11 @@ window.addEventListener('popstate',function(e){
       <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;flex-direction:column;gap:10px;">
         <div class="prog-modal-field">
           <label class="prog-modal-label">Convidados</label>
-          <input id="progSessaoConvidados" type="text" class="prog-modal-input" placeholder="">
+          <input id="progSessaoConvidados" type="text" class="prog-modal-input" autocomplete="off">
         </div>
         <div class="prog-modal-field">
           <label class="prog-modal-label">Ingressos reservados</label>
-          <input id="progSessaoIngressos" type="text" class="prog-modal-input" placeholder="">
+          <input id="progSessaoIngressos" type="number" min="0" step="1" class="prog-modal-input">
         </div>
         <div class="prog-modal-field">
           <label class="prog-modal-label">Acessibilidade disponível</label>
@@ -8815,6 +8906,21 @@ window.addEventListener('popstate',function(e){
     <div style="padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;">
       <button onclick="closeProgVinTemplatesModal()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;">Cancelar</button>
       <button id="progVinTemplatesModalSave" onclick="saveProgVinTemplatesModal()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 20px;background:var(--accent);color:#000;border:none;cursor:pointer;">Salvar templates</button>
+    </div>
+  </div>
+</div>
+
+<div id="vinhetaModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;align-items:center;justify-content:center;" onclick="if(event.target===this)closeVinhetaModal()">
+  <div style="background:var(--surface);border:1px solid var(--border);width:100%;max-width:480px;margin:auto;display:flex;flex-direction:column;max-height:90vh;">
+    <div style="padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <span id="vinhetaModalTitle" style="font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);"></span>
+      <button onclick="closeVinhetaModal()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;line-height:1;">×</button>
+    </div>
+    <div id="vinhetaModalBody" style="padding:20px 22px;overflow-y:auto;"></div>
+    <div id="vinhetaModalErr" style="display:none;font-family:var(--mono);font-size:10px;color:var(--warn);padding:8px 22px;background:rgba(255,96,85,0.06);border-top:1px solid rgba(255,96,85,0.15);flex-shrink:0;"></div>
+    <div style="padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;">
+      <button onclick="closeVinhetaModal()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;">Cancelar</button>
+      <button id="vinhetaModalSave" onclick="saveVinhetaModal()" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 20px;background:var(--accent);color:#000;border:none;cursor:pointer;">Salvar</button>
     </div>
   </div>
 </div>
@@ -8902,7 +9008,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 29/04/2026 às 16:00</span></div>
+<div id="page-footer"><span>última atualização · 29/04/2026 às 18:00</span></div>
 
 </div>
 
