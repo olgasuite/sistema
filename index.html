@@ -6327,7 +6327,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 28/04/2026 às 22:00';
+  var sysUpdate='última atualização do sistema · 28/04/2026 às 22:02';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -7333,6 +7333,11 @@ function applyTheme(theme){
 /* BROWSER BACK BUTTON — use browser state as source of truth */
 history.replaceState({olga:'landing'},'');
 window.addEventListener('popstate',function(e){
+  // mobile back
+  if(window._mobileActive){
+    olgaMobileBack();
+    return;
+  }
   _browserNav=true;
   var target=e.state&&e.state.olga;
   if(!target||target==='landing'){
@@ -7448,7 +7453,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 28/04/2026 às 22:00</span></div>
+<div id="page-footer"><span>última atualização · 28/04/2026 às 22:02</span></div>
 
 </div>
 
@@ -7556,6 +7561,7 @@ function _mobSetContent(html){
 
 function _mobPush(frame){
   _mobStack.push(frame);
+  history.pushState({olgaMobile:true,depth:_mobStack.length},'');
   var backBtn=document.getElementById('mobBackBtn');
   var logo=document.getElementById('mobLogo');
   if(backBtn)backBtn.style.display=_mobStack.length>1?'':'none';
