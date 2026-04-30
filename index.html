@@ -5,10 +5,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<style>
-  /* Desabilitar swipe-to-go-back no iOS em modo web */
-  html, body { overscroll-behavior-x: none; touch-action: pan-y; }
-</style>
 <title>OLGA Suite</title>
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
@@ -2162,6 +2158,16 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   window._olgaVinhetas = {
     save: async function(id, data) { await setDoc(doc(db, 'vinhetas', id), data); },
     remove: async function(id) { await deleteDoc(doc(db, 'vinhetas', id)); }
+  };
+
+  // API templates de vinhetas por evento (coleção vin_templates, doc = event_id)
+  window._olgaVinTemplates = {
+    load: async function(eventId) {
+      try{var d=await getDoc(doc(db,'vin_templates',eventId));return d.exists()?d.data().templates||[]:[]; }catch(e){return[];}
+    },
+    save: async function(eventId, templates) {
+      await setDoc(doc(db,'vin_templates',eventId),{event_id:eventId,templates:templates});
+    }
   };
 
   // API catálogo (coleção filmes)
@@ -5161,11 +5167,14 @@ function renderVinhetas(){
       idx[cod].sessions.push(s);
     });
   });
-  // attach sheet info
+  // attach sheet info + incluir vinhetas sem sessões
   vinhetasArr.forEach(function(v){
-    if(idx[v.codigo])idx[v.codigo].info=v;
-    else if(!activeEventsVinhetas.size||activeEventsVinhetas.has(v.evento)){
-      // vinheta exists in sheet but has no sessions under current filter — skip
+    if(idx[v.codigo]){
+      idx[v.codigo].info=v;
+    } else if(!v.evento||activeEventsVinhetas.has(v.evento)){
+      // vinheta existe mas não tem sessões: incluir mesmo assim
+      idx[v.codigo]={cod:v.codigo,info:v,sessions:[]};
+      order.push(v.codigo);
     }
   });
 
@@ -6611,7 +6620,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 30/04/2026 às 01:30';
+  var sysUpdate='última atualização do sistema · 30/04/2026 às 10:00';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -6769,6 +6778,10 @@ function _progRenderLanding(){
     var da=ea&&ea.data&&ea.data.data_inicio?ea.data.data_inicio:'',db2=eb&&eb.data&&eb.data.data_inicio?eb.data.data_inicio:'';
     return da&&db2?db2.localeCompare(da):b.localeCompare(a,'pt-BR');
   });
+  // Pré-carregar templates dos eventos visíveis
+  if(window._olgaVinTemplates){
+    evList.forEach(function(ev){if(_vinTemplatesCache[ev]===undefined)_loadVinTemplates(ev).then(function(){});});
+  }
   var html='<div class="prog-landing">';
   evList.forEach(function(ev){
     var evColor=eventColors[ev]||{bg:'var(--surface2)',text:'var(--text-dim)'};
@@ -6777,7 +6790,11 @@ function _progRenderLanding(){
     var sessOrfas=sessoesArr.filter(function(s){return s.evento===ev&&(!s.program_id||(autoP&&s.program_id===autoP.id));});
     html+='<div class="prog-event-block">';
     html+='<div class="prog-event-header"><span class="prog-event-badge" style="background:'+evColor.bg+';color:'+evColor.text+';">'+esc(ev)+'</span>';
-    if(canEdit)html+='<button class="prog-btn-sm prog-btn-ghost" onclick="openProgProgramModal(null,\''+esc(ev)+'\')">+ nova mostra</button>';
+    if(canEdit){
+      html+='<button class="prog-btn-sm prog-btn-ghost" onclick="openProgProgramModal(null,\''+esc(ev)+'\')">+ nova mostra</button>';
+      var tmplCount=(_vinTemplatesCache[ev]||[]).length;
+      html+='<button class="prog-btn-sm prog-btn-ghost" onclick="openProgVinTemplatesModal(\''+esc(ev)+'\')" style="margin-left:4px;">⊞ Templates de vinhetas'+(tmplCount?' ('+tmplCount+')':'')+'</button>';
+    }
     html+='</div><div class="prog-cards-grid">';
     evProgs.forEach(function(p){
       var subCount=_progData.subprograms.filter(function(s){return s.data.program_id===p.id;}).length;
@@ -6874,21 +6891,6 @@ function _progRenderProgram(programId){
   html+='</div>';
   html+='<div class="prog-prog-title">'+esc(prog.data.name||programId)+'</div>';
   if(prog.data.program_description)html+='<div class="prog-prog-desc">'+esc(prog.data.program_description)+'</div>';
-  // Templates de vinhetas — botão para modal dedicado
-  var templates=prog.data.vinheta_templates||[];
-  html+='<div class="prog-vin-templates-section"><div style="display:flex;align-items:center;gap:10px;"><div class="prog-section-label" style="margin-bottom:0;">Templates de vinhetas</div>';
-  if(canEdit)html+='<button class="prog-btn-sm" onclick="openProgVinTemplatesModal(\''+safePid+'\')">Gerenciar templates</button>';
-  html+='</div>';
-  if(templates.length){
-    html+='<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">';
-    templates.forEach(function(t,i){
-      html+='<span style="font-family:var(--mono);font-size:9px;border:1px solid var(--border);padding:3px 8px;color:var(--text-dim);">'+esc(t.name||'Template '+(i+1))+'<span style="color:var(--text-muted);margin-left:4px;">('+((t.bumpers||[]).length)+' vinhetas)</span></span>';
-    });
-    html+='</div>';
-  } else {
-    html+='<div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:6px;">Nenhum template cadastrado.</div>';
-  }
-  html+='</div>';
   // Subprogram boxes
   subs.forEach(function(sub){
     var sessSub=sessoesArr.filter(function(s){return s.subprogram_id===sub.id&&activeEventsProgramacao.has(s.evento||ev);});
@@ -7072,14 +7074,24 @@ async function deleteProgVinTemplate(programId,idx){
   catch(e){alert('Erro: '+e.message);}
 }
 
-/* ── Modal dedicado: Templates de Vinhetas ── */
-var _progVinTmplProgId=null,_progVinTmplList=[],_progVinTmplEditIdx=-1,_progVinTmplBumpers=[];
+/* ── Modal dedicado: Templates de Vinhetas (nível evento) ── */
+var _progVinTmplEventId=null,_progVinTmplList=[],_progVinTmplEditIdx=-1,_progVinTmplBumpers=[];
+// Cache de templates por evento: {eventId: [{name, bumpers}]}
+var _vinTemplatesCache={};
 
-function openProgVinTemplatesModal(programId){
-  _progVinTmplProgId=programId;
-  var p=_progData.programs.find(function(x){return x.id===programId;});
-  _progVinTmplList=JSON.parse(JSON.stringify(p?p.data.vinheta_templates||[]:[]));
-  document.getElementById('progVinTemplatesModalTitle').textContent='Templates de vinhetas · '+(p?p.data.name||programId:programId);
+async function _loadVinTemplates(eventId){
+  if(!window._olgaVinTemplates)return[];
+  if(_vinTemplatesCache[eventId]!==undefined)return _vinTemplatesCache[eventId];
+  var t=await window._olgaVinTemplates.load(eventId);
+  _vinTemplatesCache[eventId]=t;
+  return t;
+}
+
+function openProgVinTemplatesModal(eventId){
+  _progVinTmplEventId=eventId;
+  var loaded=_vinTemplatesCache[eventId]||[];
+  _progVinTmplList=JSON.parse(JSON.stringify(loaded));
+  document.getElementById('progVinTemplatesModalTitle').textContent='Templates de vinhetas · '+eventId;
   document.getElementById('progVinTemplatesModalErr').style.display='none';
   _progVinTmplEditIdx=-1;_progVinTmplBumpers=[];
   _progRenderVinTmplList();
@@ -7090,11 +7102,9 @@ function closeProgVinTemplatesModal(){document.getElementById('progVinTemplatesM
 
 function _progRenderVinTmplList(){
   var ul=document.getElementById('progVinTmplList');if(!ul)return;
-  var p=_progData.programs.find(function(x){return x.id===_progVinTmplProgId;});
-  var ev=p?p.data.event_id:'';
   if(!_progVinTmplList.length){ul.innerHTML='<div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);padding:8px 0;">Nenhum template cadastrado.</div>';return;}
+  var vMap={};vinhetasArr.forEach(function(v){vMap[v.codigo]=v;});
   ul.innerHTML=_progVinTmplList.map(function(t,i){
-    var vMap={};vinhetasArr.forEach(function(v){vMap[v.codigo]=v;});
     var names=(t.bumpers||[]).map(function(b){var v=vMap[b];return esc(v&&v.nome?v.nome:b);}).join(' → ');
     return'<div class="prog-vin-template-row">'
       +'<div style="flex:1;">'
@@ -7159,8 +7169,7 @@ function _progVinTmplBumperAC(){
   var q=(document.getElementById('progVinTmplBumperSearch').value||'').trim().toLowerCase();
   var res=document.getElementById('progVinTmplBumperResults');
   if(q.length<2){res.style.display='none';return;}
-  var p=_progData.programs.find(function(x){return x.id===_progVinTmplProgId;});
-  var ev=p?p.data.event_id:'';
+  var ev=_progVinTmplEventId||'';
   var matches=vinhetasArr.filter(function(v){return(!ev||v.evento===ev)&&(v.codigo.toLowerCase().includes(q)||(v.nome||'').toLowerCase().includes(q));}).slice(0,10);
   if(!matches.length){res.innerHTML='<div class="prog-autocomplete-item" style="color:var(--text-muted);">Sem resultados.</div>';res.style.display='block';return;}
   res.innerHTML=matches.map(function(v){return'<div class="prog-autocomplete-item" onmousedown="_progVinTmplAddB(\''+esc(v.codigo)+'\')">'+esc(v.nome||v.codigo)+' <span style="color:var(--text-muted);">'+esc(v.codigo)+'</span></div>';}).join('');
@@ -7173,14 +7182,14 @@ function _progVinTmplAddB(cod){
   _progRenderVinTmplBumpersEdit();
 }
 async function saveProgVinTemplatesModal(){
-  var p=_progData.programs.find(function(x){return x.id===_progVinTmplProgId;});if(!p)return;
+  if(!window._olgaVinTemplates){var el=document.getElementById('progVinTemplatesModalErr');el.textContent='API não disponível.';el.style.display='block';return;}
   var btn=document.getElementById('progVinTemplatesModalSave');btn.disabled=true;btn.textContent='Salvando…';
   try{
-    await window._olgaPrograms.save(_progVinTmplProgId,Object.assign({},p.data,{vinheta_templates:_progVinTmplList}));
-    _progData.programs=await window._olgaPrograms.list();
+    await window._olgaVinTemplates.save(_progVinTmplEventId,_progVinTmplList);
+    _vinTemplatesCache[_progVinTmplEventId]=JSON.parse(JSON.stringify(_progVinTmplList));
     closeProgVinTemplatesModal();_progRender();
   }catch(e){var el=document.getElementById('progVinTemplatesModalErr');el.textContent='Erro: '+e.message;el.style.display='block';}
-  finally{btn.disabled=false;btn.textContent='Salvar';}
+  finally{btn.disabled=false;btn.textContent='Salvar templates';}
 }
 
 /* ── CRUD Subprograms ── */
@@ -7239,8 +7248,8 @@ function openProgSessaoModal(sessaoNome,programId,subprogramId){
   _progSessaoFilmsArr=s?s.filmes.slice():[];
   _progSessaoBumpersArr=s?s.vinhetas.slice():[];
   // Vinheta templates select
-  var templates=prog?prog.data.vinheta_templates||[]:[];
-  var tmplOpts=templates.map(function(t,i){return'<option value="'+i+'">'+esc(t.name||'Template '+(i+1))+'</option>';}).join('');
+  var evTemplates=_vinTemplatesCache[ev]||[];
+  var tmplOpts=evTemplates.map(function(t,i){return'<option value="'+i+'">'+esc(t.name||'Template '+(i+1))+'</option>';}).join('');
   var subs=_progData.subprograms.filter(function(s){return s.data.program_id===programId;});
   var subOpts='<option value="">— sem submostra —</option>'+subs.map(function(s){var safeSid=s.id;return'<option value="'+esc(safeSid)+'"'+((_progSessaoContextSubId&&_progSessaoContextSubId===s.id)||(!_progSessaoContextSubId&&sessaoNome&&sessoesMap[sessaoNome]&&sessoesMap[sessaoNome].subprogram_id===s.id)?' selected':'')+'>'+esc(s.data.name||s.id)+'</option>';}).join('');
   document.getElementById('progSessaoSubprogramRow').style.display=subs.length?'':'none';
@@ -7333,8 +7342,8 @@ function _progAddBumper(cod){if(_progSessaoBumpersArr.indexOf(cod)<0)_progSessao
 function _progApplyVinTemplate(){
   var sel=document.getElementById('progVinTemplateApply');if(!sel||!sel.value)return;
   var prog=_progData.programs.find(function(p){return p.id===_progSessaoContextProgramId;});
-  if(!prog)return;
-  var templates=prog.data.vinheta_templates||[];
+  var ev=prog?prog.data.event_id:'';
+  var templates=_vinTemplatesCache[ev]||[];
   var idx=parseInt(sel.value);
   if(isNaN(idx)||idx<0||idx>=templates.length)return;
   _progSessaoBumpersArr=(templates[idx].bumpers||[]).slice();_progRenderBumpersEdit();sel.value='';
@@ -8164,12 +8173,12 @@ function renderCatDetail(){
   var selBadge=meta.selecao?'<span class="cat-status-badge '+(selCls[meta.selecao]||'')+'" style="text-transform:uppercase;letter-spacing:0.06em;">'+meta.selecao+'</span>':'';
   var kdmBadge=(copia.kdm&&copia.kdm.toUpperCase()==='SIM')?'<span class="cat-status-badge warn">⚠ KDM</span>':'';
   var html='<div class="cat-detail">';
-  html+='<button class="cat-back" onclick="renderCatalogo()">← Catálogo</button>';
+  html+='<button class="cat-back" onclick="'+(_catEditing?'_catConfirmLeave(cancelCatEdit)':'renderCatalogo()')+'">← Catálogo</button>';
   var acervoBtn='<button class="cat-card-btn" style="margin-left:0;" onclick="goToBuscaCod(\''+_catCode.replace(/'/g,"\\'")+'\')">Ver no Acervo Técnico</button>';
   if(canEdit&&!_catEditing)
     html+='<div class="cat-actions">'+acervoBtn+'<button class="cat-edit-btn" onclick="duplicateCatFilm(\''+_catCode.replace(/\'/g,"\\\'")+'\')">⧉ Duplicar</button><button class="cat-edit-btn" onclick="startCatEdit()">✎ Editar</button><button class="cat-edit-btn" style="color:var(--warn);border-color:var(--warn);" onclick="deleteCatFilm(\''+_catCode.replace(/\'/g,"\\\'")+'\')">× Excluir</button></div>';
   else if(_catEditing)
-    html+='<div class="cat-actions"><span class="cat-msg" id="catSaveMsg"></span><button class="cat-cancel-btn" onclick="cancelCatEdit()">Cancelar</button><button class="cat-save-btn" onclick="doSaveCat()">Salvar</button></div>';
+    html+='<div class="cat-actions"><span class="cat-msg" id="catSaveMsg"></span><button class="cat-cancel-btn" onclick="_catConfirmLeave(cancelCatEdit)">Cancelar</button><button class="cat-save-btn" onclick="doSaveCat()">Salvar</button></div>';
   else
     html+='<div class="cat-actions">'+acervoBtn+'</div>';
   html+='<div class="cat-header">';
@@ -8246,6 +8255,9 @@ function renderCatDetail(){
         +'</div>';
     });
     html+=catBlock('Sessões ('+sessoes.length+')',sh+'</div>');
+  }
+  if(_catEditing){
+    html+='<div class="cat-actions" style="margin-top:8px;border-top:1px solid var(--border);padding-top:14px;"><span class="cat-msg" id="catSaveMsgBottom"></span><button class="cat-cancel-btn" onclick="_catConfirmLeave(cancelCatEdit)">Cancelar</button><button class="cat-save-btn" onclick="doSaveCat()">Salvar</button></div>';
   }
   html+='</div>';
   cont.innerHTML=html;
@@ -8364,11 +8376,13 @@ function renderCatCreate(){
   var vfVals=[...new Set(filmesArr.map(function(f){return f.vf;}).filter(Boolean))].sort();
   var lentes=[...new Set(filmesArr.map(function(f){return f.lente;}).filter(Boolean))].sort();
   var sons=[...new Set(filmesArr.map(function(f){return f.som;}).filter(Boolean))].sort();
-  var statusVals=[...new Set(filmesArr.map(function(f){return f.status;}).filter(Boolean))].sort();
+  var statusVals=[...new Set(filmesArr.filter(function(f){return!_catCreateEvent||f.evento===_catCreateEvent;}).map(function(f){return f.status;}).filter(Boolean))].sort();
   function listOpts(arr){return arr.map(function(v){return'<option value="'+esc(v)+'">';}).join('');}
+  var _btnSalvar='<button class="cat-save-btn" onclick="doCreateFilm()">Criar filme</button>';
+  var _btnCancelar='<button class="cat-cancel-btn" onclick="_catConfirmLeave(renderCatalogo)">Cancelar</button>';
   var html='<div class="cat-detail">';
-  html+='<button class="cat-back" onclick="renderCatalogo()">← Catálogo</button>';
-  html+='<div class="cat-actions"><span class="cat-msg" id="catSaveMsg"></span><button class="cat-cancel-btn" onclick="renderCatalogo()">Cancelar</button><button class="cat-save-btn" onclick="doCreateFilm()">Criar filme</button></div>';
+  html+='<button class="cat-back" onclick="_catConfirmLeave(renderCatalogo)">← Catálogo</button>';
+  html+='<div class="cat-actions"><span class="cat-msg" id="catSaveMsg"></span>'+_btnCancelar+_btnSalvar+'</div>';
   html+='<div class="cat-header"><div class="cat-header-code">Novo filme</div></div>';
   // Campos exclusivos de criação (não existem na edição)
   html+=catBlock('Identificação',
@@ -8432,6 +8446,7 @@ function renderCatCreate(){
   html+=catBlock('Histórico',
     catFld('Prêmios',catTagInp('awards',[]))+catFld('Filmografia do diretor',catTagInp('director_filmography',[]))
   );
+  html+='<div class="cat-actions" style="margin-top:8px;border-top:1px solid var(--border);padding-top:14px;">'+_btnCancelar+_btnSalvar+'</div>';
   html+='</div>';
   cont.innerHTML=html;
   // atualizar sugestão de código e verificar duplicata
@@ -8445,6 +8460,9 @@ function _catCreateCheckVF(){
   var row=document.getElementById('catc_vf_row');
   if(row)row.style.display=val.includes('VF')?'':'none';
 }
+function _catConfirmLeave(fn){
+  if(confirm('Sair sem salvar? As alterações serão perdidas.'))fn();
+}
 function _catUpdateCodeSuggestion(){
   var evEl=document.getElementById('catf_event');
   var ev=evEl?(evEl.value||''):_catCreateEvent;
@@ -8452,6 +8470,12 @@ function _catUpdateCodeSuggestion(){
   var inp=document.getElementById('catf_code');if(!inp)return;
   if(!inp.dataset.userModified){inp.value=_catSuggestCode(ev);}
   _catCheckCodeDup();
+  // Atualizar datalist de status pelo evento selecionado
+  var dl=document.getElementById('catf_status_list');
+  if(dl){
+    var vals=[...new Set(filmesArr.filter(function(f){return!ev||f.evento===ev;}).map(function(f){return f.status;}).filter(Boolean))].sort();
+    dl.innerHTML=vals.map(function(v){return'<option value="'+esc(v)+'">';}).join('');
+  }
 }
 function _catCheckCodeDup(){
   var codeEl=document.getElementById('catf_code');
@@ -8524,7 +8548,9 @@ async function doCreateFilm(){
     if(window._olgaCopias)await window._olgaCopias.save(code,copiasData);
     catalogoFilmesMap[code]=catalogData;
     if(msg){msg.className='cat-msg ok';msg.textContent='Criado ✓';}
+    var _savedCatEvs=new Set(activeEventsCatalogo);
     await window._olgaLoadFirestore();
+    activeEventsCatalogo=_savedCatEvs;
     _catCode=code;_catView='detail';_catEditing=false;
     setTimeout(function(){renderCatDetail();},400);
   }catch(e){if(msg){msg.className='cat-msg err';msg.textContent='Erro: '+e.message;}}
@@ -9101,7 +9127,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 30/04/2026 às 01:30</span></div>
+<div id="page-footer"><span>última atualização · 30/04/2026 às 10:00</span></div>
 
 </div>
 
