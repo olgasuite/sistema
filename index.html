@@ -119,6 +119,9 @@ select:disabled{opacity:0.35;cursor:not-allowed;}
 .prog-flag-badge{font-family:var(--mono);font-size:8px;font-weight:700;padding:2px 6px;border-radius:2px;}
 .prog-flag-comp{background:rgba(255,107,107,0.15);color:#ff6b6b;border:1px solid rgba(255,107,107,0.3);}
 .prog-flag-pop{background:rgba(255,217,61,0.15);color:#e6c200;border:1px solid rgba(255,217,61,0.3);}
+[data-theme="light"] .prog-flag-pop,[data-theme="gray"] .prog-flag-pop,[data-theme="win98"] .prog-flag-pop{background:rgba(140,90,0,0.12);color:#7a5000;border:1px solid rgba(140,90,0,0.35);}
+.prog-prog-badge{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;padding:2px 7px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent);border-radius:2px;flex-shrink:0;}
+[data-theme="win98"] .prog-prog-badge{background:rgba(255,255,255,0.2);color:#fff;border-color:rgba(255,255,255,0.5);}
 .prog-btn-sm{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:4px 12px;background:transparent;color:var(--accent);border:1px solid var(--accent);cursor:pointer;white-space:nowrap;flex-shrink:0;}
 .prog-btn-sm:hover{background:var(--accent-dim);}
 .prog-btn-sm.prog-btn-ghost{color:var(--text-dim);border-color:var(--border);}
@@ -6995,7 +6998,7 @@ function _progRenderSessao(sessaoNome){
   html+='<div class="ficha-session-wrap">';
   html+='<div class="ficha-session-name">'+esc(sessaoNome)+'</div>';
   if(s.name)html+='<div class="prog-sess-display-name">'+esc(s.name)+'</div>';
-  html+='<span style="font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;padding:2px 7px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent);border-radius:2px;flex-shrink:0;">PROGRAMAÇÃO</span>';
+  html+='<span class="prog-prog-badge">PROGRAMAÇÃO</span>';
   html+=eventoBadge+'</div>';
   html+='<div class="ficha-meta"><div class="meta-item"><div class="meta-label">Cinema</div><div class="meta-value">'+(s.cinema||'—')+'</div></div><div class="meta-item"><div class="meta-label">Data</div><div class="meta-value">'+s.dia+'</div></div><div class="meta-item"><div class="meta-label">Hora</div><div class="meta-value">'+s.hora+'</div></div><div class="meta-item"><div class="meta-label">Filmes</div><div class="meta-value highlight">'+films.length+'</div></div></div>';
   html+='</div>'+extraHtml+'</div>';
@@ -7270,9 +7273,9 @@ function openProgSessaoModal(sessaoNome,programId,subprogramId){
   var tmplSel=document.getElementById('progVinTemplateApply');
   if(tmplSel){
     tmplSel.innerHTML='<option value="">— aplicar template de vinhetas —</option>'+tmplOpts;
-    tmplSel.style.display=templates.length?'block':'none';
+    tmplSel.style.display=evTemplates.length?'block':'none';
     var tmplHint=document.getElementById('progVinTmplHint');
-    if(tmplHint)tmplHint.style.display=templates.length?'none':'block';
+    if(tmplHint)tmplHint.style.display=evTemplates.length?'none':'block';
   }
   document.getElementById('progSessaoModalErr').style.display='none';
   _progRenderFilmsEdit();_progRenderBumpersEdit();
