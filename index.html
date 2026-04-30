@@ -7101,7 +7101,7 @@ function _progRenderSessao(sessaoNome){
   var vinhetasHtml='';
   if(s.vinhetas&&s.vinhetas.length){
     var vMap={};vinhetasArr.forEach(function(v){vMap[v.codigo]=v;});
-    var tags=s.vinhetas.map(function(cod){var info=vMap[cod];var display=info&&info.cpl?info.cpl:cod;var t=display.length>13?display.slice(0,13)+'…':display;return'<span class="ficha-vinheta-tag" title="'+esc(cod)+(info&&info.cpl?' · '+info.cpl:'')+'">'+t+'</span>';}).join('');
+    var tags=s.vinhetas.map(function(cod){var info=vMap[cod];var display=info&&info.nome?info.nome:cod;var t=display.length>13?display.slice(0,13)+'…':display;return'<span class="ficha-vinheta-tag" title="'+esc(display)+' · '+esc(cod)+'">'+t+'</span>';}).join('');
     vinhetasHtml='<div class="ficha-vinhetas"><span class="ficha-vinhetas-label">Vinhetas</span>'+tags+'</div>';
   }
   var rows=films.map(function(f,idx){
@@ -7320,7 +7320,7 @@ function _progVinTmplBumperAC(){
   res.style.display='block';
 }
 function _progVinTmplAddB(cod){
-  if(_progVinTmplBumpers.indexOf(cod)<0)_progVinTmplBumpers.push(cod);
+  _progVinTmplBumpers.push(cod);
   document.getElementById('progVinTmplBumperSearch').value='';
   document.getElementById('progVinTmplBumperResults').style.display='none';
   _progRenderVinTmplBumpersEdit();
