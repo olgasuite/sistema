@@ -8308,8 +8308,9 @@ function renderCatDetail(){
   var canEdit=window._olgaUser&&(window._olgaUser.role==='admin'||window._olgaUser.role==='editor')&&!!window._olgaCatalogo;
   var dirArr=Array.isArray(meta.director)?meta.director:(meta.director?[meta.director]:[]);
   var dirDisplay=dirArr.join(', ');
-  var legDisplay=copia.legenda||'—';
-  if(copia.legenda&&copia.legenda.toUpperCase().includes('VF')&&copia.vf)legDisplay=copia.legenda+' · '+copia.vf;
+  var legDisplay=copia.legenda?_fmtDcncToName(copia.legenda):'—';
+  if(copia.legenda&&copia.legenda.toUpperCase().includes('VF')&&copia.vf)legDisplay=_fmtDcncToName(copia.legenda)+' · '+_fmtDcncToName(copia.vf);
+  if(!_langCache)_langEnsure().then(function(){renderCatDetail();});
   var crew=meta.crew||{};
   function crewArr(v){return Array.isArray(v)?v:(v?[v]:[]);}
   function toArr(v){return Array.isArray(v)?v:(v?[v]:[]);}
@@ -8593,9 +8594,8 @@ function renderCatCreate(){
   _langTagInit('lw_catf_original_language','cldr',null);
   _langEnsure().then(function(lc){
     var cldrOpts=lc.cldrList.map(function(v){return'<option value="'+esc(v)+'">';}).join('');
-    var dcncOpts=lc.dcncList.map(function(v){return'<option value="'+esc(v)+'">';}).join('');
     var dl1=document.getElementById('catf_legenda_list');if(dl1)dl1.innerHTML=cldrOpts;
-    var dl2=document.getElementById('catf_vf_list');if(dl2)dl2.innerHTML=dcncOpts;
+    var dl2=document.getElementById('catf_vf_list');if(dl2)dl2.innerHTML=cldrOpts;
   });
   // atualizar sugestão de código e verificar duplicata
   _catUpdateCodeSuggestion();
@@ -8683,7 +8683,7 @@ async function doCreateFilm(){
     festival_code:code,event_name:ev,title:titlePt,
     original_language:gv('original_language'),
     dcp_subtitle_code:cldrToDcnc(gv('dcp_subtitle_code'))||gv('dcp_subtitle_code'),
-    vf_subtitle_code:gv('vf_subtitle_code'),
+    vf_subtitle_code:cldrToDcnc(gv('vf_subtitle_code'))||gv('vf_subtitle_code'),
     projection_lens:gv('projection_lens'),audio_format:gv('audio_format'),
     status:gv('status'),dcp_duration:durHMMSS,
     storage_location:gv('storage_location'),
@@ -8759,12 +8759,10 @@ var _acervoEditIdx=-1;
 async function openAcervoEdit(idx){
   _acervoEditIdx=idx;
   var f=filteredFilmes[idx];if(!f)return;
-  var lc=await _langEnsure();
   var statusVals=[...new Set(filmesArr.map(function(x){return x.status;}).filter(Boolean))].sort();
   var lentes=[...new Set(filmesArr.map(function(x){return x.lente;}).filter(Boolean))].sort();
   var sons=[...new Set(filmesArr.map(function(x){return x.som;}).filter(Boolean))].sort();
   function listOpts(arr){return arr.map(function(v){return'<option value="'+esc(v)+'">';}).join('');}
-  function dcncOpts(){return lc.dcncList.map(function(v){return'<option value="'+esc(v)+'">';}).join('');}
   function aeRow(label,inputHtml){return'<div class="cat-field" style="margin-bottom:8px;"><div class="cat-label">'+label+'</div><div class="cat-value">'+inputHtml+'</div></div>';}
   function aeInp(id,val,type){return'<input class="cat-input" id="ae_'+id+'" type="'+(type||'text')+'" value="'+esc(val||'')+'">';}
   function aeDatalist(id,val,listId,opts){return'<input class="cat-input" id="ae_'+id+'" list="ae_'+listId+'_list" value="'+esc(val||'')+'" autocomplete="off"><datalist id="ae_'+listId+'_list">'+opts+'</datalist>';}
@@ -8772,9 +8770,9 @@ async function openAcervoEdit(idx){
     +aeRow('Título (copias)',aeInp('titulo',f.titulo))
     +'<div class="cat-grid">'
     +aeRow('Idioma',langTagHtml('lw_ae_idioma','ae_idioma','Idioma…'))
-    +aeRow('Legendas',aeDatalist('legenda',f.legenda,'legenda',dcncOpts()))
+    +aeRow('Legendas',aeInp('legenda',f.legenda))
     +'</div>'
-    +aeRow('VF',aeDatalist('vf',f.vf,'vf',dcncOpts()))
+    +aeRow('VF',aeInp('vf',f.vf))
     +'<div class="cat-grid">'
     +aeRow('Lente',aeDatalist('lente',f.lente,'lente',listOpts(lentes)))
     +aeRow('Som',aeDatalist('som',f.som,'som',listOpts(sons)))
