@@ -7012,7 +7012,14 @@ function _progRenderSessao(sessaoNome){
   html+='<div class="ficha-session-name">'+esc(sessaoNome)+'</div>';
   if(s.name)html+='<div class="prog-sess-display-name">'+esc(s.name)+'</div>';
   html+='<span class="prog-prog-badge">PROGRAMAÇÃO</span>';
-  html+=eventoBadge+'</div>';
+  html+=eventoBadge;
+  if(prog&&(prog.data.competitive||prog.data.popular_vote)){
+    html+='<div class="prog-card-flags" style="margin-top:4px;">';
+    if(prog.data.competitive)html+='<span class="prog-flag-badge prog-flag-comp">Competitivo</span>';
+    if(prog.data.popular_vote)html+='<span class="prog-flag-badge prog-flag-pop">Voto popular</span>';
+    html+='</div>';
+  }
+  html+='</div>';
   html+='<div class="ficha-meta"><div class="meta-item"><div class="meta-label">Cinema</div><div class="meta-value">'+(s.cinema||'—')+'</div></div><div class="meta-item"><div class="meta-label">Data</div><div class="meta-value">'+s.dia+'</div></div><div class="meta-item"><div class="meta-label">Hora</div><div class="meta-value">'+s.hora+'</div></div><div class="meta-item"><div class="meta-label">Filmes</div><div class="meta-value highlight">'+films.length+'</div></div></div>';
   html+='</div>'+extraHtml+'</div>';
   html+=vinhetasHtml;
