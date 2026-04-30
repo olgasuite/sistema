@@ -1216,6 +1216,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 }
 [data-theme="win98"] .ficha-session-name{color:#fff;text-shadow:none;font-family:Tahoma,'MS Sans Serif',Arial,sans-serif;}
 [data-theme="win98"] .leg-vf-label{color:#000!important;}
+[data-theme="win98"] .prog-sess-display-name,[data-theme="win98"] .prog-sess-display-name-ficha{color:#fff!important;}
 [data-theme="win98"] .meta-label{color:rgba(255,255,255,0.75);}
 [data-theme="win98"] .meta-value{color:#fff;}
 [data-theme="win98"] .meta-value.highlight{color:#ffff80;}
@@ -2151,7 +2152,8 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 
   // API copias — escrita (leitura já feita em _olgaLoadFirestore)
   window._olgaCopias = {
-    save: async function(id, data) { await setDoc(doc(db, 'copias', id), data); }
+    save: async function(id, data) { await setDoc(doc(db, 'copias', id), data); },
+    remove: async function(id) { await deleteDoc(doc(db, 'copias', id)); }
   };
 
   // API vinhetas — CRUD completo
@@ -3165,7 +3167,19 @@ function applyParsedData(d,filename){
   events.forEach(function(ev,i){eventColors[ev]=PALETTE[i%PALETTE.length];});
   var currentEvs=currentEventsFromDates(d.sessoesArr);
   var initEvs=currentEvs.size>0?currentEvs:new Set(events);
-  activeEventsGrade=new Set(initEvs);activeEventsBusca=new Set(initEvs);activeEventsIngest=new Set(initEvs);activeEventsFicha=new Set(initEvs);activeEventsCinemas=new Set(initEvs);activeEventsDash=new Set(initEvs);activeEventsGrade2=new Set(initEvs);activeEventsSessoes=new Set(initEvs);activeEventsProjecao=new Set(initEvs);activeEventsVinhetas=new Set(initEvs);activeEventsCatalogo=new Set(initEvs);activeEventsProgramacao=new Set(initEvs);
+  // Só inicializar os sets na primeira carga. Nas recargas (dataLoaded já true), preservar estado atual.
+  if(!dataLoaded){
+    activeEventsGrade=new Set(initEvs);activeEventsBusca=new Set(initEvs);activeEventsIngest=new Set(initEvs);activeEventsFicha=new Set(initEvs);activeEventsCinemas=new Set(initEvs);activeEventsDash=new Set(initEvs);activeEventsGrade2=new Set(initEvs);activeEventsSessoes=new Set(initEvs);activeEventsProjecao=new Set(initEvs);activeEventsVinhetas=new Set(initEvs);activeEventsCatalogo=new Set(initEvs);activeEventsProgramacao=new Set(initEvs);
+  } else {
+    // Garantir que novos eventos entrem nos sets (não remover os já selecionados)
+    events.forEach(function(ev){
+      if(initEvs.has(ev)){
+        // evento novo: adicionar em todos os sets
+        var allSets=[activeEventsGrade,activeEventsBusca,activeEventsIngest,activeEventsFicha,activeEventsCinemas,activeEventsDash,activeEventsGrade2,activeEventsSessoes,activeEventsProjecao,activeEventsVinhetas,activeEventsCatalogo,activeEventsProgramacao];
+        if(!allSets.some(function(s){return s.has(ev);})){allSets.forEach(function(s){s.add(ev);});}
+      }
+    });
+  }
   dataLoaded=true;
   ['tabProjecao','tabFicha','tabGrade','tabGrade2','tabSessoes','tabVinhetas','tabIngest','tabCinemas','tabDash','tabReceptivo','tabCatalogo','tabProgramacao'].forEach(function(id){document.getElementById(id).disabled=false;});
   if(window._olgaUser&&window._olgaUser.role==='admin'){document.getElementById('tabEquipe').disabled=false;}
@@ -5576,7 +5590,7 @@ function filmMatchesSnapshot(f,snap){
   if(snap.duracao_min!==null||snap.duracao_max!==null){var dm=parseDurMinutes(f.duracao);if(dm===null)return false;if(snap.duracao_min!==null&&dm<snap.duracao_min)return false;if(snap.duracao_max!==null&&dm>snap.duracao_max)return false;}
   if(snap.gb_min!==null||snap.gb_max!==null){var gv=parseGB(f.gb);if(gv===null)return false;if(snap.gb_min!==null&&gv<snap.gb_min)return false;if(snap.gb_max!==null&&gv>snap.gb_max)return false;}
   if(snap.sessao.size>0){var fs=buscaReverseSessoes[f.codigo]||[];if(!fs.some(function(s){return snap.sessao.has(s);}))return false;}
-  if(snap.query){var q2=snap.query.toLowerCase();var _t=function(v){return String(v||'').toLowerCase();};if(!_t(f.titulo).includes(q2)&&!_t(f.codigo).includes(q2)&&!_t(f.cpl).includes(q2)&&!_t(f.idioma).includes(q2)&&!_t(f.obs).includes(q2)&&!_t(f.status).includes(q2)&&!_t(f.cplOV).includes(q2))return false;}
+  if(snap.query){var q2=snap.query.toLowerCase();var _t=function(v){return String(v||'').toLowerCase();};var _sn=(catalogoFilmesMap&&catalogoFilmesMap[f.codigo]&&catalogoFilmesMap[f.codigo].system_name)||'';if(!_t(f.titulo).includes(q2)&&!_t(f.codigo).includes(q2)&&!_t(f.cpl).includes(q2)&&!_t(f.idioma).includes(q2)&&!_t(f.obs).includes(q2)&&!_t(f.status).includes(q2)&&!_t(f.cplOV).includes(q2)&&!_t(_sn).includes(q2))return false;}
   return true;
 }
 function addBuscaSlot(){
@@ -6022,7 +6036,7 @@ function renderBuscaResults(){
       if(!applyBuscaFilters(f))return false;
       if(!q)return true;
       var _s=function(v){return String(v||'').toLowerCase();};
-      return _s(f.titulo).includes(q)||_s(f.codigo).includes(q)||_s(f.cpl).includes(q)||_s(f.idioma).includes(q)||_s(f.obs).includes(q)||_s(f.status).includes(q)||_s(f.cplOV).includes(q);
+      var _sn2=(catalogoFilmesMap&&catalogoFilmesMap[f.codigo]&&catalogoFilmesMap[f.codigo].system_name)||'';return _s(f.titulo).includes(q)||_s(f.codigo).includes(q)||_s(f.cpl).includes(q)||_s(f.idioma).includes(q)||_s(f.obs).includes(q)||_s(f.status).includes(q)||_s(f.cplOV).includes(q)||_s(_sn2).includes(q);
     });
   }else{
     filtered=[];
@@ -6588,7 +6602,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 29/04/2026 às 22:00';
+  var sysUpdate='última atualização do sistema · 30/04/2026 às 00:00';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -8152,7 +8166,10 @@ function renderCatDetail(){
   var _evBadge=copia.evento&&_evColDet?'<span class="cat-status-badge" style="background:'+_evColDet.bg+';color:'+_evColDet.text+';border-color:transparent;font-family:var(--sans);text-transform:none;letter-spacing:0;">'+copia.evento+'</span>':'';
   html+='<div class="cat-header-code">'+_catCode+(copia.status?'<span class="cat-status-badge '+sCls+'">'+copia.status+'</span>':'')+kdmBadge+selBadge+_evBadge+'</div>';
   if(_catEditing){
-    html+=catFld('Título em português',catInp('title_pt',meta.title_pt||''));
+    html+=catFld('Nome no sistema',_catEditing
+      ?'<input class="cat-input" id="catf_system_name" value="'+esc(meta.system_name||'')+'" readonly style="opacity:0.6;" title="Campo imutável">'
+      :(meta.system_name?'<span style="font-family:var(--mono);font-size:11px;color:var(--text-muted);">'+esc(meta.system_name)+'</span>':'—'));
+    html+=catFld('Título em português',_catEditing?catInp('title_pt',meta.title_pt||''):(meta.title_pt||'—'));
     html+='<div class="cat-grid">'+catFld('Título original',catInp('original_title',meta.original_title||''))+catFld('Título em inglês',catInp('english_title',meta.english_title||''))+'</div>';
     html+=catFld('Direção',catTagInp('director',dirArr));
   }else{
@@ -8265,7 +8282,9 @@ async function doSaveCat(){
   try{
     var selEl=document.getElementById('catf_selecao');
     var data={
-      festival_code:_catCode,title_pt:gv('title_pt'),
+      festival_code:_catCode,
+      system_name:(catalogoFilmesMap[_catCode]&&catalogoFilmesMap[_catCode].system_name)||gv('system_name')||'',
+      title_pt:gv('title_pt'),
       original_title:gv('original_title'),english_title:gv('english_title'),
       film_type:gv('film_type'),content_rating:gv('content_rating'),
       contact_email:gv('contact_email'),year:parseInt(gv('year'))||null,
@@ -8302,11 +8321,13 @@ function _catSuggestCode(ev){
   return evCode+String(count+1).padStart(4,'0');
 }
 async function deleteCatFilm(codigo){
-  if(!confirm('Excluir o filme "'+codigo+'" do Catálogo?\n\nO registro no Acervo Técnico (copias) NÃO será removido.'))return;
+  if(!confirm('Excluir o filme "'+codigo+'" do Catálogo e do Acervo Técnico?\n\nEsta ação não pode ser desfeita.'))return;
   try{
     await window._olgaCatalogo.remove(codigo);
+    if(window._olgaCopias&&filmesMap[codigo])await window._olgaCopias.remove(codigo);
     delete catalogoFilmesMap[codigo];
     _catView='search';_catCode=null;_catEditing=false;
+    await window._olgaLoadFirestore();
     renderCatalogo();
   }catch(e){alert('Erro ao excluir: '+e.message);}
 }
@@ -8321,7 +8342,7 @@ function openCatCreate(ev){
 function renderCatCreate(){
   var cont=document.getElementById('catalogo-container');if(!cont)return;
   // Espelhar a edição usando os mesmos catf_ ids, mas com campos extras de criação
-  var activeEvs=Object.keys(eventColors);
+  var activeEvs=(_adminEventos&&_adminEventos.length?_adminEventos.map(function(e){return e.id;}):Object.keys(eventColors));
   if(!_catCreateEvent&&activeEvs.length)_catCreateEvent=activeEvs[0];
   var evOpts='<option value="">— selecionar —</option>'+activeEvs.map(function(e){
     return'<option value="'+esc(e)+'"'+(_catCreateEvent===e?' selected':'')+'>'+esc(e)+'</option>';
@@ -8348,6 +8369,7 @@ function renderCatCreate(){
       +'</div>'
       +'<div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-top:3px;">Imutável após criação.</div>'
     )
+    +catFld('Nome no sistema *','<input class="cat-input" id="catf_system_name" placeholder="Imutável — não aparece nas fichas · use se o título definitivo ainda não foi definido">')
   );
   // Campos de copias (acervo técnico) — só na criação
   html+=catBlock('Acervo Técnico',
@@ -8373,7 +8395,7 @@ function renderCatCreate(){
   );
   // Campos espelhados da edição (mesmos catf_ ids)
   html+=catBlock('Títulos',
-    catFld('Título em português *',catInp('title_pt',''))
+    catFld('Título em português','<input class="cat-input" id="catf_title_pt" placeholder="Pode ser preenchido ou alterado depois">')
     +'<div class="cat-grid">'+catFld('Título original',catInp('original_title',''))+catFld('Título em inglês',catInp('english_title',''))+'</div>'
   );
   html+=catBlock('Dados do filme',
@@ -8440,10 +8462,11 @@ async function doCreateFilm(){
   if(msg){msg.className='cat-msg';msg.textContent='Validando…';}
   var code=(document.getElementById('catf_code').value||'').trim();
   var ev=(document.getElementById('catf_event').value||'').trim();
-  var titlePt=(document.getElementById('catf_title_pt').value||'').trim();
+  var systemName=(document.getElementById('catf_system_name').value||'').trim();
+  var titlePt=(document.getElementById('catf_title_pt')?document.getElementById('catf_title_pt').value||'':'').trim();
   if(!code){if(msg){msg.className='cat-msg err';msg.textContent='Código obrigatório.';}return;}
   if(!ev){if(msg){msg.className='cat-msg err';msg.textContent='Evento obrigatório.';}return;}
-  if(!titlePt){if(msg){msg.className='cat-msg err';msg.textContent='Título PT obrigatório.';}return;}
+  if(!systemName){if(msg){msg.className='cat-msg err';msg.textContent='Nome no sistema obrigatório.';}return;}
   if(filmesMap[code]||catalogoFilmesMap[code]){if(msg){msg.className='cat-msg err';msg.textContent='Código já existe: '+code;}return;}
   if(msg){msg.className='cat-msg';msg.textContent='Salvando…';}
   var selEl=document.getElementById('catf_selecao');
@@ -8451,6 +8474,7 @@ async function doCreateFilm(){
   var durHMMSS=_catMinToHMMSS((document.getElementById('catf_dcp_duration_min')||{value:''}).value);
   var catalogData={
     festival_code:code,
+    system_name:systemName,
     title_pt:titlePt,
     original_title:gv('original_title'),english_title:gv('english_title'),
     synopsis:synEl?synEl.value.trim():'',
@@ -9066,7 +9090,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 29/04/2026 às 22:00</span></div>
+<div id="page-footer"><span>última atualização · 30/04/2026 às 00:00</span></div>
 
 </div>
 
