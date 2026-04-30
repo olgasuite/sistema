@@ -2833,6 +2833,8 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   </select>
   <button class="print-btn" onclick="printVinhetas()" style="margin-left:8px;">⎙ Imprimir lista</button>
   <button class="cat-edit-btn" id="btnNovaVinheta" onclick="openVinhetaModal(null)" style="margin-left:8px;display:none;">+ Nova vinheta</button>
+  <select id="vinhetasTemplatesEventSel" style="display:none;font-family:var(--mono);font-size:10px;background:var(--bg);color:var(--text);border:1px solid var(--border2);padding:4px 8px;margin-left:8px;min-width:120px;"></select>
+  <button class="print-btn" id="btnVinhetasTemplates" onclick="openVinhetasTemplates()" style="margin-left:8px;display:none;">⊞ Templates de vinhetas</button>
 </div>
 
 <div id="landing">
@@ -5260,11 +5262,31 @@ function buildVinhetasFilters(){
   buildPills(document.getElementById('vinhetasEventFilters'),eventColors,activeEventsVinhetas,function(){
     vinhetasCinemaFilter='';vinhetasDayFilter='';
     rebuildVinhetasCinemaSelect();rebuildVinhetasDaySelect();
+    _rebuildVinhetasTemplatesSel();
     renderVinhetas();
   });
   rebuildVinhetasCinemaSelect();rebuildVinhetasDaySelect();
   var btn=document.getElementById('btnNovaVinheta');
   if(btn)btn.style.display=(window._olgaUser&&(window._olgaUser.role==='admin'||window._olgaUser.role==='editor')&&window._olgaVinhetas)?'':'none';
+  _rebuildVinhetasTemplatesSel();
+}
+function _rebuildVinhetasTemplatesSel(){
+  var canTmpl=window._olgaUser&&(window._olgaUser.role==='admin'||window._olgaUser.role==='editor'||window._olgaUser.role==='programacao')&&!window._olgaHasRestricao('vinhetas.templates');
+  var btnT=document.getElementById('btnVinhetasTemplates');
+  var selT=document.getElementById('vinhetasTemplatesEventSel');
+  if(!btnT||!selT)return;
+  if(canTmpl){
+    var evs=Array.from(activeEventsVinhetas);
+    selT.innerHTML=evs.map(function(e){return'<option value="'+esc(e)+'">'+esc(e)+'</option>';}).join('');
+    selT.style.display=evs.length>1?'':'none';
+    btnT.style.display='';
+  }else{btnT.style.display='none';selT.style.display='none';}
+}
+function openVinhetasTemplates(){
+  var sel=document.getElementById('vinhetasTemplatesEventSel');
+  var ev=sel&&sel.style.display!=='none'?sel.value:Array.from(activeEventsVinhetas)[0];
+  if(!ev){alert('Nenhum evento ativo.');return;}
+  openProgVinTemplatesModal(ev);
 }
 
 function filteredSessoesForVinhetas(){
@@ -6859,7 +6881,7 @@ var _progSkipReset=false;
 var _progData={programs:[],subprograms:[]};
 var _progProgramEditId=null,_progSubprogramEditId=null,_progSubprogramProgramId=null;
 var _progSessaoEditNome=null,_progSessaoContextProgramId=null,_progSessaoContextSubId=null;
-var _progSessaoFilmsArr=[],_progSessaoBumpersArr=[];
+var _progSessaoFilmsArr=[],_progSessaoBumpersArr=[],_progSessaoVinOnly=false;
 var _progVinTemplates=[];
 
 function buildProgramacaoFilters(){
@@ -6957,7 +6979,7 @@ function _progRenderLanding(){
   c.innerHTML=html+'</div>';
 }
 
-function _progRenderSessionsGrouped(sessions,programId,canEdit){
+function _progRenderSessionsGrouped(sessions,programId,canEdit,vinOnly){
   if(!sessions.length)return'<div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);padding:10px 16px;">Nenhuma sessão.</div>';
   // Agrupar por sala
   var bySala={},salaOrder=[];
@@ -6986,7 +7008,7 @@ function _progRenderSessionsGrouped(sessions,programId,canEdit){
     html+='<div class="prog-sala-header">'+esc(sala)+'</div>';
     dayOrder.forEach(function(dk){
       html+='<div class="prog-day-subheader">'+(byDay[dk][0].dia||dk)+'</div>';
-      byDay[dk].forEach(function(s){html+=_progSessRowHtml(s,programId,canEdit);});
+      byDay[dk].forEach(function(s){html+=_progSessRowHtml(s,programId,canEdit,vinOnly);});
     });
     html+='</div>';
   });
@@ -7009,6 +7031,7 @@ function _progRenderProgram(programId){
   var prog=_progData.programs.find(function(p){return p.id===programId;});
   if(!prog){c.innerHTML='<div style="padding:40px;color:var(--warn);font-family:var(--mono);font-size:11px;">Mostra não encontrada.</div>';return;}
   var canEdit=window._olgaUser&&(window._olgaUser.role==='admin'||window._olgaUser.role==='editor'||window._olgaUser.role==='programacao');
+  var vinOnly=canEdit&&window._olgaHasRestricao('sessoes.somente_vinhetas');
   var ev=prog.data.event_id;
   var evColor=eventColors[ev]||{bg:'var(--surface2)',text:'var(--text-dim)'};
   var isAuto=!!(prog.data.auto);
@@ -7024,7 +7047,7 @@ function _progRenderProgram(programId){
   html+='<span class="prog-event-badge" style="background:'+evColor.bg+';color:'+evColor.text+';">'+esc(ev)+'</span>';
   if(prog.data.competitive)html+='<span class="prog-flag-badge prog-flag-comp">Competitivo</span>';
   if(prog.data.popular_vote)html+='<span class="prog-flag-badge prog-flag-pop">Voto popular</span>';
-  if(canEdit){html+='<div class="prog-header-actions"><button class="prog-btn-sm prog-btn-ghost" onclick="openProgSubprogramModal(null,\''+safePid+'\')">+ submostra</button><button class="prog-btn-sm prog-btn-ghost" onclick="openProgSessaoModal(null,\''+safePid+'\',\'\')">+ sessão</button><button class="prog-btn-sm prog-btn-ghost" onclick="openProgProgramModal(\''+safePid+'\',\''+esc(ev)+'\')">✎ editar mostra</button></div>';}
+  if(canEdit&&!vinOnly){html+='<div class="prog-header-actions"><button class="prog-btn-sm prog-btn-ghost" onclick="openProgSubprogramModal(null,\''+safePid+'\')">+ submostra</button><button class="prog-btn-sm prog-btn-ghost" onclick="openProgSessaoModal(null,\''+safePid+'\',\'\')">+ sessão</button><button class="prog-btn-sm prog-btn-ghost" onclick="openProgProgramModal(\''+safePid+'\',\''+esc(ev)+'\')">✎ editar mostra</button></div>';}
   html+='</div>';
   html+='<div class="prog-prog-title">'+esc(prog.data.name||programId)+'</div>';
   if(prog.data.program_description)html+='<div class="prog-prog-desc">'+esc(prog.data.program_description)+'</div>';
@@ -7033,10 +7056,10 @@ function _progRenderProgram(programId){
     var sessSub=sessoesArr.filter(function(s){return s.subprogram_id===sub.id&&activeEventsProgramacao.has(s.evento||ev);});
     var safeSid=sub.id.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     html+='<div class="prog-sub-block"><div class="prog-sub-header"><span class="prog-sub-name">'+esc(sub.data.name||sub.id)+'</span><span class="prog-sub-count">'+sessSub.length+' '+(sessSub.length===1?'sessão':'sessões')+'</span>';
-    if(canEdit){html+='<div class="prog-sub-actions"><button class="prog-btn-icon" title="Editar" onclick="openProgSubprogramModal(\''+safeSid+'\',\''+safePid+'\')">✎</button><button class="prog-btn-icon" title="Duplicar" onclick="duplicateSubprogram(\''+safeSid+'\')">⧉</button><button class="prog-btn-icon prog-btn-del" title="Excluir" onclick="deleteSubprogram(\''+safeSid+'\',\''+esc(sub.data.name||sub.id)+'\')">×</button><button class="prog-btn-icon" title="Adicionar sessão" onclick="openProgSessaoModal(null,\''+safePid+'\',\''+safeSid+'\')">＋</button></div>';}
+    if(canEdit&&!vinOnly){html+='<div class="prog-sub-actions"><button class="prog-btn-icon" title="Editar" onclick="openProgSubprogramModal(\''+safeSid+'\',\''+safePid+'\')">✎</button><button class="prog-btn-icon" title="Duplicar" onclick="duplicateSubprogram(\''+safeSid+'\')">⧉</button><button class="prog-btn-icon prog-btn-del" title="Excluir" onclick="deleteSubprogram(\''+safeSid+'\',\''+esc(sub.data.name||sub.id)+'\')">×</button><button class="prog-btn-icon" title="Adicionar sessão" onclick="openProgSessaoModal(null,\''+safePid+'\',\''+safeSid+'\')">＋</button></div>';}
     html+='</div>';
     if(sub.data.subprogram_description)html+='<div class="prog-sub-desc">'+esc(sub.data.subprogram_description)+'</div>';
-    html+=_progRenderSessionsGrouped(sessSub,programId,canEdit);
+    html+=_progRenderSessionsGrouped(sessSub,programId,canEdit,vinOnly);
     html+='</div>';
   });
   // Sessões sem submostra
@@ -7045,15 +7068,15 @@ function _progRenderProgram(programId){
     html+='<div class="prog-sub-block'+(totalSubs?' prog-sub-block-nosub':'')+'"><div class="prog-sub-header">';
     html+=(totalSubs?'<span class="prog-sub-name" style="opacity:0.55;font-style:italic;">sem submostra</span>':'<span class="prog-sub-name">Sessões</span>');
     html+='<span class="prog-sub-count">'+sessSemSub.length+' '+(sessSemSub.length===1?'sessão':'sessões')+'</span>';
-    if(canEdit)html+='<div class="prog-sub-actions"><button class="prog-btn-icon" title="Adicionar sessão" onclick="openProgSessaoModal(null,\''+safePid+'\',\'\')">＋</button></div>';
+    if(canEdit&&!vinOnly)html+='<div class="prog-sub-actions"><button class="prog-btn-icon" title="Adicionar sessão" onclick="openProgSessaoModal(null,\''+safePid+'\',\'\')">＋</button></div>';
     html+='</div>';
-    html+=_progRenderSessionsGrouped(sessSemSub,programId,canEdit);
+    html+=_progRenderSessionsGrouped(sessSemSub,programId,canEdit,vinOnly);
     html+='</div>';
   }
   c.innerHTML=html+'</div>';
 }
 
-function _progSessRowHtml(s,programId,canEdit){
+function _progSessRowHtml(s,programId,canEdit,vinOnly){
   var filmTitles=s.filmes.map(function(cd){var cm=catalogoFilmesMap&&catalogoFilmesMap[cd];var f=filmesMap[cd];return(cm&&cm.title_pt)||(f&&f.titulo)||cd;}).filter(Boolean).join(' · ');
   var safe=(s.nome||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
   var safePid=(programId||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
@@ -7064,20 +7087,22 @@ function _progSessRowHtml(s,programId,canEdit){
     +'<span class="prog-sess-id">'+esc(s.nome)+'</span>'
     +'<span class="prog-sess-cinema">'+esc(s.cinema||'—')+'</span>'
     +(filmTitles?'<span class="prog-sess-films">'+esc(filmTitles.length>80?filmTitles.slice(0,80)+'…':filmTitles)+'</span>':'')
-    +(canEdit?'<span class="prog-sess-actions" onclick="event.stopPropagation()">'
+    +((canEdit||vinOnly)?'<span class="prog-sess-actions" onclick="event.stopPropagation()">'
       +'<button class="prog-btn-icon" title="Editar" onclick="openProgSessaoModal(\''+safe+'\',\''+safePid+'\',null)">✎</button>'
-      +'<button class="prog-btn-icon" title="Duplicar" onclick="duplicateProgSessao(\''+safe+'\')">⧉</button>'
-      +'<button class="prog-btn-icon prog-btn-del" title="Excluir" onclick="deleteProgSessao(\''+safe+'\')">×</button>'
+      +(canEdit&&!vinOnly?'<button class="prog-btn-icon" title="Duplicar" onclick="duplicateProgSessao(\''+safe+'\')">⧉</button>':'')
+      +(canEdit&&!vinOnly?'<button class="prog-btn-icon prog-btn-del" title="Excluir" onclick="deleteProgSessao(\''+safe+'\')">×</button>':'')
       +'</span>':'')
     +'</div>';
 }
 
 /* ── Session detail ── */
 function _progRenderSessao(sessaoNome){
+  if(!_langCache){_langEnsure().then(function(){_progRenderSessao(sessaoNome);});return;}
   var c=document.getElementById('programacao-container');
   var s=sessoesMap[sessaoNome];
   if(!s){c.innerHTML='<div style="padding:40px;color:var(--warn);font-family:var(--mono);font-size:11px;">Sessão não encontrada.</div>';return;}
   var canEdit=window._olgaUser&&(window._olgaUser.role==='admin'||window._olgaUser.role==='editor'||window._olgaUser.role==='programacao');
+  var vinOnly=canEdit&&window._olgaHasRestricao('sessoes.somente_vinhetas');
   var prog=_progData.programs.find(function(p){return p.id===_progView.programId;});
   var films=s.filmes.map(function(cd){
     var cm=(catalogoFilmesMap&&catalogoFilmesMap[cd])||{};
@@ -7126,7 +7151,7 @@ function _progRenderSessao(sessaoNome){
   var html='<div class="prog-module-wrap">';
   html+='<div class="prog-view-header"><button class="prog-back-btn" onclick="_progBack()">← voltar</button>';
   if(prog)html+='<span class="prog-breadcrumb">'+esc(prog.data.name||prog.id)+'</span>';
-  if(canEdit)html+='<button class="prog-btn-sm" style="margin-left:auto;" onclick="openProgSessaoModal(\''+safeNome+'\',\''+safePid+'\',null)">✎ editar sessão</button>';
+  if(canEdit||vinOnly)html+='<button class="prog-btn-sm" style="margin-left:auto;" onclick="openProgSessaoModal(\''+safeNome+'\',\''+safePid+'\',null)">'+(vinOnly?'✎ editar vinhetas':'✎ editar sessão')+'</button>';
   html+='</div>';
   html+='<div class="ficha"><div class="ficha-header"><div class="ficha-header-main">';
   html+='<div class="ficha-session-wrap">';
@@ -7419,7 +7444,10 @@ function openProgSessaoModal(sessaoNome,programId,subprogramId){
     if(tmplHint)tmplHint.style.display=evTemplates.length?'none':'block';
   }
   document.getElementById('progSessaoModalErr').style.display='none';
+  _progSessaoVinOnly=!!(sessaoNome&&window._olgaHasRestricao('sessoes.somente_vinhetas'));
   _progRenderFilmsEdit();_progRenderBumpersEdit();
+  ['progSessaoName','progSessaoDate','progSessaoTime','progSessaoCinemaSelect','progSessaoSubprogramSelect','progSessaoDesc','progSessaoConvidados','progSessaoIngressos','progSessaoAcessibilidade','progSessaoApresentacao','progSessaoLegEletronica','progSessaoDebate','progFilmSearch'].forEach(function(fid){var el=document.getElementById(fid);if(el){el.disabled=_progSessaoVinOnly;el.style.opacity=_progSessaoVinOnly?'0.4':'';}});
+  document.getElementById('progSessaoModalTitle').textContent=_progSessaoVinOnly?'editar vinhetas · '+sessaoNome:'';
   document.getElementById('progSessaoModal').style.display='flex';
 }
 function closeProgSessaoModal(){document.getElementById('progSessaoModal').style.display='none';}
@@ -7433,9 +7461,11 @@ function _progRenderFilmsEdit(){
       +'<span style="font-family:var(--mono);font-size:9px;color:var(--text-muted);min-width:16px;">'+(i+1)+'</span>'
       +'<span style="font-family:var(--sans);font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+esc(label)+'">'+esc(label)+'</span>'
       +'<span style="font-family:var(--mono);font-size:9px;color:var(--text-muted);">'+esc(cod)+'</span>'
-      +(i>0?'<button style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:0 2px;" onclick="_progFilmsMv('+i+',-1)">↑</button>':'<span style="width:18px;"></span>')
-      +(i<_progSessaoFilmsArr.length-1?'<button style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:0 2px;" onclick="_progFilmsMv('+i+',1)">↓</button>':'<span style="width:18px;"></span>')
-      +'<button style="background:none;border:none;cursor:pointer;color:var(--warn);font-size:14px;padding:0 2px;line-height:1;" onclick="_progSessaoFilmsArr.splice('+i+',1);_progRenderFilmsEdit()">×</button>'
+      +(_progSessaoVinOnly?'':
+        (i>0?'<button style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:0 2px;" onclick="_progFilmsMv('+i+',-1)">↑</button>':'<span style="width:18px;"></span>')
+        +(i<_progSessaoFilmsArr.length-1?'<button style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:0 2px;" onclick="_progFilmsMv('+i+',1)">↓</button>':'<span style="width:18px;"></span>')
+        +'<button style="background:none;border:none;cursor:pointer;color:var(--warn);font-size:14px;padding:0 2px;line-height:1;" onclick="_progSessaoFilmsArr.splice('+i+',1);_progRenderFilmsEdit()">×</button>'
+      )
       +'</div>';
   }).join('');
 }
@@ -7495,6 +7525,22 @@ function _progApplyVinTemplate(){
 async function saveProgSessaoModal(){
   var nome=_progSessaoEditNome||(document.getElementById('progSessaoId').value||'').trim();
   if(!nome){_progSessErr('ID de sessão obrigatório.');return;}
+  if(_progSessaoVinOnly){
+    var ex=sessoesMap[nome];if(!ex){_progSessErr('Sessão não encontrada.');return;}
+    var vinData={session_id:nome,name:ex.name||'',event_name:ex.evento||'',
+      date:ex.date?ex.date.toISOString().slice(0,10):'',
+      time:ex.time&&ex.time.str&&ex.time.str!=='?'?ex.time.str:'',
+      venue_name:ex.cinema||'',program_id:ex.program_id||'',subprogram_id:ex.subprogram_id||'',
+      session_description:ex.session_description||'',films:ex.filmes||[],bumpers:_progSessaoBumpersArr,
+      guests:ex.convidados||'',has_introduction:ex.apresentacao||'',has_debate:ex.col_ag||'',
+      has_electronic_subtitles:ex.leg_eletronica||'',reserved_tickets:ex.ingressos||'',
+      available_accessibility:ex.acessibilidades||''};
+    var btn=document.getElementById('progSessaoModalSave');btn.disabled=true;btn.textContent='Salvando…';
+    try{await window._olgaSessoes.save(nome,vinData);closeProgSessaoModal();await window._olgaLoadFirestore();if(_progSessaoContextProgramId){_progView={level:'program',programId:_progSessaoContextProgramId,sessaoNome:null};}_progRender();}
+    catch(e){_progSessErr('Erro: '+e.message);}
+    finally{btn.disabled=false;btn.textContent='Salvar';}
+    return;
+  }
   var prog=_progData.programs.find(function(p){return p.id===_progSessaoContextProgramId;});
   var ev=prog?prog.data.event_id:(sessoesMap[nome]?sessoesMap[nome].evento:'');
   var data={
@@ -7557,7 +7603,9 @@ var _EQUIPE_RESTRICOES=[
   {k:'vinhetas.sessoes',label:'Vinhetas · Contador de sessões'},
   {k:'vinhetas.cinemas',label:'Vinhetas · Contador de cinemas'},
   {k:'vinhetas.publico',label:'Vinhetas · Contador de público'},
-  {k:'eventos.locked',label:'Eventos · Bloquear seleção de eventos (usuário vê, não altera)'}
+  {k:'eventos.locked',label:'Eventos · Bloquear seleção de eventos (usuário vê, não altera)'},
+  {k:'vinhetas.templates',label:'Vinhetas · Ocultar atalho de templates de vinheta'},
+  {k:'sessoes.somente_vinhetas',label:'Sessões · Edição restrita a vinhetas (sem criar, duplicar, deletar)'}
 ];
 
 function renderEquipe(){
