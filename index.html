@@ -4,6 +4,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+  /* Desabilitar swipe-to-go-back no iOS em modo web */
+  html, body { overscroll-behavior-x: none; touch-action: pan-y; }
+</style>
 <title>OLGA Suite</title>
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
@@ -150,8 +155,8 @@ select:disabled{opacity:0.35;cursor:not-allowed;}
 .prog-sess-cinema{font-family:var(--mono);font-size:9px;color:var(--text-dim);min-width:70px;flex-shrink:0;}
 .prog-sess-films{font-family:var(--sans);font-size:10px;color:var(--text-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .prog-sess-actions{display:flex;gap:2px;margin-left:auto;flex-shrink:0;}
-.prog-sess-display-name{font-family:var(--sans);font-size:13px;color:var(--text-dim);margin-top:2px;}
-.prog-sess-display-name-ficha{font-family:var(--sans);font-size:13px;color:var(--text-dim);margin-top:2px;font-weight:400;}
+.prog-sess-display-name{font-family:var(--sans);font-size:18px;font-weight:600;color:var(--accent);margin-top:2px;line-height:1.2;}
+.prog-sess-display-name-ficha{font-family:var(--sans);font-size:18px;font-weight:600;color:var(--accent);margin-top:2px;line-height:1.2;}
 .prog-sess-desc-block{font-family:var(--sans);font-size:12px;color:var(--text-muted);line-height:1.6;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface2);}
 .prog-country-cell{white-space:nowrap;}
 .prog-country-flag{font-size:14px;margin-right:2px;}
@@ -206,7 +211,7 @@ select:disabled{opacity:0.35;cursor:not-allowed;}
 .fe-box{display:inline-flex;align-items:center;justify-content:center;width:11px;height:11px;border:1px solid var(--border2);font-size:9px;line-height:1;flex-shrink:0;}
 .fe-box.checked{border-color:var(--text-dim);color:var(--text);}
 .fe-sep{border-top:1px solid var(--border);margin:3px 0;}
-.ficha-session-name{font-family:var(--mono);font-size:26px;font-weight:600;color:var(--accent);letter-spacing:0.05em;text-transform:uppercase;line-height:1;}
+.ficha-session-name{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;line-height:1;opacity:0.65;}
 .ficha-meta{display:flex;gap:0;flex-wrap:wrap;}
 .meta-item{padding:6px 18px 6px 0;margin-right:18px;border-right:1px solid var(--border);}
 .meta-item:last-child{border-right:none;margin-right:0;}
@@ -250,7 +255,7 @@ td.cpl-cell{background:var(--cpl-bg);border-left:3px solid var(--cpl-border);pad
 .cpl-ov-ficha{font-family:var(--mono);font-size:9px;color:rgba(93,220,138,0.45);word-break:break-all;line-height:1.4;margin-top:5px;padding-top:5px;border-top:1px solid rgba(61,186,110,0.18);}
 .cpl-ov-ficha-label{font-weight:600;letter-spacing:0.1em;text-transform:uppercase;opacity:0.7;margin-right:3px;}
 .ficha-session-wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
-.ficha-session-name{font-family:var(--mono);font-size:26px;font-weight:600;color:var(--accent);letter-spacing:0.05em;text-transform:uppercase;line-height:1;}
+.ficha-session-name{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;line-height:1;opacity:0.65;}
 .ficha-evento-badge{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 10px;border-radius:2px;white-space:nowrap;align-self:center;}
 .dur-text{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);}
 .fps-gb{display:flex;flex-direction:column;gap:2px;align-items:center;}
@@ -1210,6 +1215,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
   padding:8px 14px 10px;
 }
 [data-theme="win98"] .ficha-session-name{color:#fff;text-shadow:none;font-family:Tahoma,'MS Sans Serif',Arial,sans-serif;}
+[data-theme="win98"] .leg-vf-label{color:#000!important;}
 [data-theme="win98"] .meta-label{color:rgba(255,255,255,0.75);}
 [data-theme="win98"] .meta-value{color:#fff;}
 [data-theme="win98"] .meta-value.highlight{color:#ffff80;}
@@ -2405,6 +2411,9 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
         var dateVal = fs(r['date']), timeVal = fs(r['time']);
         function _parseDate(v) {
           if (!v) return null;
+          // ISO YYYY-MM-DD: construir como local para evitar UTC offset
+          var iso = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+          if (iso) return new Date(+iso[1], +iso[2]-1, +iso[3]);
           var m = v.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
           if (m) return new Date(+m[3]<100?2000+Number(m[3]):+m[3], m[2]-1, +m[1]);
           var d = new Date(v); return isNaN(d) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -2412,7 +2421,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
         function _fmtDate(v) {
           if (!v) return '—';
           var d = _parseDate(v);
-          return d ? d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}) : v;
+          return d ? d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'2-digit'}) : v;
         }
         function _parseTime(v) {
           if (!v) return {h:0,m:0,str:'?'};
@@ -2986,9 +2995,9 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 <script id="workerScript" type="javascript/worker">
 importScripts(self._xlsxUrl||'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
 
-function fmtDateStr(val){if(!val)return'—';var d=new Date(val);if(isNaN(d))return val;return d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});}
+function fmtDateStr(val){if(!val)return'—';var iso=val.match?val.match(/^(\d{4})-(\d{2})-(\d{2})$/):null;var d=iso?new Date(+iso[1],+iso[2]-1,+iso[3]):new Date(val);if(isNaN(d))return val;return d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'2-digit'});}
 function fmtTimeStr(val){if(!val)return'—';if(typeof val==='string'&&/^\d{1,2}:\d{2}/.test(val))return val.slice(0,5);var d=new Date(val);if(!isNaN(d))return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});return val;}
-function parseDate(v){if(!v)return null;var d=new Date(v);if(!isNaN(d))return new Date(d.getFullYear(),d.getMonth(),d.getDate());var m=v.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);if(m)return new Date(+m[3]<100?2000+Number(m[3]):+m[3],m[2]-1,+m[1]);return null;}
+function parseDate(v){if(!v)return null;var iso=v.match?v.match(/^(\d{4})-(\d{2})-(\d{2})$/):null;if(iso)return new Date(+iso[1],+iso[2]-1,+iso[3]);var d=new Date(v);if(!isNaN(d))return new Date(d.getFullYear(),d.getMonth(),d.getDate());var m=v.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);if(m)return new Date(+m[3]<100?2000+Number(m[3]):+m[3],m[2]-1,+m[1]);return null;}
 function parseTime(v){if(!v)return{h:0,m:0,str:'?'};var h=0,m=0;if(typeof v==='string'&&/^\d{1,2}:\d{2}/.test(v)){var p=v.split(':').map(Number);h=p[0];m=p[1];}else{var d=new Date(v);if(!isNaN(d)){h=d.getHours();m=d.getMinutes();}}return{h:h,m:m,str:String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')};}
 
 self.onmessage=function(e){
@@ -3248,6 +3257,12 @@ function goHome(){
 function moduleCardClick(mode){if(dataLoaded)switchMode(mode);}
 
 function switchMode(mode,noPush){
+  // Herdar pills do módulo atual antes de trocar
+  if(currentMode&&currentMode!==mode){
+    var src=activeEventsForMode(currentMode);
+    var dst=activeEventsForMode(mode);
+    if(src&&dst){dst.clear();src.forEach(function(e){dst.add(e);});}
+  }
   currentMode=mode;
   if(!noPush&&!_browserNav)history.pushState({olga:mode},'');
   // always collapse the busca filter panel when leaving busca
@@ -3285,10 +3300,10 @@ function switchMode(mode,noPush){
 
 /* UTILS */
 function clean(v){return(!v||v==='-'||v==='0')?'':v;}
-function fmtDateStr(val){if(!val)return'—';var d=new Date(val);if(isNaN(d))return val;return d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});}
+function fmtDateStr(val){if(!val)return'—';var iso=val.match?val.match(/^(\d{4})-(\d{2})-(\d{2})$/):null;var d=iso?new Date(+iso[1],+iso[2]-1,+iso[3]):new Date(val);if(isNaN(d))return val;return d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'2-digit'});}
 function fmtTimeStr(val){if(!val)return'—';if(typeof val==='string'&&/^\d{1,2}:\d{2}/.test(val))return val.slice(0,5);var d=new Date(val);if(!isNaN(d))return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});return val;}
 function fmtDur(val){if(!val||val==='-')return'—';if(typeof val==='string'&&/^\d{1,2}:\d{2}/.test(val)){var p=val.split(':').map(Number);if(p[0]>0)return p[0]+'h'+String(p[1]).padStart(2,'0');return p[1]+'min';}return val;}
-function parseDate(v){if(!v)return null;var d=new Date(v);if(!isNaN(d))return new Date(d.getFullYear(),d.getMonth(),d.getDate());var m=v.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);if(m)return new Date(+m[3]<100?2000+Number(m[3]):+m[3],m[2]-1,+m[1]);return null;}
+function parseDate(v){if(!v)return null;var iso=v.match?v.match(/^(\d{4})-(\d{2})-(\d{2})$/):null;if(iso)return new Date(+iso[1],+iso[2]-1,+iso[3]);var d=new Date(v);if(!isNaN(d))return new Date(d.getFullYear(),d.getMonth(),d.getDate());var m=v.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);if(m)return new Date(+m[3]<100?2000+Number(m[3]):+m[3],m[2]-1,+m[1]);return null;}
 function parseTime(v){if(!v)return{h:0,m:0,str:'?'};var h=0,m=0;if(typeof v==='string'&&/^\d{1,2}:\d{2}/.test(v)){var p=v.split(':').map(Number);h=p[0];m=p[1];}else{var d=new Date(v);if(!isNaN(d)){h=d.getHours();m=d.getMinutes();}}return{h:h,m:m,str:String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')};}
 function lenteBadge(v){var u=(v||'').toUpperCase();if(u.includes('FLAT')&&u.includes('200'))return'<span class="badge badge-flat200">FLAT 200</span>';if(u.includes('FLAT')&&(u.includes('(C)')||u.replace(/\s/g,'').includes('(C)')))return'<span class="badge badge-flatc">FLAT (C)</span>';if(u.includes('FLAT'))return'<span class="badge badge-flat">FLAT</span>';if(u.includes('SCOPE'))return'<span class="badge badge-scope">SCOPE</span>';if(u.includes('2.0'))return'<span class="badge badge-scope">2.0:1</span>';if(v&&v!=='-')return'<span class="badge badge-flat">'+v+'</span>';return'—';}
 function somBadge(v){var u=(v||'').toUpperCase();if(u.includes('5.1'))return'<span class="badge badge-51">5.1</span>';if(u.includes('STEREO'))return'<span class="badge badge-stereo">Stereo</span>';if(v&&v!=='-')return'<span class="badge badge-stereo">'+v+'</span>';return'—';}
@@ -6573,7 +6588,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 29/04/2026 às 18:00';
+  var sysUpdate='última atualização do sistema · 29/04/2026 às 22:00';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -6666,13 +6681,11 @@ var COUNTRY_FLAGS={
 };
 function progCountryDisplay(name){
   if(!name)return'';
-  var flag=COUNTRY_FLAGS[(name||'').toLowerCase().trim()];
-  if(flag)return'<span class="prog-country-flag">'+flag+'</span><span class="prog-country-name">'+esc(name)+'</span>';
   return'<span class="prog-country-plain">'+esc(name)+'</span>';
 }
 function progCountriesCell(arr){
   if(!arr||!arr.length)return'<span style="color:var(--text-muted)">—</span>';
-  return arr.map(progCountryDisplay).join('<span style="color:var(--text-muted);margin:0 2px">/</span>');
+  return arr.map(progCountryDisplay).join('<span style="color:var(--text-muted);margin:0 3px">/</span>');
 }
 
 var _progView={level:'landing',programId:null,sessaoNome:null};
@@ -6892,6 +6905,7 @@ function _progSessRowHtml(s,programId,canEdit){
     +(canEdit?'<span class="prog-sess-actions" onclick="event.stopPropagation()">'
       +'<button class="prog-btn-icon" title="Editar" onclick="openProgSessaoModal(\''+safe+'\',\''+safePid+'\',null)">✎</button>'
       +'<button class="prog-btn-icon" title="Duplicar" onclick="duplicateProgSessao(\''+safe+'\')">⧉</button>'
+      +'<button class="prog-btn-icon prog-btn-del" title="Excluir" onclick="deleteProgSessao(\''+safe+'\')">×</button>'
       +'</span>':'')
     +'</div>';
 }
@@ -7204,7 +7218,10 @@ function openProgSessaoModal(sessaoNome,programId,subprogramId){
   // Vinheta templates select
   var templates=prog?prog.data.vinheta_templates||[]:[];
   var tmplOpts=templates.map(function(t,i){return'<option value="'+i+'">'+esc(t.name||'Template '+(i+1))+'</option>';}).join('');
-  document.getElementById('progSessaoModalTitle').textContent=sessaoNome?'Editar sessão: '+sessaoNome:'Nova sessão';
+  var subs=_progData.subprograms.filter(function(s){return s.data.program_id===programId;});
+  var subOpts='<option value="">— sem submostra —</option>'+subs.map(function(s){var safeSid=s.id;return'<option value="'+esc(safeSid)+'"'+((_progSessaoContextSubId&&_progSessaoContextSubId===s.id)||(!_progSessaoContextSubId&&sessaoNome&&sessoesMap[sessaoNome]&&sessoesMap[sessaoNome].subprogram_id===s.id)?' selected':'')+'>'+esc(s.data.name||s.id)+'</option>';}).join('');
+  document.getElementById('progSessaoSubprogramRow').style.display=subs.length?'':'none';
+  document.getElementById('progSessaoSubprogramSelect').innerHTML=subOpts;
   document.getElementById('progSessaoIdWrap').style.display=sessaoNome?'none':'flex';
   document.getElementById('progSessaoId').value='';
   document.getElementById('progSessaoName').value=s?s.name||'':'';
@@ -7310,7 +7327,7 @@ async function saveProgSessaoModal(){
     time:document.getElementById('progSessaoTime').value,
     venue_name:document.getElementById('progSessaoCinemaSelect').value||'',
     program_id:_progSessaoContextProgramId||'',
-    subprogram_id:_progSessaoContextSubId||'',
+    subprogram_id:(document.getElementById('progSessaoSubprogramSelect').value)||_progSessaoContextSubId||'',
     session_description:(document.getElementById('progSessaoDesc').value||'').trim(),
     films:_progSessaoFilmsArr,bumpers:_progSessaoBumpersArr,
     guests:(document.getElementById('progSessaoConvidados').value||'').trim(),
@@ -7325,11 +7342,26 @@ async function saveProgSessaoModal(){
     await window._olgaSessoes.save(nome,data);
     closeProgSessaoModal();
     await window._olgaLoadFirestore();
+    // Voltar para a view do program onde a sessão foi criada/editada
+    if(_progSessaoContextProgramId){
+      _progView={level:'program',programId:_progSessaoContextProgramId,sessaoNome:null};
+    }
     _progRender();
   }catch(e){_progSessErr('Erro: '+e.message);}
   finally{btn.disabled=false;btn.textContent='Salvar';}
 }
 function _progSessErr(msg){var el=document.getElementById('progSessaoModalErr');el.textContent=msg;el.style.display='block';}
+async function deleteProgSessao(nome){
+  var s=sessoesMap[nome];
+  var label=s&&s.name?nome+' · '+s.name:nome;
+  if(!confirm('Excluir a sessão "'+label+'"?\nEsta ação não pode ser desfeita.'))return;
+  try{
+    await window._olgaSessoes.remove(nome);
+    await window._olgaLoadFirestore();
+    _progRender();
+  }catch(e){alert('Erro ao excluir: '+e.message);}
+}
+
 async function duplicateProgSessao(nome){
   var s=sessoesMap[nome];if(!s)return;
   var newNome=nome+'_copia';
@@ -8095,7 +8127,7 @@ function renderCatDetail(){
   var copia=filmesMap[_catCode]||{};var meta=catalogoFilmesMap[_catCode]||{};
   var title=meta.title||copia.titulo||_catCode;var dur=fmtDurMin(copia.duracao);
   var sCls=catStatusCls(copia.status);
-  var canEdit=window._olgaUser&&(window._olgaUser.role==='admin'||window._olgaUser.role==='editor');
+  var canEdit=window._olgaUser&&(window._olgaUser.role==='admin'||window._olgaUser.role==='editor')&&!!window._olgaCatalogo;
   var dirArr=Array.isArray(meta.director)?meta.director:(meta.director?[meta.director]:[]);
   var dirDisplay=dirArr.join(', ');
   var legDisplay=copia.legenda||'—';
@@ -8110,7 +8142,7 @@ function renderCatDetail(){
   html+='<button class="cat-back" onclick="renderCatalogo()">← Catálogo</button>';
   var acervoBtn='<button class="cat-card-btn" style="margin-left:0;" onclick="goToBuscaCod(\''+_catCode.replace(/'/g,"\\'")+'\')">Ver no Acervo Técnico</button>';
   if(canEdit&&!_catEditing)
-    html+='<div class="cat-actions">'+acervoBtn+'<button class="cat-edit-btn" onclick="duplicateCatFilm(\''+_catCode.replace(/'/g,"\\'")+'\')">⧉ Duplicar</button><button class="cat-edit-btn" onclick="startCatEdit()">✎ Editar</button></div>';
+    html+='<div class="cat-actions">'+acervoBtn+'<button class="cat-edit-btn" onclick="duplicateCatFilm(\''+_catCode.replace(/\'/g,"\\\'")+'\')">⧉ Duplicar</button><button class="cat-edit-btn" onclick="startCatEdit()">✎ Editar</button><button class="cat-edit-btn" style="color:var(--warn);border-color:var(--warn);" onclick="deleteCatFilm(\''+_catCode.replace(/\'/g,"\\\'")+'\')">× Excluir</button></div>';
   else if(_catEditing)
     html+='<div class="cat-actions"><span class="cat-msg" id="catSaveMsg"></span><button class="cat-cancel-btn" onclick="cancelCatEdit()">Cancelar</button><button class="cat-save-btn" onclick="doSaveCat()">Salvar</button></div>';
   else
@@ -8269,30 +8301,15 @@ function _catSuggestCode(ev){
   var count=filmesArr.filter(function(f){return f.evento===ev;}).length;
   return evCode+String(count+1).padStart(4,'0');
 }
-function _catCheckCodeDup(){
-  var code=(document.getElementById('catc_code').value||'').trim();
-  var st=document.getElementById('catc_code_status');if(!st)return;
-  if(!code){st.textContent='';return;}
-  if(filmesMap[code]||catalogoFilmesMap[code]){st.textContent='⚠ código já existe';st.style.color='var(--warn)';}
-  else{st.textContent='✓ disponível';st.style.color='#3dba6e';}
+async function deleteCatFilm(codigo){
+  if(!confirm('Excluir o filme "'+codigo+'" do Catálogo?\n\nO registro no Acervo Técnico (copias) NÃO será removido.'))return;
+  try{
+    await window._olgaCatalogo.remove(codigo);
+    delete catalogoFilmesMap[codigo];
+    _catView='search';_catCode=null;_catEditing=false;
+    renderCatalogo();
+  }catch(e){alert('Erro ao excluir: '+e.message);}
 }
-function _catUpdateCodeSuggestion(){
-  var ev=(document.getElementById('catc_event').value||'');
-  _catCreateEvent=ev;
-  var inp=document.getElementById('catc_code');if(!inp)return;
-  if(!inp.dataset.userModified){inp.value=_catSuggestCode(ev);_catCheckCodeDup();}
-}
-function _catCreateCheckVF(){
-  var val=(document.getElementById('catc_legenda').value||'').toUpperCase();
-  var row=document.getElementById('catc_vf_row');
-  if(row)row.style.display=val.includes('VF')?'':'none';
-}
-function _catMinToHMMSS(mins){
-  var m=parseInt(mins)||0;if(!m)return'';
-  var h=Math.floor(m/60),mm=m%60;
-  return h+':'+String(mm).padStart(2,'0')+':00';
-}
-function gctv(id){var el=document.getElementById('catc_'+id);return el?(el.value||'').trim():'';}
 
 function openCatCreate(ev){
   _catView='create';_catCode=null;_catEditing=false;
@@ -8303,130 +8320,166 @@ function openCatCreate(ev){
 
 function renderCatCreate(){
   var cont=document.getElementById('catalogo-container');if(!cont)return;
+  // Espelhar a edição usando os mesmos catf_ ids, mas com campos extras de criação
+  var activeEvs=Object.keys(eventColors);
+  if(!_catCreateEvent&&activeEvs.length)_catCreateEvent=activeEvs[0];
+  var evOpts='<option value="">— selecionar —</option>'+activeEvs.map(function(e){
+    return'<option value="'+esc(e)+'"'+(_catCreateEvent===e?' selected':'')+'>'+esc(e)+'</option>';
+  }).join('');
+  var sugCode=_catSuggestCode(_catCreateEvent);
   var idiomas=[...new Set(filmesArr.map(function(f){return f.idioma;}).filter(Boolean))].sort();
   var legendas=[...new Set(filmesArr.map(function(f){return f.legenda;}).filter(Boolean))].sort();
   var vfVals=[...new Set(filmesArr.map(function(f){return f.vf;}).filter(Boolean))].sort();
-  var statusVals=[...new Set(filmesArr.map(function(f){return f.status;}).filter(Boolean))].sort();
   var lentes=[...new Set(filmesArr.map(function(f){return f.lente;}).filter(Boolean))].sort();
   var sons=[...new Set(filmesArr.map(function(f){return f.som;}).filter(Boolean))].sort();
-  var activeEvs=Object.keys(eventColors);
-  if(!_catCreateEvent&&activeEvs.length)_catCreateEvent=activeEvs[0];
-  var evOpts='<option value="">— selecionar —</option>'+activeEvs.map(function(e){return'<option value="'+esc(e)+'"'+(_catCreateEvent===e?' selected':'')+'>'+esc(e)+'</option>';}).join('');
-  var sugCode=_catSuggestCode(_catCreateEvent);
+  var statusVals=[...new Set(filmesArr.map(function(f){return f.status;}).filter(Boolean))].sort();
   function listOpts(arr){return arr.map(function(v){return'<option value="'+esc(v)+'">';}).join('');}
-  function row2(a,b){return'<div class="cat-grid">'+a+b+'</div>';}
   var html='<div class="cat-detail">';
   html+='<button class="cat-back" onclick="renderCatalogo()">← Catálogo</button>';
-  html+='<div class="cat-actions"><span class="cat-msg" id="catCreateMsg"></span><button class="cat-cancel-btn" onclick="renderCatalogo()">Cancelar</button><button class="cat-save-btn" onclick="doCreateFilm()">Salvar</button></div>';
+  html+='<div class="cat-actions"><span class="cat-msg" id="catSaveMsg"></span><button class="cat-cancel-btn" onclick="renderCatalogo()">Cancelar</button><button class="cat-save-btn" onclick="doCreateFilm()">Criar filme</button></div>';
   html+='<div class="cat-header"><div class="cat-header-code">Novo filme</div></div>';
+  // Campos exclusivos de criação (não existem na edição)
   html+=catBlock('Identificação',
-    catFld('Evento *','<select class="cat-input" id="catc_event" onchange="_catUpdateCodeSuggestion()">'+evOpts+'</select>')
+    catFld('Evento *','<select class="cat-input" id="catf_event" onchange="_catUpdateCodeSuggestion()">'+evOpts+'</select>')
     +catFld('Código *',
       '<div style="display:flex;gap:8px;align-items:center;">'
-      +'<input class="cat-input" id="catc_code" value="'+esc(sugCode)+'" oninput="this.dataset.userModified=\'1\';_catCheckCodeDup()" style="flex:1;">'
+      +'<input class="cat-input" id="catf_code" value="'+esc(sugCode)+'" oninput="this.dataset.userModified=\'1\';_catCheckCodeDup()" style="flex:1;">'
       +'<span id="catc_code_status" style="font-family:var(--mono);font-size:9px;white-space:nowrap;flex-shrink:0;"></span>'
       +'</div>'
-      +'<div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-top:3px;">Imutável após criação. Sugestão: evento + sequência por número de registros.</div>'
-    )
-    +row2(
-      catFld('Seleção','<select class="cat-input" id="catc_selecao"><option value="">—</option>'+['FEST','NÃO FEST','SUPLENTE','CONVIDADO','VISIONAMENTO'].map(function(v){return'<option>'+v+'</option>';}).join('')+'</select>'),
-      catFld('Status DCP','<input class="cat-input" id="catc_status" list="catc_status_list" placeholder="Ex: OK"><datalist id="catc_status_list">'+listOpts(statusVals)+'</datalist>')
+      +'<div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-top:3px;">Imutável após criação.</div>'
     )
   );
+  // Campos de copias (acervo técnico) — só na criação
+  html+=catBlock('Acervo Técnico',
+    '<div class="cat-grid">'
+    +catFld('Idioma','<input class="cat-input" id="catf_original_language" list="catf_idioma_list" autocomplete="off"><datalist id="catf_idioma_list">'+listOpts(idiomas)+'</datalist>')
+    +catFld('Legendas','<input class="cat-input" id="catf_dcp_subtitle_code" list="catf_legenda_list" autocomplete="off" oninput="_catCreateCheckVF()"><datalist id="catf_legenda_list">'+listOpts(legendas)+'</datalist>')
+    +'</div>'
+    +'<div id="catc_vf_row" style="display:none;">'
+    +catFld('Idioma da VF','<input class="cat-input" id="catf_vf_subtitle_code" list="catf_vf_list" autocomplete="off"><datalist id="catf_vf_list">'+listOpts(vfVals)+'</datalist>')
+    +'</div>'
+    +'<div class="cat-grid">'
+    +catFld('Lente','<input class="cat-input" id="catf_projection_lens" list="catf_lente_list"><datalist id="catf_lente_list">'+listOpts(lentes)+'</datalist>')
+    +catFld('Som','<input class="cat-input" id="catf_audio_format" list="catf_som_list"><datalist id="catf_som_list">'+listOpts(sons)+'</datalist>')
+    +'</div>'
+    +'<div class="cat-grid">'
+    +catFld('Duração','<input class="cat-input" id="catf_dcp_duration_min" type="number" min="0" placeholder="Em minutos ex: 95">')
+    +catFld('Status','<input class="cat-input" id="catf_status" list="catf_status_list"><datalist id="catf_status_list">'+listOpts(statusVals)+'</datalist>')
+    +'</div>'
+    +'<div class="cat-grid">'
+    +catFld('HD / Storage','<input class="cat-input" id="catf_storage_location" placeholder="Ex: HD01">')
+    +catFld('KDM','<select class="cat-input" id="catf_has_kdm"><option value="Não">Não</option><option value="Sim">Sim</option></select>')
+    +'</div>'
+  );
+  // Campos espelhados da edição (mesmos catf_ ids)
   html+=catBlock('Títulos',
-    catFld('Título em português *','<input class="cat-input" id="catc_title_pt" placeholder="Como aparece nos materiais do festival">')
-    +row2(
-      catFld('Título original','<input class="cat-input" id="catc_original_title">'),
-      catFld('Título em inglês','<input class="cat-input" id="catc_english_title">')
-    )
+    catFld('Título em português *',catInp('title_pt',''))
+    +'<div class="cat-grid">'+catFld('Título original',catInp('original_title',''))+catFld('Título em inglês',catInp('english_title',''))+'</div>'
   );
-  html+=catBlock('Técnico',
-    row2(
-      catFld('Duração','<input class="cat-input" id="catc_duracao_min" type="number" min="0" placeholder="Em minutos ex: 95">'),
-      catFld('Ano','<input class="cat-input" id="catc_year" type="number" min="1900" max="2100" placeholder="Ex: 2025">')
-    )
-    +row2(
-      catFld('Idioma original','<input class="cat-input" id="catc_idioma" list="catc_idioma_list" autocomplete="off"><datalist id="catc_idioma_list">'+listOpts(idiomas)+'</datalist>'),
-      catFld('Legendas','<input class="cat-input" id="catc_legenda" list="catc_legenda_list" autocomplete="off" oninput="_catCreateCheckVF()"><datalist id="catc_legenda_list">'+listOpts(legendas)+'</datalist>')
-    )
-    +'<div id="catc_vf_row" style="display:none;">'+catFld('Idioma da VF','<input class="cat-input" id="catc_vf" list="catc_vf_list" autocomplete="off"><datalist id="catc_vf_list">'+listOpts(vfVals)+'</datalist>')+'</div>'
-    +row2(
-      catFld('Lente','<input class="cat-input" id="catc_lente" list="catc_lente_list"><datalist id="catc_lente_list">'+listOpts(lentes)+'</datalist>'),
-      catFld('Som','<input class="cat-input" id="catc_som" list="catc_som_list"><datalist id="catc_som_list">'+listOpts(sons)+'</datalist>')
-    )
-    +row2(
-      catFld('Metragem','<select class="cat-input" id="catc_film_type"><option value="">—</option>'+['curta','média','longa'].map(function(v){return'<option>'+v+'</option>';}).join('')+'</select>'),
-      catFld('Classificação etária','<input class="cat-input" id="catc_content_rating" placeholder="Ex: Livre, 12 anos">')
-    )
-    +row2(
-      catFld('HD / Storage','<input class="cat-input" id="catc_hd" placeholder="Ex: HD01">'),
-      catFld('KDM','<select class="cat-input" id="catc_kdm"><option value="Não">Não</option><option value="Sim">Sim</option></select>')
-    )
+  html+=catBlock('Dados do filme',
+    catFld('Direção',catTagInp('director',[]))
+    +'<div class="cat-grid">'+catFld('Gênero',catTagInp('genre',[]))+catFld('País(es)',catTagInp('countries',[]))+'</div>'
+    +'<div class="cat-grid">'+catFld('Metragem',catInp('film_type',''))+catFld('Classificação etária',catInp('content_rating',''))+'</div>'
+    +'<div class="cat-grid">'+catFld('Ano',catInp('year','','number'))+catFld('Seleção','<select class="cat-input" id="catf_selecao"><option value=""></option>'+['FEST','NÃO FEST','SUPLENTE','CONVIDADO','VISIONAMENTO'].map(function(v){return'<option>'+v+'</option>';}).join('')+'</select>')+'</div>'
   );
-  html+=catBlock('Produção',
-    catFld('Direção',catTagInp('catc_director',[]))
-    +row2(
-      catFld('País(es)',catTagInp('catc_countries',[])),
-      catFld('Gênero',catTagInp('catc_genre',[]))
-    )
-    +row2(
-      catFld('Produtora',catTagInp('catc_production_company',[])),
-      catFld('Distribuidora',catTagInp('catc_distribution_company',[]))
-    )
+  html+=catBlock('Equipe',
+    '<div class="cat-grid">'+catFld('F · Fotografia',catTagInp('crew_cinematography',[]))+catFld('R · Roteiro',catTagInp('crew_screenplay',[]))+'</div>'
+    +'<div class="cat-grid">'+catFld('M · Montagem',catTagInp('crew_editing',[]))+catFld('S · Som',catTagInp('crew_sound',[]))+'</div>'
+    +'<div class="cat-grid">'+catFld('A · Arte',catTagInp('crew_art_direction',[]))+catFld('Fg · Figurino',catTagInp('crew_costume_design',[]))+'</div>'
+    +catFld('E · Elenco',catTagInp('crew_cast',[]))
   );
-  html+=catBlock('Sinopse','<textarea class="cat-textarea" id="catc_synopsis" rows="5" placeholder="Texto da sinopse (opcional)"></textarea>');
+  html+=catBlock('Sinopse','<textarea class="cat-textarea" id="catf_synopsis" rows="5"></textarea>');
+  html+=catBlock('Empresa(s) Produtora(s) e Distribuidora(s)',
+    '<div class="cat-grid">'+catFld('Empresa(s) Produtora(s)',catTagInp('production_company',[]))+catFld('Distribuidora(s)',catTagInp('distribution_company',[]))+'</div>'
+  );
   html+=catBlock('Distribuição',
-    row2(
-      catFld('Screener','<input class="cat-input" id="catc_screener" placeholder="URL do screener">'),
-      catFld('Email de contato','<input class="cat-input" id="catc_contact_email" type="email">')
-    )
-    +row2(
-      catFld('Previsão de chegada','<input class="cat-input" id="catc_copy_arrival_forecast" type="date">'),
-      catFld('Notas sobre a cópia','<input class="cat-input" id="catc_copy_notes">')
-    )
+    '<div class="cat-grid">'+catFld('Screener',catInp('screener',''))+catFld('Email de contato',catInp('contact_email',''))+'</div>'
+    +'<div class="cat-grid">'+catFld('Previsão de chegada',catInp('copy_arrival_forecast','','date'))+catFld('Notas sobre a cópia',catInp('copy_notes',''))+'</div>'
+  );
+  html+=catBlock('Histórico',
+    catFld('Prêmios',catTagInp('awards',[]))+catFld('Filmografia do diretor',catTagInp('director_filmography',[]))
   );
   html+='</div>';
   cont.innerHTML=html;
+  // atualizar sugestão de código e verificar duplicata
+  _catUpdateCodeSuggestion();
   _catCheckCodeDup();
   if(typeof lucide!=='undefined')lucide.createIcons();
 }
 
+function _catCreateCheckVF(){
+  var val=(document.getElementById('catf_dcp_subtitle_code')||{value:''}).value.toUpperCase();
+  var row=document.getElementById('catc_vf_row');
+  if(row)row.style.display=val.includes('VF')?'':'none';
+}
+function _catUpdateCodeSuggestion(){
+  var evEl=document.getElementById('catf_event');
+  var ev=evEl?(evEl.value||''):_catCreateEvent;
+  _catCreateEvent=ev;
+  var inp=document.getElementById('catf_code');if(!inp)return;
+  if(!inp.dataset.userModified){inp.value=_catSuggestCode(ev);}
+  _catCheckCodeDup();
+}
+function _catCheckCodeDup(){
+  var codeEl=document.getElementById('catf_code');
+  if(!codeEl)return;
+  var code=(codeEl.value||'').trim();
+  var st=document.getElementById('catc_code_status');if(!st)return;
+  if(!code){st.textContent='';return;}
+  if(filmesMap[code]||catalogoFilmesMap[code]){st.textContent='⚠ código já existe';st.style.color='var(--warn)';}
+  else{st.textContent='✓ disponível';st.style.color='#3dba6e';}
+}
+function _catMinToHMMSS(mins){
+  var m=parseInt(mins)||0;if(!m)return'';
+  var h=Math.floor(m/60),mm=m%60;
+  return h+':'+String(mm).padStart(2,'0')+':00';
+}
+
 async function doCreateFilm(){
-  var msg=document.getElementById('catCreateMsg');
+  var msg=document.getElementById('catSaveMsg');
   if(msg){msg.className='cat-msg';msg.textContent='Validando…';}
-  var code=(document.getElementById('catc_code').value||'').trim();
-  var ev=(document.getElementById('catc_event').value||'').trim();
-  var titlePt=gctv('title_pt');
+  var code=(document.getElementById('catf_code').value||'').trim();
+  var ev=(document.getElementById('catf_event').value||'').trim();
+  var titlePt=(document.getElementById('catf_title_pt').value||'').trim();
   if(!code){if(msg){msg.className='cat-msg err';msg.textContent='Código obrigatório.';}return;}
   if(!ev){if(msg){msg.className='cat-msg err';msg.textContent='Evento obrigatório.';}return;}
   if(!titlePt){if(msg){msg.className='cat-msg err';msg.textContent='Título PT obrigatório.';}return;}
   if(filmesMap[code]||catalogoFilmesMap[code]){if(msg){msg.className='cat-msg err';msg.textContent='Código já existe: '+code;}return;}
   if(msg){msg.className='cat-msg';msg.textContent='Salvando…';}
-  var durHMMSS=_catMinToHMMSS(gctv('duracao_min'));
+  var selEl=document.getElementById('catf_selecao');
+  var synEl=document.getElementById('catf_synopsis');
+  var durHMMSS=_catMinToHMMSS((document.getElementById('catf_dcp_duration_min')||{value:''}).value);
   var catalogData={
-    festival_code:code,title_pt:titlePt,
-    original_title:gctv('original_title'),english_title:gctv('english_title'),
-    synopsis:(document.getElementById('catc_synopsis')||{value:''}).value.trim(),
-    film_type:gctv('film_type'),content_rating:gctv('content_rating'),
-    original_language:gctv('idioma'),screener:gctv('screener'),
-    selecao:(document.getElementById('catc_selecao').value||'').trim(),
-    contact_email:gctv('contact_email'),
-    copy_arrival_forecast:gctv('copy_arrival_forecast'),
-    copy_notes:gctv('copy_notes'),
-    year:parseInt(gctv('year'))||null,
-    director:catGetTags('catc_director'),countries:catGetTags('catc_countries'),
-    genre:catGetTags('catc_genre'),production_company:catGetTags('catc_production_company'),
-    distribution_company:catGetTags('catc_distribution_company'),
-    awards:[],director_filmography:[],
-    crew:{cinematography:[],screenplay:[],editing:[],sound:[],art_direction:[],costume_design:[],cast:[]}
+    festival_code:code,
+    title_pt:titlePt,
+    original_title:gv('original_title'),english_title:gv('english_title'),
+    synopsis:synEl?synEl.value.trim():'',
+    film_type:gv('film_type'),content_rating:gv('content_rating'),
+    original_language:gv('original_language'),
+    screener:gv('screener'),selecao:selEl?selEl.value:'',
+    contact_email:gv('contact_email'),
+    copy_arrival_forecast:gv('copy_arrival_forecast'),copy_notes:gv('copy_notes'),
+    year:parseInt(gv('year'))||null,
+    director:catGetTags('director'),countries:catGetTags('countries'),
+    genre:catGetTags('genre'),production_company:catGetTags('production_company'),
+    distribution_company:catGetTags('distribution_company'),
+    awards:catGetTags('awards'),director_filmography:catGetTags('director_filmography'),
+    crew:{
+      cinematography:catGetTags('crew_cinematography'),screenplay:catGetTags('crew_screenplay'),
+      editing:catGetTags('crew_editing'),sound:catGetTags('crew_sound'),
+      art_direction:catGetTags('crew_art_direction'),costume_design:catGetTags('crew_costume_design'),
+      cast:catGetTags('crew_cast')
+    }
   };
   var copiasData={
     festival_code:code,event_name:ev,title:titlePt,
-    original_language:gctv('idioma'),dcp_subtitle_code:gctv('legenda'),
-    vf_subtitle_code:gctv('vf'),projection_lens:gctv('lente'),
-    audio_format:gctv('som'),status:gctv('status'),
-    dcp_duration:durHMMSS,storage_location:gctv('hd'),
-    has_kdm:(document.getElementById('catc_kdm').value||'Não'),
+    original_language:gv('original_language'),
+    dcp_subtitle_code:gv('dcp_subtitle_code'),
+    vf_subtitle_code:gv('vf_subtitle_code'),
+    projection_lens:gv('projection_lens'),audio_format:gv('audio_format'),
+    status:gv('status'),dcp_duration:durHMMSS,
+    storage_location:gv('storage_location'),
+    has_kdm:(document.getElementById('catf_has_kdm')||{value:'Não'}).value,
     notes:'',dcp_creator:'',cpl_id:'',ov_cpl_id:'',
     dcp_resolution:'',dcp_size:'',dcp_fps:'',dcp_uuid:'',
     accessibility_features:'',subtitle_status:''
@@ -8435,12 +8488,13 @@ async function doCreateFilm(){
     await window._olgaCatalogo.save(code,catalogData);
     if(window._olgaCopias)await window._olgaCopias.save(code,copiasData);
     catalogoFilmesMap[code]=catalogData;
-    if(msg){msg.className='cat-msg ok';msg.textContent='Salvo ✓';}
+    if(msg){msg.className='cat-msg ok';msg.textContent='Criado ✓';}
     await window._olgaLoadFirestore();
     _catCode=code;_catView='detail';_catEditing=false;
     setTimeout(function(){renderCatDetail();},400);
   }catch(e){if(msg){msg.className='cat-msg err';msg.textContent='Erro: '+e.message;}}
 }
+
 
 async function importCopiasToCatalog(){
   if(!window._olgaCatalogo){alert('API do catálogo não disponível.');return;}
@@ -8809,6 +8863,10 @@ window.addEventListener('popstate',function(e){
           <input id="progSessaoTime" type="time" class="prog-modal-input">
         </div>
       </div>
+      <div class="prog-modal-field" id="progSessaoSubprogramRow" style="display:none;">
+        <label class="prog-modal-label">Submostra</label>
+        <select id="progSessaoSubprogramSelect" class="prog-modal-input"></select>
+      </div>
       <div class="prog-modal-field">
         <label class="prog-modal-label">Sala</label>
         <select id="progSessaoCinemaSelect" class="prog-modal-input"><option value="">— selecionar sala —</option></select>
@@ -9008,7 +9066,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 29/04/2026 às 18:00</span></div>
+<div id="page-footer"><span>última atualização · 29/04/2026 às 22:00</span></div>
 
 </div>
 
