@@ -5275,7 +5275,7 @@ var _vinhetaEditCod=null;
 function openVinhetaModal(cod){
   _vinhetaEditCod=cod||null;
   var v=cod?vinhetasArr.find(function(x){return x.codigo===cod;}):null;
-  var activeEvs=Object.keys(eventColors);
+  var activeEvs=Object.keys(eventColors).filter(function(e){return activeEventsVinhetas.has(e);});
   var evOpts='<option value="">— selecionar —</option>'+activeEvs.map(function(e){return'<option value="'+esc(e)+'"'+(v&&v.evento===e?' selected':'')+'>'+esc(e)+'</option>';}).join('');
   var lentes=[...new Set(filmesArr.map(function(f){return f.lente;}).filter(Boolean))].sort();
   var sons=[...new Set(filmesArr.map(function(f){return f.som;}).filter(Boolean))].sort();
@@ -6611,7 +6611,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 30/04/2026 às 01:00';
+  var sysUpdate='última atualização do sistema · 30/04/2026 às 01:30';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -8351,7 +8351,7 @@ function openCatCreate(ev){
 function renderCatCreate(){
   var cont=document.getElementById('catalogo-container');if(!cont)return;
   // Espelhar a edição usando os mesmos catf_ ids, mas com campos extras de criação
-  var activeEvs=(_adminEventos&&_adminEventos.length?_adminEventos.map(function(e){return e.id;}):Object.keys(eventColors));
+  var activeEvs=Object.keys(eventColors).filter(function(e){return activeEventsCatalogo.has(e);});
   if(!_catCreateEvent&&activeEvs.length)_catCreateEvent=activeEvs[0];
   var evOpts='<option value="">— selecionar —</option>'+activeEvs.map(function(e){
     return'<option value="'+esc(e)+'"'+(_catCreateEvent===e?' selected':'')+'>'+esc(e)+'</option>';
@@ -8376,9 +8376,9 @@ function renderCatCreate(){
       +'<input class="cat-input" id="catf_code" value="'+esc(sugCode)+'" oninput="this.dataset.userModified=\'1\';_catCheckCodeDup()" style="flex:1;">'
       +'<span id="catc_code_status" style="font-family:var(--mono);font-size:9px;white-space:nowrap;flex-shrink:0;"></span>'
       +'</div>'
-      +'<div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-top:3px;">Imutável após criação.</div>'
+      +'<div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-top:3px;">Após a criação do filme esse código não pode ser alterado.</div>'
     )
-    +catFld('Nome no sistema *','<input class="cat-input" id="catf_system_name" placeholder="Imutável — não aparece nas fichas · use se o título definitivo ainda não foi definido">')
+    +catFld('Nome no sistema *','<input class="cat-input" id="catf_system_name" placeholder="Atribua um nome para circulação interna — esse campo não pode ser alterado">')
   );
   // Campos de copias (acervo técnico) — só na criação
   html+=catBlock('Acervo Técnico',
@@ -9099,7 +9099,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 30/04/2026 às 01:00</span></div>
+<div id="page-footer"><span>última atualização · 30/04/2026 às 01:30</span></div>
 
 </div>
 
