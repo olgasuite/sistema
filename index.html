@@ -1,4 +1,4 @@
-
+﻿
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -2031,6 +2031,7 @@ mark{background:rgba(232,160,32,0.28);color:var(--accent);border-radius:2px;padd
 .vinheta-card-name{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text);flex:1;min-width:0;}
 .vinheta-card-badges{display:flex;gap:5px;flex-wrap:wrap;}
 .vinheta-card-counts{display:flex;gap:14px;margin-left:auto;flex-shrink:0;}
+.vinheta-evento-pill{font-family:var(--mono);font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;display:inline-block;margin-top:2px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;background:var(--accent-dim);color:var(--accent);}
 .vinheta-count-item{display:flex;flex-direction:column;align-items:flex-end;gap:1px;}
 .vinheta-count-num{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--text);}
 .vinheta-count-label{font-family:var(--mono);font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);}
@@ -4969,6 +4970,12 @@ function goToFicha(nomeSessao){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+function goToProgFichaFromGrade(nomeSessao){
+  var sess=sessoesMap[nomeSessao];
+  _progView={level:'sessao',programId:(sess&&sess.program_id)||null,sessaoNome:nomeSessao};
+  _progSkipReset=true;
+  switchMode('programacao',true);
+}
 /* PROJEÇÃO HUB */
 function renderReceptivo(){
   var container=document.getElementById('receptivo-container');
@@ -5202,6 +5209,8 @@ function renderVinhetas(){
       return'<span class="vinheta-cinema-chip">'+c+' <span class="vinheta-cinema-chip-count">×'+byCinema[c]+'</span></span>';
     }).join('');
     var badges=(info?lenteBadge(info.lente)+somBadge(info.som):'');
+    var evC=info&&info.evento&&eventColors&&eventColors[info.evento]?getThemeBlockColor(eventColors[info.evento]):null;
+    var evPill=info&&info.evento?'<span class="vinheta-evento-pill"'+(evC?' style="background:'+evC.bg+';color:'+evC.text+';"':'')+'>'+esc(info.evento)+'</span>':'';
     var canEditV=!!(window._olgaUser&&(window._olgaUser.role==='admin'||window._olgaUser.role==='editor')&&window._olgaVinhetas);
     var safeCod=cod.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     html+='<div class="vinheta-card" onclick="openVinhetaDetail(\''+safeCod+'\')">'+
@@ -5209,6 +5218,7 @@ function renderVinhetas(){
         '<span class="vinheta-card-code">'+cod+'</span>'+
         '<div style="flex:1;min-width:0;">'+
           '<div class="vinheta-card-name">'+nome+'</div>'+
+          evPill+
           (info&&info.cpl?'<div class="vinheta-card-cpl">'+info.cpl+'</div>':'')+
         '</div>'+
         (badges?'<span class="vinheta-card-badges">'+badges+'</span>':'')+
@@ -5444,11 +5454,11 @@ function renderGrade(){
       if(s.leg_eletronica&&s.leg_eletronica.toUpperCase()==='SIM')_blkIcons+='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Leg. eletrônica"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
       var _blkFilmsStr=s.filmes.length?'<span>'+s.filmes.length+' filme'+(s.filmes.length!==1?'s':'')+'</span>':'';
       var _blkRow3=(_blkFilmsStr||_blkIcons)?'<div class="block-row3">'+_blkFilmsStr+(_blkIcons?'<span class="block-icons">'+_blkIcons+'</span>':'')+'</div>':'';
-      blk.innerHTML='<div class="block-time">'+s.time.str+'</div><div class="block-name">'+s.nome+'</div>'+(s.name?'<div class="block-display-name">'+s.name+'</div>':'')+_blkRow3+(s.evento?'<div class="block-event">'+s.evento+'</div>':'')+'<div class="block-hint">↗ ficha</div>';
+      blk.innerHTML='<div class="block-time">'+s.time.str+'</div><div class="block-name">'+s.nome+'</div>'+(s.name?'<div class="block-display-name">'+s.name+'</div>':'')+_blkRow3+(s.evento?'<div class="block-event">'+s.evento+'</div>':'')+'<div class="block-hint">↗ programação</div>';
       blk.addEventListener('mouseenter',function(ev){showTooltip(ev,s);});
       blk.addEventListener('mousemove',function(ev){moveTooltip(ev);});
       blk.addEventListener('mouseleave',function(){tip.style.display='none';});
-      blk.addEventListener('click',function(){tip.style.display='none';goToFicha(s.nome);});
+      blk.addEventListener('click',function(){tip.style.display='none';goToProgFichaFromGrade(s.nome);});
       col.appendChild(blk);
     });
     gb2.appendChild(col);
@@ -6724,6 +6734,7 @@ function progCountriesCell(arr){
 }
 
 var _progView={level:'landing',programId:null,sessaoNome:null};
+var _progSkipReset=false;
 var _progData={programs:[],subprograms:[]};
 var _progProgramEditId=null,_progSubprogramEditId=null,_progSubprogramProgramId=null;
 var _progSessaoEditNome=null,_progSessaoContextProgramId=null,_progSessaoContextSubId=null;
@@ -6738,6 +6749,8 @@ function buildProgramacaoFilters(){
 }
 
 function renderProgramacao(){
+  if(!_progSkipReset)_progView={level:'landing',programId:null,sessaoNome:null};
+  _progSkipReset=false;
   var c=document.getElementById('programacao-container');
   c.innerHTML='<div style="padding:40px;text-align:center;color:var(--text-muted);font-family:var(--mono);font-size:11px;">Carregando…</div>';
   if(!window._olgaPrograms){c.innerHTML='<div style="padding:40px;color:var(--warn);font-family:var(--mono);font-size:11px;">Módulo indisponível (sem Firebase).</div>';return;}
