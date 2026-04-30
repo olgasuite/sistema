@@ -7810,7 +7810,9 @@ function catStatusCls(st){
 }
 function buildCatalogoFilters(){
   var bar=document.getElementById('catEventFilters');if(!bar)return;
-  var events=Array.from(new Set(filmesArr.map(function(f){return f.evento;}).filter(Boolean))).sort();
+  var fromFilmes=filmesArr.map(function(f){return f.evento;}).filter(Boolean);
+  var fromColors=Object.keys(eventColors);
+  var events=Array.from(new Set(fromFilmes.concat(fromColors))).sort();
   var allActive=function(){return events.every(function(ev){return activeEventsCatalogo.has(ev);});};
   var lbl=document.createElement('button');
   lbl.className='filter-label';lbl.textContent='EVENTO:';
