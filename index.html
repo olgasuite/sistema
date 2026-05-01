@@ -230,8 +230,6 @@ select:disabled{opacity:0.3;cursor:not-allowed;}
 }
 .year-tab:hover{color:var(--text-dim);border-color:var(--border2);}
 .year-tab.open{color:var(--accent);border-color:rgba(255,186,32,0.4);}
-.year-tab.active{color:var(--accent);border-color:rgba(255,186,32,0.5);background:var(--accent-dim);}
-.year-tab.active.open{border-color:rgba(255,186,32,0.6);}
 .year-arrow{font-size:8px;opacity:0.6;}
 
 /* Event filter pills */
@@ -1017,8 +1015,6 @@ select:disabled{opacity:0.35;cursor:not-allowed;}
 .year-tab{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);background:none;border:1px solid var(--border);padding:5px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:color 0.15s,border-color 0.15s;white-space:nowrap;}
 .year-tab:hover{color:var(--text-dim);border-color:var(--text-muted);}
 .year-tab.open{color:var(--accent);border-color:rgba(255,186,32,0.4);}
-.year-tab.active{color:var(--accent);border-color:rgba(255,186,32,0.5);background:var(--accent-dim);}
-.year-tab.active.open{border-color:rgba(255,186,32,0.6);}
 .year-arrow{font-size:9px;opacity:0.7;}
 .event-filters{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
 .filter-label{font-family:var(--mono);font-size:9px;color:var(--text-muted);white-space:nowrap;}
@@ -1858,7 +1854,6 @@ mark{background:rgba(255,186,32,0.28);color:var(--accent);border-radius:2px;padd
 [data-theme="gray"] .upload-btn{background:#333;color:#fff;}
 [data-theme="gray"] .day-tab.active{background:#333;color:#fff;border-color:#333;}
 [data-theme="gray"] .year-tab.open{color:#333;border-color:#999;}
-[data-theme="gray"] .year-tab.active{color:#111;border-color:#555;background:#ccc;}
 [data-theme="gray"] .day-tab:hover{border-color:#888;color:#111;}
 [data-theme="gray"] .landing-drop{border-color:rgba(0,0,0,0.25);}
 [data-theme="gray"] .landing-drop:hover:not(.loaded){border-color:rgba(0,0,0,0.55);}
@@ -4349,7 +4344,6 @@ var cinemasArr=[];
 var cinemasComplexoFilter='',cinemasEstadoFilter='',currentCinemaDetail=null;
 var ingestDays=[],currentIngestDay=null,ingestCinemaFilter='',ingestHdFilter='',gradeCinemaFilter='';
 var grade2Days=[],grade2CurrentDay=null,grade2CinemaFilter='';
-var gradeDayFilter=new Set(),grade2DayFilter=new Set();
 var sessoesCinemaFilter='',_sessoesHidePast=true;
 var vinhetasCinemaFilter='',vinhetasDayFilter='';
 var dashCinemaFilter='',dashDayFilter=new Set(),dashStatusSelected=null,dashStatSelected=null;
@@ -4799,7 +4793,7 @@ function pickBestDay(dayArr){
   return dayArr[dayArr.length-1].key;
 }
 
-function buildGradeDays(){var seen=new Set();days=[];sessoesArr.forEach(function(s){if(!s.date)return;var k=s.date.toISOString().slice(0,10);if(!seen.has(k)){seen.add(k);days.push({key:k,date:s.date});}});days.sort(function(a,b){return a.date-b.date;});currentDay=pickBestDay(days);grade2Days=days.slice();grade2CurrentDay=currentDay;gradeDayFilter=new Set(currentDay?[currentDay]:[]);grade2DayFilter=new Set(currentDay?[currentDay]:[]);}
+function buildGradeDays(){var seen=new Set();days=[];sessoesArr.forEach(function(s){if(!s.date)return;var k=s.date.toISOString().slice(0,10);if(!seen.has(k)){seen.add(k);days.push({key:k,date:s.date});}});days.sort(function(a,b){return a.date-b.date;});currentDay=pickBestDay(days);grade2Days=days.slice();grade2CurrentDay=currentDay;}
 
 /* INGEST */
 function buildIngestDays(){
@@ -4992,7 +4986,7 @@ function openGradePrintModal(){
   }).forEach(function(d){
     var o=document.createElement('option');o.value=d.key;
     o.textContent=d.date.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
-    if(d.key===Array.from(gradeDayFilter)[0])o.selected=true;
+    if(d.key===currentDay)o.selected=true;
     ds.appendChild(o);
   });
   document.querySelector('input[name="gptMode"][value="A"]').checked=true;
@@ -5375,12 +5369,9 @@ function renderGrade2DayTabs(){
     });
   });
   var validKeys=activeDays.map(function(d){return d.key;});
-  // prune stale keys from set
-  grade2DayFilter.forEach(function(k){if(validKeys.indexOf(k)===-1)grade2DayFilter.delete(k);});
-  // if nothing selected, pick best day
-  if(grade2DayFilter.size===0){
-    var best=pickBestDay(activeDays);
-    if(best)grade2DayFilter.add(best);
+  if(!grade2CurrentDay||validKeys.indexOf(grade2CurrentDay)===-1){
+    grade2CurrentDay=pickBestDay(activeDays);
+    if(grade2CurrentDay) window._grade2YearsOpen=new Set([new Date(grade2CurrentDay+'T00:00:00').getFullYear()]);
   }
   var byYear={},yearOrder=[];
   activeDays.forEach(function(d){
@@ -5390,45 +5381,25 @@ function renderGrade2DayTabs(){
   });
   if(!window._grade2YearsOpen){
     window._grade2YearsOpen=new Set();
-    var firstSel=Array.from(grade2DayFilter)[0];
-    if(firstSel) window._grade2YearsOpen.add(new Date(firstSel+'T00:00:00').getFullYear());
+    if(grade2CurrentDay) window._grade2YearsOpen.add(new Date(grade2CurrentDay+'T00:00:00').getFullYear());
     else if(yearOrder.length) window._grade2YearsOpen.add(yearOrder[yearOrder.length-1]);
   }
   yearOrder.forEach(function(y){
     var isOpen=window._grade2YearsOpen.has(y);
-    var yearKeys=byYear[y].map(function(d){return d.key;});
-    var allYearSel=yearKeys.length>0&&yearKeys.every(function(k){return grade2DayFilter.has(k);});
     var yBtn=document.createElement('button');
-    yBtn.className='year-tab'+(isOpen?' open':'')+(allYearSel?' active':'');
+    yBtn.className='year-tab'+(isOpen?' open':'');
     yBtn.innerHTML=String(y)+'<span class="year-arrow">'+(isOpen?'▾':'▸')+'</span>';
-    yBtn.addEventListener('click',function(e){
-      e.stopPropagation();
-      if(allYearSel){
-        yearKeys.forEach(function(k){grade2DayFilter.delete(k);});
-        if(grade2DayFilter.size===0){var best=pickBestDay(activeDays);if(best)grade2DayFilter.add(best);}
-      }else{
-        yearKeys.forEach(function(k){grade2DayFilter.add(k);});
-      }
-      renderGrade2();
-    });
-    var arrow=yBtn.querySelector('.year-arrow');
-    arrow.addEventListener('click',function(e){
-      e.stopPropagation();
-      if(window._grade2YearsOpen.has(y))window._grade2YearsOpen.delete(y);else window._grade2YearsOpen.add(y);
+    yBtn.addEventListener('click',function(){
+      if(window._grade2YearsOpen.has(y)) window._grade2YearsOpen.delete(y);
+      else window._grade2YearsOpen.add(y);
       renderGrade2DayTabs();
     });
     container.appendChild(yBtn);
     if(isOpen){
       activeDays.filter(function(d){return d.date.getFullYear()===y;}).forEach(function(d){
-        var isActive=grade2DayFilter.has(d.key);
-        var btn=document.createElement('button');btn.className='day-tab'+(isActive?' active':'');
+        var btn=document.createElement('button');btn.className='day-tab'+(d.key===grade2CurrentDay?' active':'');
         btn.textContent=d.date.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
-        btn.addEventListener('click',function(){
-          if(grade2DayFilter.has(d.key))grade2DayFilter.delete(d.key);
-          else grade2DayFilter.add(d.key);
-          if(grade2DayFilter.size===0){grade2DayFilter.add(d.key);}
-          renderGrade2();
-        });
+        btn.addEventListener('click',function(){grade2CurrentDay=d.key;renderGrade2DayTabs();renderGrade2();});
         container.appendChild(btn);
       });
     }
@@ -5478,7 +5449,7 @@ function renderGrade2(){
   var tip=document.getElementById('tooltip');
   var _as2=allowedSalas();
   var ds=sessoesArr.filter(function(s){
-    return s.date&&(grade2DayFilter.size===0||grade2DayFilter.has(s.date.toISOString().slice(0,10)))&&
+    return s.date&&s.date.toISOString().slice(0,10)===grade2CurrentDay&&
            (!s.evento||activeEventsGrade2.has(s.evento))&&
            (!grade2CinemaFilter||s.cinema===grade2CinemaFilter)&&
            (!_as2||!s.cinema||_as2.has(s.cinema));
@@ -6320,13 +6291,11 @@ function renderDayTabs(){
              (!gradeCinemaFilter||s.cinema===gradeCinemaFilter);
     });
   });
+  // if currentDay is no longer valid (or was never set), pick best available day
   var validKeys=activeDays.map(function(d){return d.key;});
-  // prune stale keys from set
-  gradeDayFilter.forEach(function(k){if(validKeys.indexOf(k)===-1)gradeDayFilter.delete(k);});
-  // if nothing selected, pick best day
-  if(gradeDayFilter.size===0){
-    var best=pickBestDay(activeDays);
-    if(best)gradeDayFilter.add(best);
+  if(!currentDay||validKeys.indexOf(currentDay)===-1){
+    currentDay=pickBestDay(activeDays);
+    if(currentDay) window._gradeYearsOpen=new Set([new Date(currentDay+'T00:00:00').getFullYear()]);
   }
   var byYear={},yearOrder=[];
   activeDays.forEach(function(d){
@@ -6336,47 +6305,25 @@ function renderDayTabs(){
   });
   if(!window._gradeYearsOpen){
     window._gradeYearsOpen=new Set();
-    var firstSel=Array.from(gradeDayFilter)[0];
-    if(firstSel) window._gradeYearsOpen.add(new Date(firstSel+'T00:00:00').getFullYear());
+    if(currentDay) window._gradeYearsOpen.add(new Date(currentDay+'T00:00:00').getFullYear());
     else if(yearOrder.length) window._gradeYearsOpen.add(yearOrder[yearOrder.length-1]);
   }
   yearOrder.forEach(function(y){
     var isOpen=window._gradeYearsOpen.has(y);
-    var yearKeys=byYear[y].map(function(d){return d.key;});
-    var allYearSel=yearKeys.length>0&&yearKeys.every(function(k){return gradeDayFilter.has(k);});
     var yBtn=document.createElement('button');
-    yBtn.className='year-tab'+(isOpen?' open':'')+(allYearSel?' active':'');
+    yBtn.className='year-tab'+(isOpen?' open':'');
     yBtn.innerHTML=String(y)+'<span class="year-arrow">'+(isOpen?'▾':'▸')+'</span>';
-    yBtn.addEventListener('click',function(e){
-      e.stopPropagation();
-      if(allYearSel){
-        yearKeys.forEach(function(k){gradeDayFilter.delete(k);});
-        // ensure something stays selected
-        if(gradeDayFilter.size===0){var best=pickBestDay(activeDays);if(best)gradeDayFilter.add(best);}
-      }else{
-        yearKeys.forEach(function(k){gradeDayFilter.add(k);});
-      }
-      renderGrade();
-    });
-    // separate open/close via arrow click
-    var arrow=yBtn.querySelector('.year-arrow');
-    arrow.addEventListener('click',function(e){
-      e.stopPropagation();
-      if(window._gradeYearsOpen.has(y))window._gradeYearsOpen.delete(y);else window._gradeYearsOpen.add(y);
+    yBtn.addEventListener('click',function(){
+      if(window._gradeYearsOpen.has(y)) window._gradeYearsOpen.delete(y);
+      else window._gradeYearsOpen.add(y);
       renderDayTabs();
     });
     container.appendChild(yBtn);
     if(isOpen){
       byYear[y].forEach(function(d){
-        var isActive=gradeDayFilter.has(d.key);
-        var btn=document.createElement('button');btn.className='day-tab'+(isActive?' active':'');
+        var btn=document.createElement('button');btn.className='day-tab'+(d.key===currentDay?' active':'');
         btn.textContent=d.date.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
-        btn.addEventListener('click',function(){
-          if(gradeDayFilter.has(d.key))gradeDayFilter.delete(d.key);
-          else gradeDayFilter.add(d.key);
-          if(gradeDayFilter.size===0){gradeDayFilter.add(d.key);}
-          renderGrade();
-        });
+        btn.addEventListener('click',function(){currentDay=d.key;renderDayTabs();renderGrade();});
         container.appendChild(btn);
       });
     }
@@ -6867,7 +6814,7 @@ function renderGrade(){
   var tip=document.getElementById('tooltip');
   var _as=allowedSalas();
   var ds=sessoesArr.filter(function(s){
-    return s.date&&(gradeDayFilter.size===0||gradeDayFilter.has(s.date.toISOString().slice(0,10)))&&
+    return s.date&&s.date.toISOString().slice(0,10)===currentDay&&
            (!s.evento||activeEventsGrade.has(s.evento))&&
            (!gradeCinemaFilter||s.cinema===gradeCinemaFilter)&&
            (!_as||!s.cinema||_as.has(s.cinema));
@@ -7646,6 +7593,13 @@ function renderDashDayTabs(){
   var validKeys=activeDays.map(function(d){return d.key;});
   // prune stale keys from set
   dashDayFilter.forEach(function(k){if(validKeys.indexOf(k)===-1)dashDayFilter.delete(k);});
+
+  // "Todos" button
+  var allBtn=document.createElement('button');
+  allBtn.className='day-tab'+(dashDayFilter.size===0?' active':'');
+  allBtn.textContent='Todos';
+  allBtn.addEventListener('click',function(){dashDayFilter.clear();dashStatusSelected=null;dashStatSelected=null;window._dashYearsOpen=null;rebuildDashCinemaSelect();renderDash();});
+  container.appendChild(allBtn);
 
   var byYear={},yearOrder=[];
   activeDays.forEach(function(d){var y=d.date.getFullYear();if(!byYear[y]){byYear[y]=[];yearOrder.push(y);}byYear[y].push(d);});
