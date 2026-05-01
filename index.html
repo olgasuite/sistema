@@ -3084,6 +3084,80 @@ html[data-theme]:not([data-theme="win98"]) .empty-state .icon,
 html[data-theme]:not([data-theme="win98"]) .theme-toggle-icon{display:none!important;}
 html[data-theme]:not([data-theme="win98"]) .nav-tab{gap:0;}
 html[data-theme]:not([data-theme="win98"]) .module-card{gap:6px;}
+
+/* second pass: cleaner typography and stronger contrast control */
+html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
+
+/* dark theme rebuilt around #0D0D0E */
+[data-theme="dark"]{
+  --bg:#0D0D0E;
+  --surface:#131417;
+  --surface2:#181A1E;
+  --surface3:#1E2127;
+  --surface4:#242833;
+  --border:#2A2E37;
+  --border2:#3A4150;
+  --accent:#6D8CFF;
+  --accent-text:#AFC1FF;
+  --accent-dim:rgba(109,140,255,0.14);
+  --accent-glow:rgba(109,140,255,0.08);
+  --on-accent:#EEF2FF;
+  --text:#E9ECF3;
+  --text-dim:#BCC3D1;
+  --text-muted:#8A93A5;
+  --ok:#34D399;
+  --warn:#FB7185;
+  --cpl-bg:rgba(52,211,153,0.13);
+  --cpl-color:#6EE7B7;
+  --cpl-border:rgba(52,211,153,0.35);
+}
+[data-theme="dark"] header{background:rgba(13,13,14,0.95);}
+
+/* hover legibility fixes for clear themes */
+[data-theme="light"] tbody tr:hover,
+[data-theme="gray"] tbody tr:hover{background:rgba(120,130,160,0.10)!important;}
+[data-theme="light"] .film-card:hover,
+[data-theme="light"] .prog-card:hover,
+[data-theme="light"] .module-card:hover:not(.disabled),
+[data-theme="light"] .sess-row:hover,
+[data-theme="light"] .cinema-sess-row:hover,
+[data-theme="light"] .vinheta-sess-row:hover{
+  background:#EFF2F8!important;
+  color:var(--text)!important;
+}
+[data-theme="gray"] .film-card:hover,
+[data-theme="gray"] .prog-card:hover,
+[data-theme="gray"] .module-card:hover:not(.disabled),
+[data-theme="gray"] .sess-row:hover,
+[data-theme="gray"] .cinema-sess-row:hover,
+[data-theme="gray"] .vinheta-sess-row:hover{
+  background:#ECEEF2!important;
+  color:var(--text)!important;
+}
+[data-theme="win98"] .sess-row:hover,
+[data-theme="win98"] .cinema-sess-row:hover,
+[data-theme="win98"] .vinheta-sess-row:hover,
+[data-theme="win98"] .film-card:hover,
+[data-theme="win98"] .prog-card:hover{
+  background:#dbe8f8!important;
+  color:#000!important;
+}
+[data-theme="win98"] .sess-row:hover * ,
+[data-theme="win98"] .cinema-sess-row:hover * ,
+[data-theme="win98"] .vinheta-sess-row:hover *{color:#000!important;}
+
+/* cursor-like spinner for landing loading state */
+.drop-icon-spinner{
+  width:18px;
+  height:18px;
+  border:2px solid var(--border2);
+  border-top-color:var(--accent);
+  border-right-color:var(--accent);
+  border-radius:50%;
+  animation:cursorSpin 0.8s linear infinite;
+  display:inline-block!important;
+}
+@keyframes cursorSpin{to{transform:rotate(360deg);}}
 </style>
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -4155,7 +4229,18 @@ var buscaFilters={
   duracao_min:null,duracao_max:null,gb_min:null,gb_max:null,
   sessao:new Set()
 };
-var PALETTE=[{bg:'#e8a020',text:'#000'},{bg:'#3dba6e',text:'#000'},{bg:'#4a9eff',text:'#000'},{bg:'#c87aff',text:'#000'},{bg:'#ff6b6b',text:'#000'},{bg:'#ffd93d',text:'#000'},{bg:'#6bcfcf',text:'#000'},{bg:'#ff9f43',text:'#000'}];
+var PALETTE=[
+  {bg:'#5C7CFA',text:'#FFFFFF'},
+  {bg:'#0EA5A5',text:'#FFFFFF'},
+  {bg:'#7C3AED',text:'#FFFFFF'},
+  {bg:'#D97706',text:'#FFFFFF'},
+  {bg:'#DC2626',text:'#FFFFFF'},
+  {bg:'#2563EB',text:'#FFFFFF'},
+  {bg:'#0891B2',text:'#FFFFFF'},
+  {bg:'#9333EA',text:'#FFFFFF'},
+  {bg:'#B45309',text:'#FFFFFF'},
+  {bg:'#BE123C',text:'#FFFFFF'}
+];
 
 var fileInput=document.getElementById('fileInput');
 var fileNameEl=document.getElementById('fileName');
@@ -4170,7 +4255,7 @@ landingDrop.addEventListener('drop',function(e){e.preventDefault();landingDrop.c
 function loadFile(file){
   fileLastModified=file.lastModified?new Date(file.lastModified):null;
   fileNameEl.textContent=file.name;
-  landingDrop.innerHTML='<div class="drop-icon" style="opacity:1;animation:spin 1s linear infinite;display:inline-block">⟳</div><div class="drop-label" style="color:var(--accent)">Processando…</div><div class="drop-sub">'+file.name+'</div>';
+  landingDrop.innerHTML='<div class="drop-icon drop-icon-spinner" aria-hidden="true"></div><div class="drop-label" style="color:var(--accent)">Processando...</div><div class="drop-sub">'+file.name+'</div>';
   var reader=new FileReader();
   reader.onload=function(ev){
     var buffer=ev.target.result;
