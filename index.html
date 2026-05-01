@@ -2159,6 +2159,9 @@ mark{background:rgba(255,186,32,0.28);color:var(--accent);border-radius:2px;padd
   const auth = getAuth(app);
   const db   = getFirestore(app);
   const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({
+  prompt: "select_account"
+});
 
   // API de gestão de usuários exposta ao escopo global
   window._olgaUsuarios = {
