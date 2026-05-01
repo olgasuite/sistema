@@ -3088,30 +3088,59 @@ html[data-theme]:not([data-theme="win98"]) .module-card{gap:6px;}
 /* second pass: cleaner typography and stronger contrast control */
 html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
 
-/* dark theme rebuilt around #0D0D0E */
-[data-theme="dark"]{
-  --bg:#0D0D0E;
-  --surface:#121316;
-  --surface2:#17191D;
-  --surface3:#1C1F25;
-  --surface4:#22262E;
-  --border:#2A2E36;
-  --border2:#3A414D;
-  --accent:#5E6AD2;
-  --accent-text:#AAB2F4;
-  --accent-dim:rgba(94,106,210,0.15);
-  --accent-glow:rgba(94,106,210,0.08);
-  --on-accent:#F1F3FF;
-  --text:#E6E8EE;
-  --text-dim:#B8BFCC;
-  --text-muted:#8B92A1;
-  --ok:#8F96A3;
-  --warn:#C27A86;
-  --cpl-bg:rgba(94,106,210,0.10);
-  --cpl-color:#AAB2F4;
-  --cpl-border:rgba(94,106,210,0.35);
+/* Studio Light (clear) */
+[data-theme="light"]{
+  --bg:#F8FAFC;
+  --surface:#FFFFFF;
+  --surface2:#FFFFFF;
+  --surface3:#F1F5F9;
+  --surface4:#E2E8F0;
+  --border:#E2E8F0;
+  --border2:#CBD5E1;
+  --accent:#2563EB;
+  --accent-text:#1D4ED8;
+  --accent-dim:rgba(37,99,235,0.12);
+  --accent-glow:rgba(37,99,235,0.06);
+  --on-accent:#FFFFFF;
+  --text:#1E293B;
+  --text-dim:#334155;
+  --text-muted:#64748B;
+  --ok:#2563EB;
+  --warn:#B91C1C;
+  --cpl-bg:rgba(37,99,235,0.08);
+  --cpl-color:#1D4ED8;
+  --cpl-border:rgba(37,99,235,0.28);
+  --sans:'Inter',system-ui,sans-serif;
+  --mono:'Inter',system-ui,sans-serif;
 }
-[data-theme="dark"] header{background:rgba(13,13,14,0.95);}
+[data-theme="light"] header{background:rgba(248,250,252,0.96);}
+
+/* Midnight Premiere (dark) */
+[data-theme="dark"]{
+  --bg:#121212;
+  --surface:#1E1E1E;
+  --surface2:#1E1E1E;
+  --surface3:#252525;
+  --surface4:#2C2C2C;
+  --border:#333333;
+  --border2:#444444;
+  --accent:#D4AF37;
+  --accent-text:#E7C86A;
+  --accent-dim:rgba(212,175,55,0.16);
+  --accent-glow:rgba(212,175,55,0.08);
+  --on-accent:#1A1A1A;
+  --text:#E0E0E0;
+  --text-dim:#BDBDBD;
+  --text-muted:#A0A0A0;
+  --ok:#D4AF37;
+  --warn:#C98B8B;
+  --cpl-bg:rgba(212,175,55,0.10);
+  --cpl-color:#E7C86A;
+  --cpl-border:rgba(212,175,55,0.35);
+  --sans:'Inter',system-ui,sans-serif;
+  --mono:'Inter',system-ui,sans-serif;
+}
+[data-theme="dark"] header{background:rgba(18,18,18,0.96);}
 
 /* hover legibility fixes for clear themes */
 [data-theme="light"] tbody tr:hover,
@@ -3170,10 +3199,14 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
 
 /* landing modules stay readable at high zoom */
 #landing .landing-modules{
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr))!important;
+  display:grid!important;
+  grid-auto-flow:column!important;
+  grid-auto-columns:minmax(0,1fr)!important;
+  grid-template-columns:none!important;
   width:min(100%,1800px)!important;
   max-width:1800px!important;
 }
+#landing .landing-modules .module-card{min-width:0;}
 
 /* win98 readability polish */
 [data-theme="win98"]{
@@ -4030,7 +4063,7 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
     <div class="drop-label">Carregar sistema_olga.xlsx</div>
     <div class="drop-sub">clique ou arraste o arquivo aqui</div>
   </div>
-  <div class="landing-modules" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));max-width:1800px;width:min(100%,1800px);">
+  <div class="landing-modules" style="max-width:1800px;width:min(100%,1800px);">
     <div class="module-card disabled" id="modCardDash" onclick="moduleCardClick('dash')">
       <div class="module-icon"><i data-lucide="bar-chart-2"></i></div>
       <div class="module-name">Dashboard</div>
@@ -5075,11 +5108,18 @@ function buildPills(container,evColors,activeSet,onToggle){
   container.innerHTML='';if(!Object.keys(evColors).length)return;
   var events=Object.keys(evColors);
   var evLocked=!!(window._olgaHasRestricao&&window._olgaHasRestricao('eventos.locked'));
+  var isWin98=(document.documentElement.getAttribute('data-theme')||'dark')==='win98';
+  function inactiveText(){return isWin98?'#000':'var(--text-muted)';}
+  function labelOnBg(){return isWin98?'#000080':'var(--surface2)';}
+  function labelOnText(){return isWin98?'#fff':'var(--text)';}
+  function labelOffBg(){return isWin98?'#d4d0c8':'var(--surface2)';}
+  function labelOffText(){return isWin98?'#000':'var(--text)';}
   function allActive(){return events.every(function(ev){return activeSet.has(ev);});}
   function updateLbl(){
     var all=allActive();
-    lbl.style.background=all?'#fff':'#000';
-    lbl.style.color=all?'#000':'#fff';
+    lbl.style.background=all?labelOnBg():labelOffBg();
+    lbl.style.color=all?labelOnText():labelOffText();
+    if(isWin98)lbl.style.border='1px solid #808080';
     lbl.title=evLocked?'Seleção de eventos bloqueada':(all?'Desmarcar todos':'Marcar todos');
   }
   var lbl=document.createElement('button');
@@ -5092,7 +5132,7 @@ function buildPills(container,evColors,activeSet,onToggle){
       pills.forEach(function(p,i){
         var ev=events[i],col=evColors[ev];
         if(activate){activeSet.add(ev);p.style.background=col.bg;p.style.color=col.text;p.style.borderColor='transparent';p.classList.add('active');}
-        else{activeSet.delete(ev);p.style.background='transparent';p.style.color='#555';p.style.borderColor='transparent';p.classList.remove('active');}
+        else{activeSet.delete(ev);p.style.background='transparent';p.style.color=inactiveText();p.style.borderColor='transparent';p.classList.remove('active');}
       });
       lbl.blur();updateLbl();onToggle();
     });
@@ -5105,11 +5145,11 @@ function buildPills(container,evColors,activeSet,onToggle){
     pill.className='event-pill'+(isActive?' active':'');
     pill.textContent=ev;
     if(isActive){pill.style.background=col.bg;pill.style.color=col.text;pill.style.borderColor='transparent';}
-    else{pill.style.background='transparent';pill.style.color='#555';pill.style.borderColor='transparent';}
+    else{pill.style.background='transparent';pill.style.color=inactiveText();pill.style.borderColor='transparent';}
     if(evLocked){pill.style.cursor='default';pill.style.opacity='0.75';}
     else{
       pill.addEventListener('click',function(){
-        if(activeSet.has(ev)){activeSet.delete(ev);pill.style.background='transparent';pill.style.color='#555';pill.style.borderColor='transparent';pill.classList.remove('active');}
+        if(activeSet.has(ev)){activeSet.delete(ev);pill.style.background='transparent';pill.style.color=inactiveText();pill.style.borderColor='transparent';pill.classList.remove('active');}
         else{activeSet.add(ev);pill.style.background=col.bg;pill.style.color=col.text;pill.style.borderColor='transparent';pill.classList.add('active');}
         pill.blur();updateLbl();onToggle();
       });
@@ -5380,6 +5420,21 @@ function getThemeBlockColor(evColor){
     ];
     var idx=-1;for(var k=0;k<PALETTE.length;k++){if(PALETTE[k]===evColor){idx=k;break;}}
     return hiPalette[idx>=0?idx%hiPalette.length:0];
+  }
+  if(theme==="win98"){
+    // Paleta suave e legível, alinhada ao visual clássico do tema
+    var winPalette=[
+      {bg:'#b8cbe8',text:'#000'},
+      {bg:'#c7d8f2',text:'#000'},
+      {bg:'#d3def0',text:'#000'},
+      {bg:'#cfd7e5',text:'#000'},
+      {bg:'#d6dce8',text:'#000'},
+      {bg:'#c5d2e6',text:'#000'},
+      {bg:'#d9e1ef',text:'#000'},
+      {bg:'#c2d0e8',text:'#000'}
+    ];
+    var idx=-1;for(var k=0;k<PALETTE.length;k++){if(PALETTE[k]===evColor){idx=k;break;}}
+    return winPalette[idx>=0?idx%winPalette.length:0];
   }
   return evColor;
 }
@@ -9207,11 +9262,23 @@ function buildCatalogoFilters(){
   var fromFilmes=filmesArr.map(function(f){return f.evento;}).filter(Boolean);
   var fromColors=Object.keys(eventColors);
   var events=Array.from(new Set(fromFilmes.concat(fromColors))).sort();
+  var isWin98=(document.documentElement.getAttribute('data-theme')||'dark')==='win98';
   var allActive=function(){return events.every(function(ev){return activeEventsCatalogo.has(ev);});};
   var lbl=document.createElement('button');
   lbl.className='filter-label';lbl.textContent='EVENTO:';
   lbl.style.cssText='cursor:pointer;padding:3px 8px;transition:background 0.15s,color 0.15s;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;border-radius:2px;white-space:nowrap;border:none;outline:none;';
-  var updateLbl=function(){var all=allActive();lbl.style.background=all?'#fff':'#000';lbl.style.color=all?'#000':'#fff';lbl.title=all?'Desmarcar todos':'Marcar todos';};
+  var updateLbl=function(){
+    var all=allActive();
+    if(isWin98){
+      lbl.style.background=all?'#000080':'#d4d0c8';
+      lbl.style.color=all?'#fff':'#000';
+      lbl.style.border='1px solid #808080';
+    }else{
+      lbl.style.background=all?'var(--surface2)':'var(--surface3)';
+      lbl.style.color='var(--text)';
+    }
+    lbl.title=all?'Desmarcar todos':'Marcar todos';
+  };
   var evLocked=!!(window._olgaHasRestricao&&window._olgaHasRestricao('eventos.locked'));
   if(evLocked){lbl.style.cursor='default';lbl.style.opacity='0.5';lbl.title='Seleção de eventos bloqueada';}
   else lbl.addEventListener('click',function(){
@@ -9222,7 +9289,9 @@ function buildCatalogoFilters(){
   bar.innerHTML='';bar.appendChild(lbl);updateLbl();
   events.forEach(function(ev){
     var col=eventColors[ev]||null;var isActive=activeEventsCatalogo.has(ev);
-    var style=isActive&&col?'background:'+col.bg+';color:'+col.text+';border-color:transparent;':'background:transparent;color:#555;border-color:transparent;';
+    var style=isActive&&col
+      ?'background:'+col.bg+';color:'+col.text+';border-color:transparent;'
+      :'background:transparent;color:'+(isWin98?'#000':'var(--text-muted)')+';border-color:transparent;';
     var pill=document.createElement('button');
     pill.className='event-pill'+(isActive?' active':'');
     pill.setAttribute('data-ev',ev);pill.style.cssText=style;pill.textContent=ev;
