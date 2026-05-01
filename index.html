@@ -3091,25 +3091,25 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
 /* dark theme rebuilt around #0D0D0E */
 [data-theme="dark"]{
   --bg:#0D0D0E;
-  --surface:#131417;
-  --surface2:#181A1E;
-  --surface3:#1E2127;
-  --surface4:#242833;
-  --border:#2A2E37;
-  --border2:#3A4150;
-  --accent:#6D8CFF;
-  --accent-text:#AFC1FF;
-  --accent-dim:rgba(109,140,255,0.14);
-  --accent-glow:rgba(109,140,255,0.08);
-  --on-accent:#EEF2FF;
-  --text:#E9ECF3;
-  --text-dim:#BCC3D1;
-  --text-muted:#8A93A5;
-  --ok:#34D399;
-  --warn:#FB7185;
-  --cpl-bg:rgba(52,211,153,0.13);
-  --cpl-color:#6EE7B7;
-  --cpl-border:rgba(52,211,153,0.35);
+  --surface:#121316;
+  --surface2:#17191D;
+  --surface3:#1C1F25;
+  --surface4:#22262E;
+  --border:#2A2E36;
+  --border2:#3A414D;
+  --accent:#5E6AD2;
+  --accent-text:#AAB2F4;
+  --accent-dim:rgba(94,106,210,0.15);
+  --accent-glow:rgba(94,106,210,0.08);
+  --on-accent:#F1F3FF;
+  --text:#E6E8EE;
+  --text-dim:#B8BFCC;
+  --text-muted:#8B92A1;
+  --ok:#8F96A3;
+  --warn:#C27A86;
+  --cpl-bg:rgba(94,106,210,0.10);
+  --cpl-color:#AAB2F4;
+  --cpl-border:rgba(94,106,210,0.35);
 }
 [data-theme="dark"] header{background:rgba(13,13,14,0.95);}
 
@@ -3138,13 +3138,22 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
 [data-theme="win98"] .cinema-sess-row:hover,
 [data-theme="win98"] .vinheta-sess-row:hover,
 [data-theme="win98"] .film-card:hover,
-[data-theme="win98"] .prog-card:hover{
+[data-theme="win98"] .prog-card:hover,
+[data-theme="win98"] .module-card:hover:not(.disabled),
+[data-theme="win98"] .nav-tab:hover:not(:disabled),
+[data-theme="win98"] .day-tab:hover,
+[data-theme="win98"] .year-tab:hover{
   background:#dbe8f8!important;
   color:#000!important;
 }
 [data-theme="win98"] .sess-row:hover * ,
 [data-theme="win98"] .cinema-sess-row:hover * ,
-[data-theme="win98"] .vinheta-sess-row:hover *{color:#000!important;}
+[data-theme="win98"] .vinheta-sess-row:hover *,
+[data-theme="win98"] .film-card:hover *,
+[data-theme="win98"] .prog-card:hover *,
+[data-theme="win98"] .module-card:hover:not(.disabled) *{color:#000!important;}
+[data-theme="win98"] .event-pill{color:#000!important;border-color:#808080!important;background:#d4d0c8!important;}
+[data-theme="win98"] .event-pill.active{background:#000080!important;color:#fff!important;border-color:#000080!important;}
 
 /* cursor-like spinner for landing loading state */
 .drop-icon-spinner{
@@ -3158,6 +3167,100 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
   display:inline-block!important;
 }
 @keyframes cursorSpin{to{transform:rotate(360deg);}}
+
+/* landing modules stay readable at high zoom */
+#landing .landing-modules{
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr))!important;
+  width:min(100%,1800px)!important;
+  max-width:1800px!important;
+}
+
+/* win98 readability polish */
+[data-theme="win98"]{
+  --text:#000000;
+  --text-dim:#111111;
+  --text-muted:#333333;
+}
+[data-theme="win98"] .filter-label,
+[data-theme="win98"] .result-count,
+[data-theme="win98"] .file-name,
+[data-theme="win98"] .drop-sub,
+[data-theme="win98"] .module-desc,
+[data-theme="win98"] .card-codigo,
+[data-theme="win98"] .film-sub,
+[data-theme="win98"] .sess-day-count,
+[data-theme="win98"] .sess-cinema,
+[data-theme="win98"] .sess-films,
+[data-theme="win98"] .sess-dur,
+[data-theme="win98"] .cinema-sess-date,
+[data-theme="win98"] .cinema-sess-film-list,
+[data-theme="win98"] .vinheta-sess-date,
+[data-theme="win98"] .vinheta-sess-cinema,
+[data-theme="win98"] .footer-stamp{color:#222!important;}
+
+[data-theme="win98"] .mode-bar{background:#d4d0c8!important;}
+[data-theme="win98"] .mode-bar select,
+[data-theme="win98"] .mode-bar input{background:#fff!important;color:#000!important;}
+
+[data-theme="win98"] .nav-tab.active,
+[data-theme="win98"] .year-tab.open,
+[data-theme="win98"] .day-tab.active{color:#000080!important;}
+
+[data-theme="win98"] .event-pill{
+  background:#d4d0c8!important;
+  color:#000!important;
+  border:1px solid #808080!important;
+  opacity:1!important;
+}
+[data-theme="win98"] .event-pill.active{
+  background:#000080!important;
+  color:#fff!important;
+  border-color:#000080!important;
+}
+
+[data-theme="win98"] .badge,
+[data-theme="win98"] .status-ok,
+[data-theme="win98"] .status-cancel,
+[data-theme="win98"] .status-other{
+  color:#000!important;
+  border-color:#808080!important;
+}
+[data-theme="win98"] .badge-kdm,
+[data-theme="win98"] .badge-kdm-sim,
+[data-theme="win98"] .expand-value.warn{color:#7a0000!important;}
+
+[data-theme="win98"] .sess-row:hover,
+[data-theme="win98"] .cinema-sess-row:hover,
+[data-theme="win98"] .vinheta-sess-row:hover,
+[data-theme="win98"] .prog-sess-row:hover,
+[data-theme="win98"] .film-card:hover,
+[data-theme="win98"] .prog-card:hover,
+[data-theme="win98"] .module-card:hover:not(.disabled),
+[data-theme="win98"] .day-tab:hover,
+[data-theme="win98"] .year-tab:hover,
+[data-theme="win98"] .nav-tab:hover:not(:disabled){
+  background:#dbe8f8!important;
+  color:#000!important;
+}
+[data-theme="win98"] .sess-row:hover *,
+[data-theme="win98"] .cinema-sess-row:hover *,
+[data-theme="win98"] .vinheta-sess-row:hover *,
+[data-theme="win98"] .prog-sess-row:hover *,
+[data-theme="win98"] .film-card:hover *,
+[data-theme="win98"] .prog-card:hover *,
+[data-theme="win98"] .module-card:hover:not(.disabled) *{color:#000!important;}
+
+[data-theme="win98"] .ficha-vinhetas,
+[data-theme="win98"] .ficha-vinhetas-obs,
+[data-theme="win98"] .obs-text,
+[data-theme="win98"] .card-obs{
+  color:#2b2b00!important;
+  border-left-color:#808000!important;
+}
+
+[data-theme="win98"] table th{background:#c8c4bc!important;color:#000!important;}
+[data-theme="win98"] table td{background:#fff!important;color:#000!important;}
+[data-theme="win98"] tbody tr:hover td{background:#dbe8f8!important;color:#000!important;}
 </style>
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -3431,8 +3534,8 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
     var fileNameEl  = document.getElementById('fileName');
     if (landingDrop) {
       landingDrop.innerHTML =
-        '<div class="drop-icon" style="animation:spin 1s linear infinite;display:inline-block">⟳</div>' +
-        '<div class="drop-label" style="color:var(--accent)">Carregando do Firestore…</div>' +
+        '<div class="drop-icon drop-icon-spinner" aria-hidden="true"></div>' +
+        '<div class="drop-label" style="color:var(--accent)">Carregando do Firestore...</div>' +
         '<div class="drop-sub">aguarde</div>';
     }
     if (fileNameEl) fileNameEl.textContent = 'carregando…';
@@ -3663,7 +3766,7 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
       console.error('Firestore load error:', err);
       if (landingDrop) {
         landingDrop.innerHTML =
-          '<div class="drop-icon" style="color:var(--warn)">⚠</div>' +
+          '<div class="drop-icon" style="color:var(--warn);display:block!important">⚠</div>' +
           '<div class="drop-label" style="color:var(--warn)">Erro ao carregar dados</div>' +
           '<div class="drop-sub">' + err.message + '</div>';
       }
@@ -3927,7 +4030,7 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
     <div class="drop-label">Carregar sistema_olga.xlsx</div>
     <div class="drop-sub">clique ou arraste o arquivo aqui</div>
   </div>
-  <div class="landing-modules" style="grid-template-columns:repeat(9,1fr);max-width:1800px;">
+  <div class="landing-modules" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));max-width:1800px;width:min(100%,1800px);">
     <div class="module-card disabled" id="modCardDash" onclick="moduleCardClick('dash')">
       <div class="module-icon"><i data-lucide="bar-chart-2"></i></div>
       <div class="module-name">Dashboard</div>
@@ -4230,16 +4333,14 @@ var buscaFilters={
   sessao:new Set()
 };
 var PALETTE=[
-  {bg:'#5C7CFA',text:'#FFFFFF'},
-  {bg:'#0EA5A5',text:'#FFFFFF'},
-  {bg:'#7C3AED',text:'#FFFFFF'},
-  {bg:'#D97706',text:'#FFFFFF'},
-  {bg:'#DC2626',text:'#FFFFFF'},
-  {bg:'#2563EB',text:'#FFFFFF'},
-  {bg:'#0891B2',text:'#FFFFFF'},
-  {bg:'#9333EA',text:'#FFFFFF'},
-  {bg:'#B45309',text:'#FFFFFF'},
-  {bg:'#BE123C',text:'#FFFFFF'}
+  {bg:'#5E6AD2',text:'#FFFFFF'},
+  {bg:'#6B7280',text:'#FFFFFF'},
+  {bg:'#475569',text:'#FFFFFF'},
+  {bg:'#7C83D9',text:'#FFFFFF'},
+  {bg:'#4B5563',text:'#FFFFFF'},
+  {bg:'#6366F1',text:'#FFFFFF'},
+  {bg:'#52525B',text:'#FFFFFF'},
+  {bg:'#64748B',text:'#FFFFFF'}
 ];
 
 var fileInput=document.getElementById('fileInput');
