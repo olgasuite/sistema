@@ -9397,6 +9397,7 @@ window.addEventListener('popstate',function(e){
 window._mobileActive = false;
 var _mobStack = [];
 var _mobActiveEvs = null; // Set ou null (null = todos)
+var _mobYearsClosed = new Set();
 
 var _mobIconPaths = {
   'projector':'<polyline points="6 8 6 2"/><polyline points="18 8 18 2"/><polyline points="2 8 22 8"/><path d="M2 8v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8"/><circle cx="12" cy="14" r="2"/>',
@@ -9409,6 +9410,7 @@ var _mobIconPaths = {
   'download':'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
   'layout-dashboard':'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
   'monitor':'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
+  'layout-list':'<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
 };
 
 function _mobIcon(name,cls){
@@ -9463,6 +9465,9 @@ function _mobDispatch(frame){
   else if(v==='dash')_mobRenderDash(p,true);
   else if(v==='ingest')_mobRenderIngest(p,true);
   else if(v==='grade')_mobRenderGrade(p,true);
+  else if(v==='programacao')_mobRenderProgramacao(p,true);
+  else if(v==='programacao-programa')_mobRenderProgPrograma(p,true);
+  else if(v==='programacao-sessao')_mobRenderProgSessao(p,true);
 }
 
 function olgaMobileInit(){
@@ -9515,7 +9520,9 @@ function _mobEventFilterHtml(activeEvs){
   if(!eventColors)return'';
   var evList=Object.keys(eventColors);
   if(!evList.length)return'';
-  var html='<div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px 0;">';
+  var allActive=!activeEvs||activeEvs.size===evList.length;
+  var html='<div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px 0;align-items:center;">';
+  html+='<button onclick="_mobToggleAllEvs()" style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.08em;padding:3px 10px;border-radius:2px;border:1px solid var(--border2);cursor:pointer;background:var(--surface2);color:var(--text-muted);">'+(allActive?'nenhum':'todos')+'</button>';
   evList.forEach(function(ev){
     var active=!activeEvs||activeEvs.has(ev);
     var ec=eventColors[ev]||{bg:'var(--border2)',text:'var(--text)'};
@@ -9530,7 +9537,13 @@ window._mobToggleEv=function(ev){
   if(!_mobActiveEvs)_mobActiveEvs=new Set(allEvs);
   if(_mobActiveEvs.has(ev))_mobActiveEvs.delete(ev);
   else _mobActiveEvs.add(ev);
-  // re-render current view preserving params
+  var cur=_mobStack[_mobStack.length-1];
+  if(cur)_mobDispatch(cur);
+};
+window._mobToggleAllEvs=function(){
+  var allEvs=Object.keys(eventColors||{});
+  var allActive=!_mobActiveEvs||_mobActiveEvs.size===allEvs.length;
+  _mobActiveEvs=allActive?new Set():null;
   var cur=_mobStack[_mobStack.length-1];
   if(cur)_mobDispatch(cur);
 };
@@ -9570,14 +9583,37 @@ function _mobDayTabsHtml(dias,selDia,onclickFn){
     for(var i=0;i<dias.length;i++){if(dias[i].getTime()>=hoje.getTime()){melhor=dias[i];break;}}
     selDia=melhor.getTime();
   }
+  var years=[];
+  dias.forEach(function(d){var y=d.getFullYear();if(years.indexOf(y)===-1)years.push(y);});
+  var multiYear=years.length>1;
   var html='<div class="mob-day-tabs">';
-  html+=dias.map(function(d){
-    var t=d.getTime();
-    var lbl=d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
-    return'<button class="mob-day-tab'+(t===selDia?' active':'')+'" onclick="'+onclickFn+'('+t+')">'+lbl+'</button>';
-  }).join('');
+  if(multiYear){
+    var byYear={};
+    dias.forEach(function(d){var y=d.getFullYear();if(!byYear[y])byYear[y]=[];byYear[y].push(d);});
+    years.forEach(function(y){
+      var open=!_mobYearsClosed.has(y);
+      html+='<button onclick="_mobToggleYear('+y+')" style="font-family:var(--mono);font-size:9px;font-weight:700;padding:3px 10px;border-radius:2px;border:1px solid var(--border2);cursor:pointer;background:var(--surface2);color:var(--text-muted);margin-right:2px;">'+y+(open?' ▲':' ▼')+'</button>';
+      if(open){byYear[y].forEach(function(d){
+        var t=d.getTime();
+        var lbl=d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+        html+='<button class="mob-day-tab'+(t===selDia?' active':'')+'" onclick="'+onclickFn+'('+t+')">'+lbl+'</button>';
+      });}
+    });
+  }else{
+    html+=dias.map(function(d){
+      var t=d.getTime();
+      var lbl=d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+      return'<button class="mob-day-tab'+(t===selDia?' active':'')+'" onclick="'+onclickFn+'('+t+')">'+lbl+'</button>';
+    }).join('');
+  }
   return{html:html+'</div>',selDia:selDia};
 }
+window._mobToggleYear=function(y){
+  if(_mobYearsClosed.has(y))_mobYearsClosed.delete(y);
+  else _mobYearsClosed.add(y);
+  var cur=_mobStack[_mobStack.length-1];
+  if(cur)_mobDispatch(cur);
+};
 
 function _mobGetDias(filtroEvs,filtroSala){
   var u=window._olgaUser;
@@ -9612,6 +9648,7 @@ function olgaMobileHome(noStack){
     {mod:'catalogo', icon:'library',          label:'Catálogo',    sub:'Ficha curatorial',    fn:'olgaMobileCatalogo()'},
     {mod:'projecao', icon:'download',         label:'Ingest',      sub:'Checklist de DCP',    fn:'olgaMobileIngest()'},
     {mod:'grade',    icon:'layout-dashboard', label:'Grade',       sub:'Programação do dia',  fn:'olgaMobileGrade()'},
+    {mod:'programacao',icon:'layout-list',   label:'Programação', sub:'Mostras e sessões',    fn:'olgaMobileProgramacao()'},
   ];
 
   // dedup por fn
@@ -10188,6 +10225,185 @@ function _mobRenderGrade(params,noScroll){
   _mobSetContent(_mobEventFilterHtml(filtroEvs)+r.html+'<div style="height:12px;"></div>'+(sessoes.length?gradeHtml:'<div class="mob-empty">Sem sessões neste dia.</div>'));
 }
 window._mobGradeSelDia=function(t){var cur=_mobStack[_mobStack.length-1];if(cur)cur.params.dia=t;_mobRenderGrade(cur?cur.params:{dia:t},true);};
+
+/* ── PROGRAMAÇÃO (read-only) ─────────────────────────────────────── */
+function olgaMobileProgramacao(){
+  _mobPush({view:'programacao',params:{}});
+  _mobRenderProgramacao({});
+}
+
+function _mobRenderProgramacao(params,noScroll){
+  params=params||{};
+  if(!dataLoaded){_mobSetContent('<div class="mob-empty">Dados não carregados.</div>');return;}
+  if(!window._olgaPrograms){_mobSetContent('<div class="mob-empty">Módulo indisponível.</div>');return;}
+  var filtroEvs=_mobActiveEvs;
+  if(!_progData.programs.length){
+    _mobSetContent(_mobEventFilterHtml(filtroEvs)+'<div class="mob-empty">Carregando…</div>');
+    Promise.all([window._olgaPrograms.list(),window._olgaSubprograms?window._olgaSubprograms.list():Promise.resolve([])]).then(function(r){
+      _progData.programs=r[0];_progData.subprograms=r[1]||[];
+      _mobRenderProgramacao(params);
+    }).catch(function(){_mobSetContent('<div class="mob-empty">Erro ao carregar programação.</div>');});
+    return;
+  }
+  var evList=Object.keys(eventColors);
+  if(filtroEvs)evList=evList.filter(function(ev){return filtroEvs.has(ev);});
+  var html=_mobEventFilterHtml(filtroEvs);
+  if(!evList.length){_mobSetContent(html+'<div class="mob-empty">Nenhum evento selecionado.</div>');return;}
+  evList.forEach(function(ev){
+    var evColor=eventColors[ev]||{bg:'var(--surface2)',text:'var(--text-dim)'};
+    var evProgs=_progData.programs.filter(function(p){return p.data.event_id===ev&&!p.data.auto;});
+    var autoP=_progData.programs.find(function(p){return p.data.event_id===ev&&p.data.auto;});
+    var sessOrfas=sessoesArr.filter(function(s){return s.evento===ev&&(!s.program_id||(autoP&&s.program_id===autoP.id));});
+    html+='<div style="margin:12px 12px 4px;display:flex;align-items:center;gap:8px;">';
+    html+='<span style="background:'+evColor.bg+';color:'+evColor.text+';font-family:var(--mono);font-size:9px;font-weight:700;padding:2px 10px;border-radius:2px;">'+_mobEsc(ev)+'</span></div>';
+    if(!evProgs.length&&!sessOrfas.length){html+='<div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);padding:6px 14px;">Nenhuma mostra.</div>';return;}
+    evProgs.forEach(function(p){
+      var subCount=_progData.subprograms.filter(function(s){return s.data.program_id===p.id;}).length;
+      var sessCount=sessoesArr.filter(function(s){return s.program_id===p.id;}).length;
+      var safePid=p.id.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      html+='<div class="mob-sessao-card" onclick="_mobIrProgPrograma(\''+safePid+'\',\''+_mobEsc(ev)+'\')" style="margin:4px 12px;">';
+      html+='<div style="display:flex;justify-content:space-between;align-items:baseline;">';
+      html+='<span style="font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text);">'+_mobEsc(p.data.name||p.id)+'</span>';
+      html+='<svg style="width:14px;height:14px;stroke:var(--text-muted);stroke-width:2;fill:none;flex-shrink:0;" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+      html+='</div>';
+      if(p.data.program_description)html+='<div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:3px;">'+_mobEsc(p.data.program_description.slice(0,80))+(p.data.program_description.length>80?'…':'')+'</div>';
+      html+='<div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-top:4px;">'+subCount+' submostra'+(subCount!==1?'s':'')+' · '+sessCount+' sessão'+(sessCount!==1?'ões':'')+'</div>';
+      html+='</div>';
+    });
+    if(sessOrfas.length){
+      html+='<div class="mob-sessao-card" onclick="_mobIrProgPrograma(\'__orphans_'+_mobEsc(ev)+'\',\''+_mobEsc(ev)+'\')" style="margin:4px 12px;">';
+      html+='<div style="display:flex;justify-content:space-between;align-items:baseline;">';
+      html+='<span style="font-family:var(--sans);font-size:13px;color:var(--text-muted);">Sessões sem mostra</span>';
+      html+='<svg style="width:14px;height:14px;stroke:var(--text-muted);stroke-width:2;fill:none;flex-shrink:0;" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+      html+='</div>';
+      html+='<div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-top:4px;">'+sessOrfas.length+' sessão'+(sessOrfas.length!==1?'ões':'')+'</div>';
+      html+='</div>';
+    }
+  });
+  _mobSetContent(html);
+}
+
+window._mobIrProgPrograma=function(programId,ev){
+  _mobPush({view:'programacao-programa',params:{programId:programId,ev:ev}});
+  _mobRenderProgPrograma({programId:programId,ev:ev});
+};
+
+function _mobRenderProgPrograma(params,noScroll){
+  params=params||{};
+  if(!dataLoaded){_mobSetContent('<div class="mob-empty">Dados não carregados.</div>');return;}
+  var programId=params.programId||'';
+  var ev=params.ev||'';
+  var filtroEvs=_mobActiveEvs;
+  var isOrphans=programId.indexOf('__orphans_')===0;
+  var evColor=eventColors[ev]||{bg:'var(--surface2)',text:'var(--text-dim)'};
+  var p=!isOrphans&&_progData.programs.find(function(x){return x.id===programId;});
+  var sessoes;
+  if(isOrphans){
+    var autoP=_progData.programs.find(function(x){return x.data.event_id===ev&&x.data.auto;});
+    sessoes=sessoesArr.filter(function(s){return s.evento===ev&&(!s.program_id||(autoP&&s.program_id===autoP.id));});
+  }else{
+    sessoes=sessoesArr.filter(function(s){return s.program_id===programId;});
+  }
+  // Filtra por evento ativo
+  if(filtroEvs)sessoes=sessoes.filter(function(s){return filtroEvs.has(s.evento);});
+  // Agrupa por submostra, depois por dia
+  var subs=[];var bySub={};
+  sessoes.forEach(function(s){
+    var sid=s.subprogram_id||'';
+    if(!bySub[sid]){bySub[sid]=[];subs.push(sid);}
+    bySub[sid].push(s);
+  });
+  var html=_mobEventFilterHtml(filtroEvs);
+  html+='<div style="margin:10px 12px 6px;display:flex;align-items:center;gap:8px;">';
+  html+='<span style="background:'+evColor.bg+';color:'+evColor.text+';font-family:var(--mono);font-size:9px;font-weight:700;padding:2px 10px;border-radius:2px;">'+_mobEsc(ev)+'</span>';
+  html+='<span style="font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text);">'+_mobEsc(isOrphans?'Sessões sem mostra':p&&p.data.name||programId)+'</span></div>';
+  if(!sessoes.length){_mobSetContent(html+'<div class="mob-empty">Nenhuma sessão.</div>');return;}
+  subs.forEach(function(sid){
+    var subObj=sid&&_progData.subprograms.find(function(x){return x.id===sid;});
+    if(subObj)html+='<div style="font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);padding:8px 14px 2px;">'+_mobEsc(subObj.data.name||sid)+'</div>';
+    var byDay={};var dayOrder=[];
+    bySub[sid].forEach(function(s){
+      var k=s.date?s.date.toISOString().slice(0,10):'0000-00-00';
+      if(!byDay[k]){byDay[k]=[];dayOrder.push(k);}
+      byDay[k].push(s);
+    });
+    dayOrder.sort();
+    dayOrder.forEach(function(dk){
+      byDay[dk].sort(function(a,b){return(a.time?a.time.h*60+a.time.m:0)-(b.time?b.time.h*60+b.time.m:0);});
+      var dLabel=dk!=='0000-00-00'?new Date(dk+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit'}):'Sem data';
+      html+='<div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);padding:6px 14px 0;border-top:1px solid var(--border);margin-top:6px;">'+_mobEsc(dLabel)+'</div>';
+      byDay[dk].forEach(function(s){
+        var filmes=s.filmes.map(function(c){var f=filmesMap[c];return f?f.titulo||c:c;}).filter(Boolean);
+        html+='<div class="mob-sessao-card" onclick="_mobIrProgSessao(\''+_mobEsc(s.nome)+'\')" style="margin:4px 12px;">';
+        html+='<div class="mob-sessao-header">';
+        html+='<span class="mob-sessao-hora">'+(s.hora||'?')+'</span>';
+        html+='<div style="flex:1;min-width:0;"><div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+_mobEsc(s.cinema)+'</div></div>';
+        html+='<svg style="width:14px;height:14px;stroke:var(--text-muted);stroke-width:2;fill:none;flex-shrink:0;" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+        html+='</div>';
+        html+='<div class="mob-sessao-body">'+filmes.map(function(t){return'<div class="mob-sessao-filme">'+_mobEsc(t)+'</div>';}).join('')+'</div>';
+        html+='</div>';
+      });
+    });
+  });
+  _mobSetContent(html);
+}
+
+window._mobIrProgSessao=function(nome){
+  _mobPush({view:'programacao-sessao',params:{nome:nome}});
+  _mobRenderProgSessao({nome:nome});
+};
+
+function _mobRenderProgSessao(params,noScroll){
+  params=params||{};
+  var s=sessoesMap[params.nome];
+  if(!s){_mobSetContent('<div class="mob-empty">Sessão não encontrada.</div>');return;}
+  var ev=eventColors[s.evento]||null;
+  var evPill=s.evento?'<span class="mob-sessao-pill" style="'+(ev?'background:'+ev.bg+';color:'+ev.text+';':'background:var(--border2);color:var(--text);')+'">'+_mobEsc(s.evento)+'</span> ':'';
+  var p=s.program_id&&_progData.programs.find(function(x){return x.id===s.program_id;});
+  var sub=s.subprogram_id&&_progData.subprograms.find(function(x){return x.id===s.subprogram_id;});
+  var html='<div class="mob-ficha-block">';
+  html+='<div style="margin-bottom:8px;">'+evPill+(p?'<span style="font-family:var(--mono);font-size:9px;color:var(--text-muted);">'+_mobEsc(p.data.name||p.id)+'</span>':'')+(sub?'<span style="font-family:var(--mono);font-size:9px;color:var(--text-muted);"> · '+_mobEsc(sub.data.name||sub.id)+'</span>':'')+'</div>';
+  html+='<div class="mob-ficha-titulo">'+_mobEsc(params.nome)+'</div>';
+  html+='<div class="mob-ficha-subtitulo">'+_mobEsc(s.cinema)+' · '+_mobEsc(s.dia||'')+(s.hora?' · '+_mobEsc(s.hora):'')+'</div>';
+  if(s.session_description)html+='<div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:10px;line-height:1.5;">'+_mobEsc(s.session_description)+'</div>';
+  var extraParts=[];
+  if(s.convidados)extraParts.push('Convidados: '+s.convidados);
+  if(s.ingressos)extraParts.push('Ingressos reservados: '+s.ingressos);
+  if(extraParts.length)html+='<div style="font-family:var(--mono);font-size:10px;color:var(--accent);background:rgba(232,160,32,0.07);border:1px solid rgba(232,160,32,0.2);border-radius:2px;padding:7px 10px;margin-bottom:10px;">'+extraParts.map(_mobEsc).join(' · ')+'</div>';
+  var boxItems=[{label:'Apresentação',val:s.apresentacao},{label:'Leg. eletrônica',val:s.leg_eletronica},{label:'Debate',val:s.col_ag}];
+  html+='<div style="display:flex;gap:8px;margin-bottom:14px;">';
+  boxItems.forEach(function(b){
+    var checked=b.val&&b.val.toLowerCase().indexOf('sim')!==-1;
+    html+='<div style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:'+(checked?'var(--ok)':'var(--text-muted)')+';">'+
+      '<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border:1px solid '+(checked?'var(--ok)':'var(--border)')+';border-radius:2px;font-size:10px;font-weight:700;">'+(checked?'✕':'')+'</span>'+
+      _mobEsc(b.label)+'</div>';
+  });
+  html+='</div>';
+  // vinhetas
+  if(s.vinhetas&&s.vinhetas.length){
+    var vMap={};(vinhetasArr||[]).forEach(function(v){vMap[v.codigo]=v;});
+    html+='<div style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">vinhetas</div>';
+    html+='<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;">';
+    s.vinhetas.forEach(function(cod){var info=vMap[cod];var lbl=info&&info.cpl?info.cpl:cod;if(lbl.length>16)lbl=lbl.slice(0,16)+'…';html+='<span style="font-family:var(--mono);font-size:9px;padding:2px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:2px;">'+_mobEsc(lbl)+'</span>';});
+    html+='</div>';
+  }
+  // filmes
+  html+='<div style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Filmes</div>';
+  var films=s.filmes.map(function(c){return Object.assign({codigo:c},filmesMap[c]||{});}).filter(function(f){return f.titulo||f.codigo;});
+  if(!films.length)html+='<div class="mob-empty" style="padding:12px 0;">Nenhum filme associado.</div>';
+  films.forEach(function(f){
+    html+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;margin-bottom:10px;overflow:hidden;">';
+    html+='<div style="padding:10px 12px;border-bottom:1px solid var(--border);">';
+    html+='<div class="mob-sessao-filme">'+_mobEsc(f.titulo||f.codigo)+'</div>';
+    html+='<div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-top:2px;">'+_mobEsc(f.codigo)+(f.hd?' · '+_mobEsc(f.hd):'')+'</div>';
+    html+='</div><div style="padding:8px 12px;">';
+    var rowP=function(lbl,val){if(!val||val==='-'||val==='—'||val==='')return'';return'<div style="display:flex;gap:8px;padding:3px 0;font-family:var(--mono);font-size:10px;border-bottom:1px solid var(--border);"><span style="color:var(--text-muted);width:72px;flex-shrink:0;">'+lbl+'</span><span style="color:var(--text-dim);">'+_mobEsc(String(val))+'</span></div>';};
+    html+=rowP('Idioma',f.idioma);html+=rowP('Legenda',f.legenda||f.vf);html+=rowP('Duração',typeof fmtDur==='function'?fmtDur(f.duracao):f.duracao);html+=rowP('CPL',f.cpl);html+=rowP('Acessib.',f.acessibilidade);html+=rowP('OBS',f.obs);
+    html+='</div></div>';
+  });
+  html+='</div>';
+  _mobSetContent(html);
+}
 
 function _mobEsc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
