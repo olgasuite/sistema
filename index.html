@@ -77,119 +77,26 @@
 html{font-size:14px;}
 body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;line-height:1.5;}
 
-/* ── SIDEBAR: vertical navigation ── */
-.sidebar{
-  position:fixed;top:0;left:0;z-index:300;
-  width:220px;height:100vh;
-  background:var(--surface);
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;
-  transform:translateX(0);transition:transform 0.2s;
-}
-.sidebar.collapsed{transform:translateX(-220px);}
-.sidebar-toggle{
-  position:fixed;top:12px;left:12px;z-index:301;
-  background:var(--accent);color:var(--on-accent);
-  border:none;border-radius:var(--r);
-  padding:6px 10px;font-size:11px;font-weight:600;
-  cursor:pointer;display:none;
-}
-.sidebar.visible .sidebar-toggle{display:block;}
-
-/* Logo section */
-.sidebar-header{
-  padding:var(--sp-lg);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:8px;
-}
-.sidebar-logo{
-  font-family:var(--mono);font-size:11px;font-weight:600;
-  letter-spacing:0.12em;text-transform:uppercase;
-  color:var(--accent);flex:1;
-}
-.sidebar-filezone{
-  margin-top:var(--sp-sm);
-}
-.sidebar-upload-btn{
-  display:inline-flex;align-items:center;gap:4px;
-  padding:4px 8px;background:var(--accent);color:var(--on-accent);
-  font-size:9px;font-weight:600;letter-spacing:0.05em;
-  border:none;border-radius:var(--r-sm);cursor:pointer;
-}
-.sidebar-file-name{
-  font-family:var(--mono);font-size:8px;color:var(--text-muted);
-  margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-
-/* Navigation */
-.sidebar-nav{
-  flex:1;overflow-y:auto;padding:var(--sp-md) 0;
-}
-.sidebar-nav-group{
-  margin-bottom:var(--sp-lg);
-}
-.sidebar-nav-title{
-  font-family:var(--mono);font-size:8px;font-weight:600;
-  letter-spacing:0.08em;text-transform:uppercase;
-  color:var(--text-muted);
-  padding:0 var(--sp-lg);margin-bottom:4px;
-}
-.sidebar-nav-item{
-  display:flex;align-items:center;gap:8px;
-  width:100%;padding:8px var(--sp-lg);
-  font-family:var(--sans);font-size:10px;font-weight:500;
-  color:var(--text-dim);background:none;border:none;
-  cursor:pointer;transition:all 0.1s;
-  text-align:left;
-}
-.sidebar-nav-item:hover:not(:disabled){
-  background:var(--surface3);color:var(--text);
-}
-.sidebar-nav-item.active{
-  background:var(--accent-dim);color:var(--accent);
-  border-left:3px solid var(--accent);
-}
-.sidebar-nav-item:disabled{opacity:0.3;cursor:not-allowed;}
-.sidebar-nav-icon{
-  width:14px;height:14px;flex-shrink:0;
-}
-
-/* Footer */
-.sidebar-footer{
-  padding:var(--sp-md);border-top:1px solid var(--border);
-  display:flex;flex-direction:column;gap:8px;
-}
-.sidebar-theme-btn{
-  padding:6px 12px;background:var(--surface3);color:var(--text);
-  border:1px solid var(--border);border-radius:var(--r);
-  font-size:9px;font-weight:500;cursor:pointer;
-}
-.sidebar-theme-btn:hover{background:var(--surface4);}
-.sidebar-user{
-  font-family:var(--mono);font-size:8px;color:var(--text-muted);
-  display:flex;align-items:center;gap:4px;
-}
-.sidebar-user::before{
-  content:'';width:2px;height:8px;border-radius:1px;background:var(--ok);
-}
-
-/* ── MAIN CONTENT: adjusted for sidebar ── */
-.main-content{
-  margin-left:220px;min-height:100vh;transition:margin-left 0.2s;
-}
-.sidebar.collapsed + .main-content{margin-left:0;}
-
-/* Compact header for main content */
-.main-header{
+/* ── HEADER: compact console bar, hard-left, no decorative icons ── */
+header{
   position:sticky;top:0;z-index:200;
-  background:rgba(19,13,5,0.98);backdrop-filter:blur(8px);
+  background:rgba(19,13,5,0.98);
+  backdrop-filter:blur(8px);
   border-bottom:1px solid var(--border);
   padding:0 var(--sp-lg);
-  display:flex;align-items:center;gap:var(--sp-md);
-  height:44px;
+  display:flex;align-items:stretch;height:44px;
 }
-.main-header .zoom-controls{
-  margin-left:auto;
+/* Logo: monospaced ID mark */
+.logo{
+  font-family:var(--mono);font-size:10px;font-weight:500;
+  letter-spacing:0.24em;color:var(--accent);text-transform:uppercase;
+  display:flex;align-items:center;padding-right:var(--sp-md);
+  border-right:1px solid var(--border);
+  white-space:nowrap;flex-shrink:0;
+  background:none;border-top:none;border-bottom:none;border-left:none;
+  cursor:pointer;transition:color 0.1s;
 }
+.logo:hover{color:var(--accent-text);}
 /* File zone */
 .file-zone{display:flex;align-items:center;gap:var(--sp-sm);padding:0 var(--sp-md);border-right:1px solid var(--border);flex-shrink:0;}
 /* Primary action button — Amber fill, on-accent text, low-profile */
@@ -3971,12 +3878,6 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
           '<span class="userbar-name">' + perfil.name + '</span>' +
           '<button class="userbar-btn" onclick="_olgaSignOut()">sair</button>';
       }
-      
-      // Atualizar nome do usuário na barra lateral
-      var sidebarUser = document.getElementById('sidebarUserName');
-      if (sidebarUser) {
-        sidebarUser.textContent = perfil.name;
-      }
 
       // Aplicar restrições de módulos
       applyModulePermissions(perfil.modulos);
@@ -4008,85 +3909,37 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
 </div>
 
 <div id="olga-app" style="display:none;">
-<!-- Sidebar Navigation -->
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <div class="sidebar-logo" onclick="goHome()" style="cursor:pointer;">OLGA · Suite</div>
-  </div>
-  <div class="sidebar-filezone">
-    <label class="sidebar-upload-btn" for="fileInput">▲ XLSX</label>
+<header>
+  <button class="logo" onclick="goHome()" title="Página inicial">OLGA · Suite</button>
+  <div class="file-zone">
+    <label class="upload-btn" for="fileInput">▲ XLSX</label>
     <input type="file" id="fileInput" accept=".xlsx,.xls">
-    <div class="sidebar-file-name" id="fileName">nenhum arquivo</div>
+    <span class="file-name" id="fileName">nenhum arquivo</span>
   </div>
-  
-  <nav class="sidebar-nav">
-    <div class="sidebar-nav-group">
-      <div class="sidebar-nav-title">Principal</div>
-      <button class="sidebar-nav-item" id="tabDash" disabled onclick="switchMode('dash')">
-        <i class="sidebar-nav-icon" data-lucide="bar-chart-2"></i>
-        Dashboard
-      </button>
-      <button class="sidebar-nav-item" id="tabCatalogo" disabled onclick="switchMode('catalogo')">
-        <i class="sidebar-nav-icon" data-lucide="library"></i>
-        Catálogo
-      </button>
-      <button class="sidebar-nav-item" id="tabProgramacao" disabled onclick="switchMode('programacao')">
-        <i class="sidebar-nav-icon" data-lucide="layout-list"></i>
-        Programação
-      </button>
-      <button class="sidebar-nav-item" id="tabProjecao" disabled onclick="switchMode('projecao')">
-        <i class="sidebar-nav-icon" data-lucide="projector"></i>
-        Projeção
-      </button>
-      <button class="sidebar-nav-item" id="tabGrade" disabled onclick="switchMode('grade')">
-        <i class="sidebar-nav-icon" data-lucide="layout-dashboard"></i>
-        Grade
-      </button>
-      <button class="sidebar-nav-item" id="tabSessoes" disabled onclick="switchMode('sessoes')">
-        <i class="sidebar-nav-icon" data-lucide="calendar-clock"></i>
-        Sessões
-      </button>
-    </div>
-    
-    <div class="sidebar-nav-group">
-      <div class="sidebar-nav-title">Ferramentas</div>
-      <button class="sidebar-nav-item" id="tabVinhetas" disabled onclick="switchMode('vinhetas')">
-        <i class="sidebar-nav-icon" data-lucide="film"></i>
-        Vinhetas
-      </button>
-      <button class="sidebar-nav-item" id="tabCinemas" disabled onclick="switchMode('cinemas')">
-        <i class="sidebar-nav-icon" data-lucide="clapperboard"></i>
-        Cinemas
-      </button>
-      <button class="sidebar-nav-item" id="tabReceptivo" disabled onclick="switchMode('receptivo')">
-        <i class="sidebar-nav-icon" data-lucide="users"></i>
-        Receptivo
-      </button>
-      <button class="sidebar-nav-item" id="tabEquipe" disabled onclick="switchMode('equipe')" style="display:none">
-        <i class="sidebar-nav-icon" data-lucide="shield"></i>
-        Administração
-      </button>
-    </div>
+  <nav class="nav-tabs">
+    <button class="nav-tab" id="tabDash" disabled onclick="switchMode('dash')"><span class="tab-icon"><i data-lucide="bar-chart-2"></i></span> Dashboard</button>
+    <button class="nav-tab" id="tabCatalogo" disabled onclick="switchMode('catalogo')"><span class="tab-icon"><i data-lucide="library"></i></span> Catálogo</button>
+    <button class="nav-tab" id="tabProgramacao" disabled onclick="switchMode('programacao')"><span class="tab-icon"><i data-lucide="layout-list"></i></span> Programação</button>
+    <button class="nav-tab" id="tabProjecao" disabled onclick="switchMode('projecao')"><span class="tab-icon"><i data-lucide="projector"></i></span> Projeção</button>
+    <button class="nav-tab" id="tabFicha" disabled onclick="switchMode('ficha')" style="display:none"></button>
+    <button class="nav-tab" id="tabGrade" disabled onclick="switchMode('grade')"><span class="tab-icon"><i data-lucide="layout-dashboard"></i></span> Grade</button>
+    <button class="nav-tab" id="tabGrade2" disabled onclick="switchMode('grade2')" style="display:none"></button>
+    <button class="nav-tab" id="tabSessoes" disabled onclick="switchMode('sessoes')"><span class="tab-icon"><i data-lucide="calendar-clock"></i></span> Sessões</button>
+    <button class="nav-tab" id="tabBusca" onclick="switchMode('busca')" style="display:none"><span class="tab-icon"><i data-lucide="search"></i></span> Acervo</button>
+    <button class="nav-tab" id="tabVinhetas" disabled onclick="switchMode('vinhetas')"><span class="tab-icon"><i data-lucide="film"></i></span> Vinhetas</button>
+    <button class="nav-tab" id="tabIngest" disabled onclick="switchMode('ingest')" style="display:none"></button>
+    <button class="nav-tab" id="tabCinemas" disabled onclick="switchMode('cinemas')"><span class="tab-icon"><i data-lucide="clapperboard"></i></span> Cinemas</button>
+    <button class="nav-tab" id="tabReceptivo" disabled onclick="switchMode('receptivo')"><span class="tab-icon"><i data-lucide="users"></i></span> Receptivo</button>
+    <button class="nav-tab" id="tabEquipe" disabled onclick="switchMode('equipe')" style="display:none"><span class="tab-icon"><i data-lucide="shield"></i></span> Administração</button>
   </nav>
-  
-  <div class="sidebar-footer">
-    <button class="sidebar-theme-btn" onclick="toggleTheme()">Tema</button>
-    <div class="sidebar-user" id="sidebarUserName"></div>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar esquema de cores">Tema</button>
+  <div id="olga-userbar"></div>
+  <div class="zoom-controls">
+    <button class="zoom-btn" onclick="changeZoom(-1)" title="Diminuir zoom">−</button>
+    <span class="zoom-level" id="zoomLabel" onclick="resetZoom()" title="Clique para resetar">100%</span>
+    <button class="zoom-btn" onclick="changeZoom(+1)" title="Aumentar zoom">+</button>
   </div>
-</aside>
-
-<!-- Toggle button for mobile -->
-<button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
-
-<!-- Main Content Area -->
-<div class="main-content">
-  <header class="main-header">
-    <div class="zoom-controls">
-      <button class="zoom-btn" onclick="changeZoom(-1)" title="Diminuir zoom">−</button>
-      <span class="zoom-level" id="zoomLabel" onclick="resetZoom()" title="Clique para resetar">100%</span>
-      <button class="zoom-btn" onclick="changeZoom(1)" title="Aumentar zoom">+</button>
-    </div>
-  </header>
+</header>
 
 <div id="main-content">
 
@@ -4699,28 +4552,6 @@ function goHome(){
 
 function moduleCardClick(mode){if(dataLoaded)switchMode(mode);}
 
-// Sidebar toggle function
-function toggleSidebar(){
-  var sidebar = document.getElementById('sidebar');
-  sidebar.classList.toggle('collapsed');
-}
-
-// Auto-hide sidebar on mobile
-function handleResize(){
-  var sidebar = document.getElementById('sidebar');
-  var toggle = document.querySelector('.sidebar-toggle');
-  if(window.innerWidth <= 768){
-    sidebar.classList.add('collapsed');
-    toggle.style.display = 'block';
-  } else {
-    sidebar.classList.remove('collapsed');
-    toggle.style.display = 'none';
-  }
-}
-
-window.addEventListener('resize', handleResize);
-document.addEventListener('DOMContentLoaded', handleResize);
-
 function switchMode(mode,noPush){
   // Herdar pills do módulo atual antes de trocar
   if(currentMode&&currentMode!==mode){
@@ -4738,12 +4569,9 @@ function switchMode(mode,noPush){
   document.getElementById('app').style.display='block';
   ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','equipe','catalogo','programacao'].forEach(function(m){
     var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m==='programacao'?'Programacao':m.charAt(0).toUpperCase()+m.slice(1);
-    var tab = document.getElementById('tab'+cap);
-    if(tab) tab.classList.toggle('active',m===mode);
-    var bar = document.getElementById('bar'+cap);
-    if(bar) bar.classList.toggle('hidden',m!==mode);
-    var panel = document.getElementById(m+'-panel');
-    if(panel) panel.classList.toggle('active',m===mode);
+    document.getElementById('tab'+cap).classList.toggle('active',m===mode);
+    document.getElementById('bar'+cap).classList.toggle('hidden',m!==mode);
+    document.getElementById(m+'-panel').classList.toggle('active',m===mode);
   });
   rebuildPillsForMode(mode);
   if(mode==='projecao')renderProjecao();
@@ -10802,44 +10630,11 @@ window.addEventListener('popstate',function(e){
 .mob-ficha-warn{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--warn);background:rgba(255,180,171,0.08);border:1px solid rgba(255,180,171,0.2);border-radius:2px;padding:6px 10px;margin-bottom:8px;}
 .mob-ficha-ok{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--ok);background:rgba(61,186,110,0.07);border:1px solid rgba(61,186,110,0.2);border-radius:2px;padding:6px 10px;margin-bottom:8px;}
 .mob-empty{font-family:var(--mono);font-size:11px;color:var(--text-muted);text-align:center;padding:48px 20px;}
-/* ── ELEGANT DAY PILLS ── */
-.mob-day-tabs{
-  display:flex;padding:16px 20px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;
-  gap:8px;scrollbar-width:none;-ms-overflow-style:none;
-}
-.mob-day-tabs::-webkit-scrollbar{display:none;}
-.mob-day-tab{
-  font-family:var(--mono);font-size:10px;font-weight:600;
-  letter-spacing:0.04em;text-transform:uppercase;
-  padding:8px 14px;
-  background:var(--surface2);
-  color:var(--text-dim);
-  border:1px solid var(--border);
-  border-radius:var(--r-pill);
-  cursor:pointer;white-space:nowrap;flex-shrink:0;
-  transition:all 0.15s ease;
-  position:relative;overflow:hidden;
-}
-.mob-day-tab::before{
-  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
-  background:linear-gradient(135deg,var(--accent-glow) 0%,transparent 60%);
-  opacity:0;transition:opacity 0.15s;
-}
-.mob-day-tab:hover{
-  background:var(--surface3);
-  color:var(--text);
-  border-color:var(--border2);
-  transform:translateY(-1px);
-}
-.mob-day-tab:hover::before{opacity:1;}
-.mob-day-tab.active{
-  background:linear-gradient(135deg,var(--accent) 0%,var(--accent-text) 100%);
-  color:var(--on-accent);
-  border-color:var(--accent);
-  box-shadow:0 2px 8px rgba(255,186,32,0.2);
-  transform:translateY(-1px);
-}
-.mob-day-tab.active::before{opacity:0;}
+.mob-day-tabs{display:flex;padding:12px 14px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:0;}
+.mob-day-tab{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:6px 11px;border:1px solid var(--border);border-right:none;background:transparent;color:var(--text-muted);cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.mob-day-tab:first-child{border-radius:2px 0 0 2px;}
+.mob-day-tab:last-child{border-right:1px solid var(--border);border-radius:0 2px 2px 0;}
+.mob-day-tab.active{background:var(--accent);color:var(--on-accent);border-color:var(--accent);}
 </style>
 
 <div id="olga-mobile">
