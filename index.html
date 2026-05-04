@@ -2712,15 +2712,16 @@ mark{background:rgba(255,186,32,0.28);color:var(--accent);border-radius:2px;padd
    ============================================================ */
 #catalogo-panel{padding:0 0 80px;}
 .cat-list{padding:14px 24px;display:flex;flex-direction:column;gap:4px;}
-.cat-item{display:flex;align-items:center;gap:12px;padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border2);cursor:pointer;transition:background 0.1s;text-align:left;width:100%;color:var(--text);}
+.cat-item{display:grid;grid-template-columns:76px 80px 1fr 140px 40px 80px 84px;align-items:center;gap:12px;padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border2);cursor:pointer;transition:background 0.1s;text-align:left;width:100%;color:var(--text);}
 .cat-item:hover{background:var(--surface2);}
 .cat-item.has-meta{border-left-color:var(--accent);}
-.cat-item-code{font-family:var(--mono);font-size:10px;color:var(--text-muted);min-width:76px;flex-shrink:0;}
-.cat-item-title{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.cat-item-dir{font-family:var(--sans);font-size:11px;color:var(--text-dim);min-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cat-item-code{font-family:var(--mono);font-size:10px;color:var(--text-muted);}
+.cat-item-title{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cat-item-dir{font-family:var(--sans);font-size:11px;color:var(--text-dim);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cat-item-dir.dim{color:var(--text-muted);}
-.cat-item-dur{font-family:var(--mono);font-size:10px;color:var(--text-muted);white-space:nowrap;min-width:34px;}
-.cat-item-status{font-family:var(--mono);font-size:9px;font-weight:600;padding:1px 7px;border:1px solid var(--border);color:var(--text-muted);white-space:nowrap;flex-shrink:0;}
+.cat-item-dur{font-family:var(--mono);font-size:10px;color:var(--text-muted);white-space:nowrap;}
+.cat-item-status{font-family:var(--mono);font-size:9px;font-weight:600;padding:1px 7px;border:1px solid var(--border);color:var(--text-muted);white-space:nowrap;}
+.cat-item-status:empty{border:none;padding:0;}
 .cat-item-status.ok{background:var(--cpl-bg);color:var(--ok);border-color:var(--cpl-border);}
 .cat-item-status.warn{background:rgba(255,180,171,0.07);color:var(--warn);border-color:rgba(255,180,171,0.2);}
 .cat-detail{max-width:800px;margin:0 auto;padding:22px 32px 80px;}
@@ -2802,7 +2803,8 @@ mark{background:rgba(255,186,32,0.28);color:var(--accent);border-radius:2px;padd
 .cat-run-btn{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:7px 20px;background:var(--accent);color:var(--bg);border:none;cursor:pointer;}
 .cat-run-btn:hover{opacity:0.85;}
 .cat-add-btn{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:7px 14px;background:transparent;color:var(--accent);border:1px solid var(--accent);cursor:pointer;}
-.cat-add-btn:hover{background:var(--accent-dim);}
+.cat-add-btn:hover:not(:disabled){background:var(--accent-dim);}
+.cat-add-btn:disabled{opacity:0.25;cursor:not-allowed;}
 .cat-all-btn{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:7px 14px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;margin-left:auto;}
 .cat-all-btn:hover{border-color:var(--text-dim);color:var(--text);}
 .cat-clear-btn{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:7px 12px;background:transparent;color:var(--text-muted);border:1px solid var(--border);cursor:pointer;}
@@ -2812,7 +2814,7 @@ mark{background:rgba(255,186,32,0.28);color:var(--accent);border-radius:2px;padd
 .cat-slot-rm{background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;line-height:1;padding:0;opacity:0.7;}
 .cat-slot-rm:hover{opacity:1;}
 .cat-res-hdr{display:flex;align-items:center;gap:10px;padding:8px 24px;border-bottom:1px solid var(--border);background:var(--surface);}
-.cat-item-ev{font-family:var(--mono);font-size:8px;font-weight:700;padding:1px 6px;border:1px solid;white-space:nowrap;flex-shrink:0;border-radius:2px;}
+.cat-item-ev{font-family:var(--mono);font-size:8px;font-weight:700;padding:1px 6px;border:1px solid;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:2px;}
 .cat-res-count{font-family:var(--mono);font-size:10px;color:var(--text-muted);}
 
 @media print{
@@ -3981,7 +3983,7 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
     <button class="search-clear" id="searchClear">×</button>
   </div>
   <button class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleFilterPanel()">⊞ Filtros <span class="filter-badge" id="filterBadge"></span></button>
-  <button class="add-slot-btn" id="addSlotBtn" onclick="addBuscaSlot()" title="Salvar filtros atuais como conjunto e iniciar novo" disabled>⊕ Conjunto</button>
+  <button class="cat-add-btn" id="addSlotBtn" onclick="addBuscaSlot()" title="Salvar filtros atuais como conjunto e iniciar novo" disabled>+ Adicionar ao conjunto</button>
   <div class="event-filters" id="buscaEventFilters"></div>
   <span class="result-count" id="resultCount"></span>
   <button class="print-btn" onclick="printBusca()" style="margin-left:auto;">⎙ Imprimir</button>
@@ -7043,7 +7045,6 @@ function renderAdditiveSlots(){
   buscaAdditiveSlots.forEach(function(snap,i){
     html+='<span class="additive-slot-tag">'+slotDescription(snap,i)+'<button class="additive-slot-rm" onclick="removeAdditiveSlot('+i+')" title="Remover conjunto">×</button></span>';
   });
-  html+='<button class="additive-clear-btn" onclick="clearAdditiveSlots()">✕ Limpar conjuntos</button>';
   bar.innerHTML=html;
 }
 
@@ -7453,6 +7454,7 @@ function renderBuscaResults(){
   var hasCurrentFilters=q||(countActiveFilters()>0);
   // nada ativo: mostrar estado vazio sem renderizar
   if(!q&&!countActiveFilters()&&!buscaAdditiveSlots.length){
+    renderAdditiveSlots();
     re.style.display='none';re.innerHTML='';
     be.style.display='flex';
     be.querySelector('p').textContent='Digite para buscar ou aplique filtros.';
@@ -7516,6 +7518,8 @@ function renderBuscaResults(){
             (f.evento&&col?'<span class="card-evento" style="background:'+col.bg+';color:'+col.text+'">'+f.evento+'</span>':'')+
             statusBadge(f.status)+
             kdmTag+
+          '</div>'+
+          '<div style="margin:2px 0 5px;">'+
             '<button class="cat-card-btn" data-cod="'+f.codigo.replace(/"/g,'&quot;')+'" onclick="event.stopPropagation();switchMode(\'catalogo\');openCatDetail(this.dataset.cod)" title="Ver no Catálogo">Ver no Catálogo</button>'+
           '</div>'+
           '<div class="card-meta">'+
@@ -8024,7 +8028,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 30/04/2026 às 10:00';
+  var sysUpdate='última atualização do sistema · 04/05/2026 às 00:15';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -9381,17 +9385,19 @@ function _catBuildCards(films){
     var title=meta.title||f.titulo||f.codigo;
     var dir=Array.isArray(meta.director)?meta.director.join(', '):(meta.director||'');
     var dur=fmtDurMin(f.duracao);var sCls=catStatusCls(f.status);
-    var selTag=meta.selecao?'<span class="cat-item-status '+(selCls[meta.selecao]||'')+'" style="text-transform:uppercase;letter-spacing:0.05em;">'+meta.selecao+'</span>':'';
     var evCol=f.evento&&eventColors[f.evento]?eventColors[f.evento]:null;
-    var evTag=f.evento&&evCol?'<span class="cat-item-ev" style="background:'+evCol.bg+';color:'+evCol.text+';border-color:transparent;">'+f.evento+'</span>':'';
+    var evSpan=evCol?'<span class="cat-item-ev" style="background:'+evCol.bg+';color:'+evCol.text+';border-color:transparent;">'+f.evento+'</span>':'<span></span>';
+    var durSpan=dur?'<span class="cat-item-dur">'+dur+'</span>':'<span class="cat-item-dur">—</span>';
+    var selSpan=meta.selecao?'<span class="cat-item-status '+(selCls[meta.selecao]||'')+'" style="text-transform:uppercase;letter-spacing:0.05em;">'+meta.selecao+'</span>':'<span></span>';
+    var statusSpan=f.status?'<span class="cat-item-status '+sCls+'">'+f.status+'</span>':'<span></span>';
     html+='<button class="cat-item'+(hasMeta?' has-meta':'')+'" data-cod="'+f.codigo.replace(/"/g,'&quot;')+'" onclick="openCatDetail(this.dataset.cod)">'
       +'<span class="cat-item-code">'+f.codigo+'</span>'
-      +evTag
+      +evSpan
       +'<span class="cat-item-title">'+(title||'')+'</span>'
       +(dir?'<span class="cat-item-dir">'+dir+'</span>':'<span class="cat-item-dir dim">—</span>')
-      +(dur?'<span class="cat-item-dur">'+dur+'</span>':'')
-      +selTag
-      +(f.status?'<span class="cat-item-status '+sCls+'">'+f.status+'</span>':'')
+      +durSpan
+      +selSpan
+      +statusSpan
     +'</button>';
   });
   return html+'</div>';
@@ -10585,7 +10591,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 30/04/2026 às 10:00</span></div>
+<div id="page-footer"><span>última atualização · 04/05/2026 às 00:15</span></div>
 
 </div>
 
