@@ -1325,7 +1325,7 @@ td.cpl-cell{background:var(--cpl-bg);border-left:3px solid var(--cpl-border);pad
 mark{background:rgba(255,186,32,0.28);color:var(--accent);border-radius:2px;padding:0 1px;}
 .card-codigo{font-family:var(--mono);font-size:10px;color:var(--text-dim);white-space:nowrap;}
 .card-evento{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;border-radius:2px;}
-.card-meta{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:5px;}
+.card-meta{display:flex;gap:10px;flex-wrap:nowrap;align-items:center;margin-top:5px;overflow-x:auto;padding-bottom:2px;}
 .meta-tag{font-family:var(--mono);font-size:10px;color:var(--text-dim);display:flex;align-items:center;gap:5px;}
 .meta-tag .label{font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);}
 .card-obs{margin-top:7px;font-family:var(--sans);font-size:11px;font-style:italic;color:rgba(255,186,32,0.7);line-height:1.4;padding:5px 9px;border-left:2px solid rgba(255,186,32,0.3);background:rgba(255,186,32,0.04);}
@@ -4112,17 +4112,20 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
   <div class="event-filters" id="ingestEventFilters" style="margin-left:4px;"></div>
   <button class="print-btn" onclick="printIngest()" style="margin-left:4px;">⎙ Imprimir</button>
 </div>
-<div class="mode-bar hidden" id="barCinemas">
-  <select id="cinemasEventoSelect" style="min-width:160px;" onchange="cinemasEventoFilter=this.value;rebuildCinemasEstadoSelect();rebuildCinemasComplexoSelect();renderCinemas();">
-    <option value="">Todos os eventos</option>
-  </select>
-  <select id="cinemasEstadoSelect" style="min-width:120px;margin-left:8px;" onchange="cinemasEstadoFilter=this.value;rebuildCinemasComplexoSelect();renderCinemas();">
-    <option value="">Todos os estados</option>
-  </select>
-  <select id="cinemasComplexoSelect" style="min-width:180px;margin-left:8px;" onchange="cinemasComplexoFilter=this.value;renderCinemas();">
-    <option value="">Todos os complexos</option>
-  </select>
-  <button id="btnNovaSala" style="display:none;margin-left:auto;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:4px 12px;background:var(--accent);color:var(--on-accent);border:none;cursor:pointer;" onclick="openCinemaEdit(null)">+ Nova sala</button>
+<div class="mode-bar hidden" id="barCinemas" style="flex-wrap:wrap;row-gap:4px;">
+  <div class="event-filters" id="cinemasEventFilters"></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-left:8px;flex-shrink:0;">
+    <select id="cinemasEventoSelect" style="min-width:160px;" onchange="cinemasEventoFilter=this.value;rebuildCinemasEstadoSelect();rebuildCinemasComplexoSelect();renderCinemas();">
+      <option value="">Todos os eventos</option>
+    </select>
+    <select id="cinemasEstadoSelect" style="min-width:120px;" onchange="cinemasEstadoFilter=this.value;rebuildCinemasComplexoSelect();renderCinemas();">
+      <option value="">Todos os estados</option>
+    </select>
+    <select id="cinemasComplexoSelect" style="min-width:180px;" onchange="cinemasComplexoFilter=this.value;renderCinemas();">
+      <option value="">Todos os complexos</option>
+    </select>
+    <button id="btnNovaSala" style="display:none;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:4px 12px;background:var(--accent);color:var(--on-accent);border:none;cursor:pointer;" onclick="openCinemaEdit(null)">+ Nova sala</button>
+  </div>
 </div>
 <div class="mode-bar hidden" id="barKDM">
   <div class="event-filters" id="kdmEventFilters"></div>
@@ -4172,11 +4175,6 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
       <div class="module-name">Dashboard</div>
       <div class="module-desc">Monitoramento de filmes por situação no sistema e dados gerais do evento</div>
     </div>
-    <div class="module-card disabled" id="modCardCatalogo" onclick="moduleCardClick('catalogo')">
-      <div class="module-icon"><i data-lucide="library"></i></div>
-      <div class="module-name">Catálogo</div>
-      <div class="module-desc">Fichas curatoriais dos filmes, sinopses, equipe e metadados de exibição</div>
-    </div>
     <div class="module-card disabled" id="modCardProgramacao" onclick="moduleCardClick('programacao')">
       <div class="module-icon"><i data-lucide="layout-list"></i></div>
       <div class="module-name">Programação</div>
@@ -4189,13 +4187,8 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
     </div>
     <div class="module-card disabled" id="modCardGrade" onclick="moduleCardClick('grade')">
       <div class="module-icon"><i data-lucide="layout-dashboard"></i></div>
-      <div class="module-name">Grade</div>
+      <div class="module-name">Grades</div>
       <div class="module-desc">Grade visual de programação por dia e sala</div>
-    </div>
-    <div class="module-card disabled" id="modCardSessoes" onclick="moduleCardClick('sessoes')">
-      <div class="module-icon"><i data-lucide="calendar-clock"></i></div>
-      <div class="module-name">Sessões</div>
-      <div class="module-desc">Lista de sessões por dia com filtro por sala</div>
     </div>
     <div class="module-card disabled" id="modCardVinhetas" onclick="moduleCardClick('vinhetas')">
       <div class="module-icon"><i data-lucide="film"></i></div>
@@ -4207,11 +4200,6 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
       <div class="module-name">Cinemas</div>
       <div class="module-desc">Fichas técnicas das salas, equipamentos e Borderô</div>
     </div>
-    <div class="module-card disabled" id="modCardKDM" onclick="moduleCardClick('kdm')">
-      <div class="module-icon"><i data-lucide="key"></i></div>
-      <div class="module-name">KDM</div>
-      <div class="module-desc">Validação de chaves e certificados dos servidores</div>
-    </div>
     <div class="module-card disabled" id="modCardReceptivo" onclick="moduleCardClick('receptivo')">
       <div class="module-icon"><i data-lucide="users"></i></div>
       <div class="module-name">Receptivo</div>
@@ -4222,6 +4210,10 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
       <div class="module-name">Bilheteria</div>
       <div class="module-desc">Gestão de ingressos, bilheterias e controle de acesso</div>
     </div>
+    <!-- hidden cards (accessible via header only) -->
+    <div class="module-card disabled" id="modCardCatalogo" onclick="moduleCardClick('catalogo')" style="display:none"></div>
+    <div class="module-card disabled" id="modCardSessoes" onclick="moduleCardClick('sessoes')" style="display:none"></div>
+    <div class="module-card disabled" id="modCardKDM" onclick="moduleCardClick('kdm')" style="display:none"></div>
   </div>
 </div>
 
@@ -5743,6 +5735,12 @@ function _cinemaMatchesEventoFilter(c){
 }
 
 function buildCinemasFilters(){
+  buildPills(document.getElementById('cinemasEventFilters'),eventColors,activeEventsCinemas,function(){
+    rebuildCinemasEventoSelect();
+    rebuildCinemasEstadoSelect();
+    rebuildCinemasComplexoSelect();
+    renderCinemas();
+  });
   rebuildCinemasEventoSelect();
   rebuildCinemasEstadoSelect();
   rebuildCinemasComplexoSelect();
@@ -6770,6 +6768,12 @@ function renderBilheteria(){
 /* ========== KDM MODULE ========== */
 
 var _kdmResults={};
+var _kdmPendingFilename='';
+// Restore KDM results from previous session
+try{
+  var _kdmStored=localStorage.getItem('olga-kdm-results');
+  if(_kdmStored)_kdmResults=JSON.parse(_kdmStored);
+}catch(e){}
 
 function _sha1(bytes){
   var H=[0x67452301,0xEFCDAB89,0x98BADCFE,0x10325476,0xC3D2E1F0];
@@ -7006,7 +7010,8 @@ function renderKDM(){
 
 function _kdmResultHtml(sessaoNome){
   var r=_kdmResults[sessaoNome];if(!r)return'';
-  var html='<div class="kdm-result-title">Último teste · '+r.timestamp+'</div>';
+  var fileInfo=r.filename?'<span style="font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-left:8px;opacity:0.7;">'+r.filename+'</span>':'';
+  var html='<div class="kdm-result-title" style="display:flex;align-items:baseline;gap:0;flex-wrap:wrap;">Último teste · '+r.timestamp+fileInfo+'</div>';
   r.lines.forEach(function(l){
     if(l.diag){
       html+='<div class="kdm-check-line kdm-check-info" style="font-size:9px;padding:1px 0 1px 16px;word-break:break-all;opacity:0.8;"><span>'+l.text+'</span></div>';
@@ -7025,6 +7030,7 @@ function testKDM(sessaoNome){
   var input=document.createElement('input');input.type='file';input.accept='.xml';
   input.onchange=function(){
     var file=input.files[0];if(!file)return;
+    _kdmPendingFilename=file.name;
     var reader=new FileReader();
     reader.onload=function(e){try{_processKDMTest(sessaoNome,e.target.result);}catch(err){alert('Erro ao processar o KDM:\n'+err.message);}};
     reader.readAsText(file);
@@ -7154,7 +7160,9 @@ function _processKDMTest(sessaoNome,xml){
   var now=new Date();
   var ts=now.toLocaleDateString('pt-BR')+' '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   var status=overallOk?'ok':(windowFail&&certOk?'window':'fail');
-  _kdmResults[sessaoNome]={status:status,timestamp:ts,lines:lines};
+  _kdmResults[sessaoNome]={status:status,timestamp:ts,lines:lines,filename:_kdmPendingFilename||''};
+  _kdmPendingFilename='';
+  try{localStorage.setItem('olga-kdm-results',JSON.stringify(_kdmResults));}catch(e){}
 
   var enc=encodeURIComponent(sessaoNome);
   var rowEl=document.getElementById('kdmrow-'+enc);
@@ -8786,7 +8794,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 04/05/2026 às 15:00';
+  var sysUpdate='última atualização do sistema · 04/05/2026 às 15:10';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -11348,7 +11356,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 04/05/2026 às 15:00</span></div>
+<div id="page-footer"><span>última atualização · 04/05/2026 às 15:10</span></div>
 
 </div>
 
