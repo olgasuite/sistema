@@ -297,7 +297,7 @@ select:disabled{opacity:0.3;cursor:not-allowed;}
   border:1px solid var(--border);border-radius:var(--r);overflow:hidden;
 }
 .module-card{
-  background:var(--surface);padding:18px var(--sp-md);
+  background:var(--surface);padding:clamp(10px,1.4vw,18px) clamp(8px,1.1vw,16px);
   display:flex;flex-direction:column;gap:4px;
   cursor:pointer;transition:background 0.1s;
   border-right:1px solid var(--border);
@@ -313,10 +313,10 @@ select:disabled{opacity:0.3;cursor:not-allowed;}
 /* Module icons — hidden per "rejects decorative elements" */
 .module-icon{display:none;}
 .module-name{
-  font-family:var(--sans);font-size:10px;font-weight:700;
+  font-family:var(--sans);font-size:clamp(7.5px,0.85vw,10px);font-weight:700;
   letter-spacing:0.05em;text-transform:uppercase;color:var(--text);
 }
-.module-desc{font-family:var(--sans);font-size:11px;font-weight:400;color:var(--text-muted);line-height:1.4;}
+.module-desc{font-family:var(--sans);font-size:clamp(8px,0.9vw,11px);font-weight:400;color:var(--text-muted);line-height:1.4;}
 
 /* ── PROGRAMAÇÃO ── */
 .prog-landing{padding:24px 28px 60px;}
@@ -1048,8 +1048,8 @@ select:disabled{opacity:0.35;cursor:not-allowed;}
 [data-theme="light"] .module-icon{color:var(--accent);opacity:0.85;}
 [data-theme="gray"] .module-icon{color:#333333;opacity:0.7;}
 [data-theme="terminal"] .module-icon{color:var(--accent);opacity:0.85;}
-.module-name{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-dim);}
-.module-desc{font-family:var(--sans);font-size:11px;color:var(--text-muted);line-height:1.5;}
+.module-name{font-family:var(--mono);font-size:clamp(8px,0.95vw,11px);font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-dim);}
+.module-desc{font-family:var(--sans);font-size:clamp(8.5px,0.95vw,11px);color:var(--text-muted);line-height:1.5;}
 /* PROGRAMAÇÃO */
 .prog-landing{padding:28px 32px 60px;}
 .prog-event-block{margin-bottom:40px;}
@@ -3970,11 +3970,7 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
 <div id="olga-app" style="display:none;">
 <header>
   <button class="logo" onclick="goHome()" title="Página inicial">OLGA · Suite</button>
-  <div class="file-zone">
-    <label class="upload-btn" for="fileInput">▲ XLSX</label>
-    <input type="file" id="fileInput" accept=".xlsx,.xls">
-    <span class="file-name" id="fileName">nenhum arquivo</span>
-  </div>
+  <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
   <nav class="nav-tabs">
     <button class="nav-tab" id="tabDash" disabled onclick="switchMode('dash')"><span class="tab-icon"><i data-lucide="bar-chart-2"></i></span> Dashboard</button>
     <button class="nav-tab" id="tabCatalogo" disabled onclick="switchMode('catalogo')"><span class="tab-icon"><i data-lucide="library"></i></span> Catálogo</button>
@@ -4477,7 +4473,7 @@ landingDrop.addEventListener('drop',function(e){e.preventDefault();landingDrop.c
 
 function loadFile(file){
   fileLastModified=file.lastModified?new Date(file.lastModified):null;
-  fileNameEl.textContent=file.name;
+  if(fileNameEl)fileNameEl.textContent=file.name;
   landingDrop.innerHTML='<div class="drop-icon drop-icon-spinner" aria-hidden="true"></div><div class="drop-label" style="color:var(--accent)">Processando...</div><div class="drop-sub">'+file.name+'</div>';
   var reader=new FileReader();
   reader.onload=function(ev){
@@ -4548,8 +4544,7 @@ function applyParsedData(d,filename){
   if(window._olgaUser&&window._olgaUser.role==='admin'){document.getElementById('tabEquipe').disabled=false;}
   ['modCardProjecao','modCardGrade','modCardSessoes','modCardVinhetas','modCardCinemas','modCardKDM','modCardDash','modCardReceptivo','modCardBilheteria','modCardCatalogo','modCardProgramacao'].forEach(function(id){document.getElementById(id).classList.remove('disabled');});
   buildGradeDays();window._gradeYearsOpen=null;window._grade2YearsOpen=null;window._dashYearsOpen=null;buildFichaFilters();buildGradeFilters();buildGrade2Filters();buildSessoesFilters();buildProjecaoFilters();buildVinhetasFilters();buildBuscaFilters();buildIngestDays();buildIngestFilters();buildBuscaFilterPanel();buildCinemasFilters();buildDashFilters();buildCatalogoFilters();
-  fileNameEl.textContent=filename||'arquivo carregado';
-  fileNameEl.classList.add('loaded');
+  if(fileNameEl){fileNameEl.textContent=filename||'arquivo carregado';fileNameEl.classList.add('loaded');}
   window._olgaDataLabel=filename||null;
   landingDrop.classList.add('loaded');
   landingDrop.innerHTML='<div class="drop-icon" style="opacity:1">✓</div><div class="drop-label" style="color:var(--ok)">'+(filename||'arquivo carregado')+'</div><div class="drop-sub">arquivo carregado — selecione um módulo abaixo</div>';
@@ -6741,6 +6736,8 @@ function _kdmResultHtml(sessaoNome){
   r.lines.forEach(function(l){
     if(l.diag){
       html+='<div class="kdm-check-line kdm-check-info" style="font-size:9px;padding:1px 0 1px 16px;word-break:break-all;opacity:0.8;"><span>'+l.text+'</span></div>';
+    }else if(!l.ok&&l.warn&&l.text&&l.text.indexOf('KDM pertence')!==-1){
+      html+='<div class="kdm-check-line" style="margin-top:6px;padding:6px 10px;background:rgba(255,186,32,0.10);border:1px solid rgba(255,186,32,0.35);border-radius:2px;color:var(--accent);font-weight:600;gap:8px;"><span>⚑</span><span>'+l.text.replace(/^⚑\s*/,'')+'</span></div>';
     }else{
       var cls=l.ok?'kdm-check-ok':l.warn?'kdm-check-warn':'kdm-check-fail';
       html+='<div class="kdm-check-line '+cls+'"><span>'+(l.ok?'✓':l.warn?'⚠':'✗')+'</span><span>'+l.text+'</span></div>';
@@ -6838,6 +6835,32 @@ function _processKDMTest(sessaoNome,xml){
       if(!thumbOk){overallOk=false;certOk=false;}
     }
     lines.push({ok:true,warn:false,text:'Tipo: '+(isSMPTE?'SMPTE':'Interop')});
+
+    // 2b. Se cert falhou, procura outra sala cujo cert bata com este KDM
+    if(!certOk){
+      var allC=getAllCinemas();
+      var matched=[];
+      allC.arr.forEach(function(ci){
+        if(!ci.cert_serial_hex||ci.sala===s.cinema)return;
+        var hit=false;
+        if(isSMPTE){
+          var sOk=_normalizeSerial(kdmSerial)===ci.cert_serial_dec;
+          var iOk=_normalizeDN(kdmIssuer)===_normalizeDN(ci.cert_issuer);
+          if(sOk&&iOk){
+            if(kdmSubject){hit=_normalizeDN(kdmSubject)===_normalizeDN(ci.cert_subject);}
+            else{hit=true;}
+          }
+        }else{
+          hit=!!(kdmThumb&&ci.cert_thumbprint&&kdmThumb.trim()===ci.cert_thumbprint.trim());
+        }
+        if(hit)matched.push(ci.sala);
+      });
+      if(matched.length){
+        lines.push({ok:false,warn:true,text:'\u29d7 KDM pertence a outra sala: '+matched.join(', ')});
+      }else{
+        lines.push({ok:false,warn:true,text:'KDM n\u00e3o corresponde a nenhuma sala cadastrada'});
+      }
+    }
   }
 
   // 3. Window validation
