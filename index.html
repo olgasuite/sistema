@@ -1321,13 +1321,13 @@ td.cpl-cell{background:var(--cpl-bg);border-left:3px solid var(--cpl-border);pad
 #busca-results{padding:18px 24px;display:grid;gap:8px;}
 .film-card{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--border);display:grid;grid-template-columns:1fr auto;gap:0;transition:border-left-color 0.2s,background 0.15s;}
 .film-card:hover{background:var(--surface2);}
-.card-main{padding:13px 15px;}
-.card-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:5px;}
+.card-main{padding:13px 15px 14px;}
+.card-top{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;margin-bottom:0;}
 .card-titulo{font-family:var(--sans);font-size:14px;font-weight:600;color:var(--text);line-height:1.2;}
 mark{background:rgba(255,186,32,0.28);color:var(--accent);border-radius:2px;padding:0 1px;}
 .card-codigo{font-family:var(--mono);font-size:10px;color:var(--text-dim);white-space:nowrap;}
 .card-evento{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;border-radius:2px;}
-.card-meta{display:flex;gap:5px;flex-wrap:nowrap;align-items:stretch;margin-top:6px;overflow-x:auto;scrollbar-width:none;}
+.card-meta{display:flex;gap:5px;flex-wrap:nowrap;align-items:center;margin-top:8px;overflow-x:auto;scrollbar-width:none;}
 /* unified pill — every card-meta child is this exact height */
 .cp{display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:2px;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;text-transform:uppercase;line-height:1;}
 /* label·value pill */
@@ -8994,7 +8994,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 04/05/2026 às 17:10';
+  var sysUpdate='última atualização do sistema · 04/05/2026 às 17:20';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -11556,7 +11556,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 04/05/2026 às 17:10</span></div>
+<div id="page-footer"><span>última atualização · 04/05/2026 às 17:20</span></div>
 
 </div>
 
