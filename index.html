@@ -1,4 +1,4 @@
-﻿
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6559,7 +6559,7 @@ function _parsePemToCert(pem){
     if(tag===0x1e){var r='';for(var i=s;i<s+len;i+=2)r+=String.fromCharCode((der[i]<<8)|der[i+1]);return r;}
     var r='';for(var i=s;i<s+len;i++)r+=String.fromCharCode(der[i]);return r;
   }
-  var OID_MAP={'2.5.4.3':'CN','2.5.4.6':'C','2.5.4.7':'L','2.5.4.8':'ST','2.5.4.10':'O','2.5.4.11':'OU','0.9.2342.19200300.100.1.25':'DC','1.2.840.113549.1.9.1':'emailAddress'};
+  var OID_MAP={'2.5.4.3':'CN','2.5.4.6':'C','2.5.4.7':'L','2.5.4.8':'ST','2.5.4.10':'O','2.5.4.11':'OU','2.5.4.46':'dnQualifier','0.9.2342.19200300.100.1.25':'DC','1.2.840.113549.1.9.1':'emailAddress'};
   function parseDN(s,len){
     var parts=[],pos=s,end=s+len;
     while(pos<end){
@@ -6601,11 +6601,11 @@ function _parsePemToCert(pem){
 
 function _normalizeDN(dn){
   if(!dn)return'';
-  var s=dn.replace(/"/g,'').replace(/\\\+/g,'+').replace(/\\(.)/g,'$1').replace(/, /g,',').replace(/\s*=\s*/g,'=');
-  var parts=s.split(',').filter(function(p){return p.indexOf('>')>=0||p.indexOf('=')>0;});
-  parts=parts.filter(function(p){return p.indexOf('=')>0;}).map(function(p){
-    var idx=p.indexOf('=');return p.substring(0,idx).trim()+'='+p.substring(idx+1).trim();
-  }).filter(function(p){var idx=p.indexOf('=');return idx>0&&p.substring(0,idx)&&p.substring(idx+1);});
+  var s=dn.trim();
+  if(s.charAt(0)==='/')s=s.slice(1).replace(/\//g,',');
+  s=s.replace(/"/g,'').replace(/\\\+/g,'+').replace(/\\(.)/g,'$1').replace(/,\s+/g,',').replace(/\s*=\s*/g,'=');
+  var parts=s.split(',').filter(function(p){return p.indexOf('=')>0;});
+  parts=parts.map(function(p){var idx=p.indexOf('=');return p.substring(0,idx).trim()+'='+p.substring(idx+1).trim();}).filter(function(p){var idx=p.indexOf('=');return idx>0&&p.substring(0,idx)&&p.substring(idx+1);});
   return parts.sort().join(',');
 }
 
@@ -6796,11 +6796,16 @@ function _processKDMTest(sessaoNome,xml){
     if(isSMPTE){
       var serialOk=_normalizeSerial(kdmSerial)===cinema.cert_serial_dec;
       var issuerOk=_normalizeDN(kdmIssuer)===_normalizeDN(cinema.cert_issuer);
-      var subjectOk=_normalizeDN(kdmSubject)===_normalizeDN(cinema.cert_subject);
       lines.push({ok:serialOk,warn:false,text:'Serial: '+(_normalizeSerial(kdmSerial)||'—')+' '+(serialOk?'✓':'≠ cert: '+cinema.cert_serial_dec)});
       lines.push({ok:issuerOk,warn:false,text:'Issuer: '+(issuerOk?'✓':'divergente')});
-      lines.push({ok:subjectOk,warn:false,text:'Subject: '+(subjectOk?'✓':'divergente')});
-      if(!serialOk||!issuerOk||!subjectOk){overallOk=false;certOk=false;}
+      if(kdmSubject){
+        var subjectOk=_normalizeDN(kdmSubject)===_normalizeDN(cinema.cert_subject);
+        lines.push({ok:subjectOk,warn:false,text:'Subject: '+(subjectOk?'✓':'divergente')});
+        if(!serialOk||!issuerOk||!subjectOk){overallOk=false;certOk=false;}
+      }else{
+        // SMPTE KDMs usando X509IssuerSerial não incluem SubjectName — OK
+        if(!serialOk||!issuerOk){overallOk=false;certOk=false;}
+      }
     }else{
       var thumbOk=!!(kdmThumb&&cinema.cert_thumbprint&&kdmThumb.trim()===cinema.cert_thumbprint.trim());
       lines.push({ok:thumbOk,warn:false,text:'Thumbprint Interop: '+(thumbOk?'✓':'divergente')});
@@ -8458,7 +8463,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 04/05/2026 às 01:00';
+  var sysUpdate='última atualização do sistema · 04/05/2026 às 08:00';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -11020,7 +11025,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 04/05/2026 às 01:00</span></div>
+<div id="page-footer"><span>última atualização · 04/05/2026 às 08:00</span></div>
 
 </div>
 
