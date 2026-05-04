@@ -1321,8 +1321,8 @@ td.cpl-cell{background:var(--cpl-bg);border-left:3px solid var(--cpl-border);pad
 #busca-results{padding:18px 24px;display:grid;gap:8px;}
 .film-card{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--border);display:grid;grid-template-columns:1fr auto;gap:0;transition:border-left-color 0.2s,background 0.15s;}
 .film-card:hover{background:var(--surface2);}
-.card-main{padding:13px 15px 14px;}
-.card-top{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;margin-bottom:0;}
+.card-main{padding:13px 15px 14px;display:block;}
+.card-top{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;margin-bottom:6px;}
 .card-titulo{font-family:var(--sans);font-size:14px;font-weight:600;color:var(--text);line-height:1.2;}
 mark{background:rgba(255,186,32,0.28);color:var(--accent);border-radius:2px;padding:0 1px;}
 .card-codigo{font-family:var(--mono);font-size:10px;color:var(--text-dim);white-space:nowrap;}
@@ -2751,15 +2751,15 @@ mark{background:rgba(255,186,32,0.28);color:var(--accent);border-radius:2px;padd
    ============================================================ */
 #catalogo-panel{padding:0 0 80px;}
 .cat-list{padding:14px 24px;display:flex;flex-direction:column;gap:4px;}
-.cat-item{display:grid;grid-template-columns:76px 80px 1fr 140px 40px 80px 84px;align-items:center;gap:12px;padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border2);cursor:pointer;transition:background 0.1s;text-align:left;width:100%;color:var(--text);}
+.cat-item{display:grid;grid-template-columns:76px 80px 1fr 140px 40px 50px 80px 84px;align-items:center;gap:12px;padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border2);cursor:pointer;transition:background 0.1s;text-align:left;width:100%;color:var(--text);}
 .cat-item:hover{background:var(--surface2);}
 .cat-item.has-meta{border-left-color:var(--accent);}
 .cat-item-code{font-family:var(--mono);font-size:10px;color:var(--text-muted);}
 .cat-item-title{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .cat-item-dir{font-family:var(--sans);font-size:11px;color:var(--text-dim);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cat-item-dir.dim{color:var(--text-muted);}
-.cat-item-dur{font-family:var(--mono);font-size:10px;color:var(--text-muted);white-space:nowrap;}
-.cat-item-status{font-family:var(--mono);font-size:9px;font-weight:600;padding:1px 7px;border:1px solid var(--border);color:var(--text-muted);white-space:nowrap;}
+.cat-item-dur{font-family:var(--mono);font-size:10px;color:var(--text-muted);white-space:nowrap;text-align:center;display:block;}
+.cat-item-status{font-family:var(--mono);font-size:9px;font-weight:600;padding:1px 7px;border:1px solid var(--border);color:var(--text-muted);white-space:nowrap;text-align:center;display:block;}
 .cat-item-status:empty{border:none;padding:0;}
 .cat-item-status.ok{background:var(--cpl-bg);color:var(--ok);border-color:var(--cpl-border);}
 .cat-item-status.warn{background:rgba(255,180,171,0.07);color:var(--warn);border-color:rgba(255,180,171,0.2);}
@@ -2853,7 +2853,8 @@ mark{background:rgba(255,186,32,0.28);color:var(--accent);border-radius:2px;padd
 .cat-slot-rm{background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;line-height:1;padding:0;opacity:0.7;}
 .cat-slot-rm:hover{opacity:1;}
 .cat-res-hdr{display:flex;align-items:center;gap:10px;padding:8px 24px;border-bottom:1px solid var(--border);background:var(--surface);}
-.cat-item-ev{font-family:var(--mono);font-size:8px;font-weight:700;padding:1px 6px;border:1px solid;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:2px;display:inline-block;max-width:100%;}
+.cat-item-ev{font-family:var(--mono);font-size:8px;font-weight:700;padding:1px 6px;border:1px solid;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:2px;display:block;max-width:100%;text-align:center;}
+.cat-item-kdm{font-family:var(--mono);font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;text-align:center;display:block;background:rgba(232,55,32,0.12);color:#ff6e55;border:1px solid rgba(232,55,32,0.28);}
 .cat-res-count{font-family:var(--mono);font-size:10px;color:var(--text-muted);}
 
 @media print{
@@ -8994,7 +8995,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 04/05/2026 às 17:20';
+  var sysUpdate='última atualização do sistema · 04/05/2026 às 17:30';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -9355,11 +9356,14 @@ function _progRenderSessao(sessaoNome){
     var idiomaCell=f.idioma?'<span class="idioma-text">'+esc(f.idioma)+'</span>':'<span style="color:var(--text-muted)">—</span>';
     var acessCell=f.acessibilidade?'<div style="font-size:9px;line-height:1.4;color:var(--text-dim);max-width:100px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">'+esc(f.acessibilidade)+'</div>':'<span style="color:var(--text-muted)">—</span>';
     var paisCell=f.countries&&f.countries.length?progCountriesCell(f.countries):'<span style="color:var(--text-muted)">—</span>';
+    var fRaw=filmesMap[f.codigo]||{};var fKdm=(fRaw.kdm||'').toLowerCase()==='sim';
+    var kdmCell=fKdm?'<span class="badge badge-kdm-sim" style="font-size:8px;">KDM</span>':'<span style="color:var(--text-muted)">—</span>';
     return'<tr><td class="film-num">'+(idx+1)+'</td>'
       +'<td><div class="film-title">'+esc(f.titulo_pt)+'</div>'+(f.titulo_pt!==f.titulo&&f.titulo?'<div class="film-sub" style="font-size:9px;color:var(--text-muted);">'+esc(f.titulo)+'</div>':'')+'</td>'
       +'<td><div class="dur-text">'+fmtDur(f.duracao)+'</div></td>'
       +'<td class="center">'+idiomaCell+'</td>'
       +'<td>'+legCell+'</td>'
+      +'<td class="center">'+kdmCell+'</td>'
       +'<td class="center">'+acessCell+'</td>'
       +'<td class="prog-country-cell">'+paisCell+'</td>'
       +'</tr>';
@@ -9388,7 +9392,7 @@ function _progRenderSessao(sessaoNome){
   html+='</div>'+extraHtml+'</div>';
   html+=vinhetasHtml;
   if(s.session_description)html+='<div class="prog-sess-desc-block">'+esc(s.session_description)+'</div>';
-  html+='<div class="film-table-wrap"><table><thead><tr><th>#</th><th>Título PT</th><th>Duração</th><th class="center">Idioma</th><th>Legendas</th><th class="center" title="Acessibilidade"><svg width="13" height="13" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle;"><circle cx="11" cy="4" r="1"/><path d="m11 9 2 7h5l-1.5 3"/><path d="M9 9H7l1 7"/><path d="M13.5 19a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z"/></svg></th><th>País</th></tr></thead><tbody>'+(rows||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">Nenhum filme encontrado para esta sessão.</td></tr>')+'</tbody></table></div>';
+  html+='<div class="film-table-wrap"><table><thead><tr><th>#</th><th>Título PT</th><th>Duração</th><th class="center">Idioma</th><th>Legendas</th><th class="center">KDM</th><th class="center" title="Acessibilidade"><svg width="13" height="13" viewBox="0 0 24 24" style="stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle;"><circle cx="11" cy="4" r="1"/><path d="m11 9 2 7h5l-1.5 3"/><path d="M9 9H7l1 7"/><path d="M13.5 19a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z"/></svg></th><th>País</th></tr></thead><tbody>'+(rows||'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">Nenhum filme encontrado para esta sessão.</td></tr>')+'</tbody></table></div>';
   html+='<div class="ficha-footer"><div class="footer-total">Duração total: <strong>'+totalDur+'</strong></div><div class="footer-stamp">OLGA · '+new Date().toLocaleString('pt-BR')+'</div></div></div>';
   c.innerHTML=html+'</div>';
 }
@@ -10353,6 +10357,7 @@ function _catBuildCards(films){
     var evCol=f.evento&&eventColors[f.evento]?eventColors[f.evento]:null;
     var evSpan=evCol?'<span class="cat-item-ev" style="background:'+evCol.bg+';color:'+evCol.text+';border-color:transparent;">'+f.evento+'</span>':'<span></span>';
     var durSpan=dur?'<span class="cat-item-dur">'+dur+'</span>':'<span class="cat-item-dur">—</span>';
+    var kdmSpan=f.kdm&&f.kdm.toString().toUpperCase()==='SIM'?'<span class="cat-item-kdm">KDM</span>':'<span></span>';
     var selSpan=meta.selecao?'<span class="cat-item-status '+(selCls[meta.selecao]||'')+'" style="text-transform:uppercase;letter-spacing:0.05em;">'+meta.selecao+'</span>':'<span></span>';
     var statusSpan=f.status?'<span class="cat-item-status '+sCls+'">'+f.status+'</span>':'<span></span>';
     html+='<button class="cat-item'+(hasMeta?' has-meta':'')+'" data-cod="'+f.codigo.replace(/"/g,'&quot;')+'" onclick="openCatDetail(this.dataset.cod)">'
@@ -10361,6 +10366,7 @@ function _catBuildCards(films){
       +'<span class="cat-item-title">'+(title||'')+'</span>'
       +(dir?'<span class="cat-item-dir">'+dir+'</span>':'<span class="cat-item-dir dim">—</span>')
       +durSpan
+      +kdmSpan
       +selSpan
       +statusSpan
     +'</button>';
@@ -11556,7 +11562,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 04/05/2026 às 17:20</span></div>
+<div id="page-footer"><span>última atualização · 04/05/2026 às 17:30</span></div>
 
 </div>
 
