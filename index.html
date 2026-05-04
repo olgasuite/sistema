@@ -2951,6 +2951,47 @@ mark{background:rgba(255,186,32,0.28);color:var(--accent);border-radius:2px;padd
 .wip-back{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:7px 18px;background:transparent;color:var(--text-dim);border:1px solid var(--border);cursor:pointer;transition:all 0.15s;margin-top:8px;}
 .wip-back:hover{border-color:var(--accent);color:var(--accent);}
 .wip-badge{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);border:1px solid var(--border);padding:3px 12px;border-radius:2px;}
+/* KDM */
+#kdm-container{padding:0 0 60px;}
+.kdm-day-group{border-bottom:1px solid var(--border);}
+.kdm-day-header{display:flex;align-items:baseline;gap:10px;padding:10px 24px 8px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:52px;z-index:50;}
+.kdm-day-label{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text);}
+.kdm-day-label.today{color:var(--accent);}
+.kdm-day-count{font-family:var(--mono);font-size:9px;color:var(--text-muted);}
+.kdm-row{display:flex;align-items:center;gap:12px;padding:10px 24px;border-bottom:1px solid var(--border);min-height:44px;}
+.kdm-row:last-child{border-bottom:none;}
+.kdm-row-time{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text);min-width:40px;flex-shrink:0;}
+.kdm-row-cinema{font-family:var(--mono);font-size:11px;color:var(--text-dim);min-width:140px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.kdm-row-body{flex:1;min-width:0;}
+.kdm-row-name{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.kdm-row-films{font-family:var(--sans);font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.kdm-status{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:2px 8px;border:1px solid;border-radius:2px;flex-shrink:0;white-space:nowrap;}
+.kdm-status-none{color:var(--text-muted);border-color:var(--border);}
+.kdm-status-ok{color:#3dba6e;border-color:rgba(61,186,110,0.4);}
+.kdm-status-fail{color:#ffb4ab;border-color:rgba(255,100,80,0.4);}
+.kdm-status-window{color:var(--accent);border-color:rgba(255,186,32,0.4);}
+.kdm-status-nocert{color:var(--text-muted);border-color:var(--border);font-style:italic;}
+.kdm-test-btn{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:4px 12px;background:transparent;border:1px solid var(--border2);color:var(--text-dim);cursor:pointer;transition:all 0.15s;flex-shrink:0;}
+.kdm-test-btn:hover{border-color:var(--accent);color:var(--accent);}
+.kdm-result-wrap{padding:12px 24px 16px;background:var(--surface2);border-top:1px solid var(--border);}
+.kdm-result-title{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.kdm-check-line{font-family:var(--mono);font-size:11px;padding:3px 0;display:flex;align-items:baseline;gap:8px;}
+.kdm-check-ok{color:#3dba6e;}
+.kdm-check-fail{color:#ffb4ab;}
+.kdm-check-warn{color:var(--accent);}
+.kdm-check-info{color:var(--text-muted);}
+/* Cert section in cinema detail */
+.cinema-cert-section{margin-top:12px;border:1px solid var(--border);border-left:3px solid var(--border2);}
+.cinema-cert-section.has-cert{border-left-color:rgba(61,186,110,0.6);}
+.cinema-cert-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.cinema-cert-label{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);}
+.cinema-cert-label.has-cert{color:#3dba6e;}
+.cinema-cert-import-btn{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:3px 12px;background:transparent;border:1px solid var(--border2);color:var(--text-dim);cursor:pointer;transition:all 0.15s;}
+.cinema-cert-import-btn:hover{border-color:var(--accent);color:var(--accent);}
+.cinema-cert-fields{display:flex;flex-wrap:wrap;padding:8px 16px;gap:0;}
+.cinema-cert-field{padding:6px 16px 6px 0;min-width:220px;}
+.cinema-cert-field-label{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);}
+.cinema-cert-field-val{font-family:var(--mono);font-size:10px;color:var(--text-dim);word-break:break-all;}
 /* SESSÕES */
 #sessoes-container{padding:0 0 60px;}
 .sess-past-toggle{display:flex;align-items:center;gap:8px;width:100%;padding:9px 24px;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);background:var(--surface2);border:none;border-bottom:1px solid var(--border);cursor:pointer;transition:color 0.15s;}
@@ -3392,6 +3433,13 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
     remove: async function(id) { await deleteDoc(doc(db, 'copias', id)); }
   };
 
+  // API cinemas — escrita de campos cert_*
+  window._olgaCinemas = {
+    saveCert: async function(docId, certData) {
+      await setDoc(doc(db, 'cinemas', docId), certData, {merge:true});
+    }
+  };
+
   // API idiomas padronizados (coleção isdclf_languages) — apenas leitura/cache
   window._olgaLanguages = {
     load: async function() {
@@ -3518,20 +3566,20 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
   // ── Aplica visibilidade de abas/cards conforme perfil ───────────
   function applyModulePermissions(modulos) {
     // modulos: null = tudo liberado; [] ou lista = só esses
-    var ALL = ['projecao','grade','sessoes','vinhetas','cinemas','dash','receptivo','bilheteria','catalogo','programacao'];
+    var ALL = ['projecao','grade','sessoes','vinhetas','cinemas','kdm','dash','receptivo','bilheteria','catalogo','programacao'];
     var allowed = modulos && modulos.length ? new Set(modulos) : null;
 
     // Tabs do nav (tabProjecao, tabGrade, etc.)
     var tabMap = {
       projecao:'tabProjecao', grade:'tabGrade', sessoes:'tabSessoes',
-      vinhetas:'tabVinhetas', cinemas:'tabCinemas',
+      vinhetas:'tabVinhetas', cinemas:'tabCinemas', kdm:'tabKDM',
       dash:'tabDash', receptivo:'tabReceptivo', bilheteria:'tabBilheteria', catalogo:'tabCatalogo',
       programacao:'tabProgramacao'
     };
     // Module cards na landing
     var cardMap = {
       projecao:'modCardProjecao', grade:'modCardGrade', sessoes:'modCardSessoes',
-      vinhetas:'modCardVinhetas', cinemas:'modCardCinemas',
+      vinhetas:'modCardVinhetas', cinemas:'modCardCinemas', kdm:'modCardKDM',
       dash:'modCardDash', receptivo:'modCardReceptivo', bilheteria:'modCardBilheteria', catalogo:'modCardCatalogo',
       programacao:'modCardProgramacao'
     };
@@ -3731,12 +3779,20 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
         var eventosList = eventoRaw ? eventoRaw.split(';').map(function(e){return e.trim();}).filter(Boolean) : [];
         if (userEventos && eventosList.length && !eventosList.some(function(e){return userEventos.has(e);})) return;
         cinemasArr2.push({
+          docId:    doc.id,
           complexo: fs(r['complex_name']), sala:       sala,
           servidor: fs(r['server_model']), serial:     fs(r['server_serial']),
           projetor: fs(r['projector_model']),assentos: fs(r['seat_count']),
           proporcao:fs(r['screen_aspect_ratio']),som:  fs(r['sound_system']),
           obs:      fs(r['notes']),        cineassista:fs(r['cineassist_system']),
-          evento:   eventoRaw,             estado:     fs(r['state'])
+          evento:   eventoRaw,             estado:     fs(r['state']),
+          cert_subject:    fs(r['cert_subject']),
+          cert_issuer:     fs(r['cert_issuer']),
+          cert_serial_hex: fs(r['cert_serial_hex']),
+          cert_serial_dec: fs(r['cert_serial_dec']),
+          cert_thumbprint: fs(r['cert_thumbprint']),
+          cert_filename:   fs(r['cert_filename']),
+          cert_imported_at:r['cert_imported_at']&&r['cert_imported_at'].toDate?r['cert_imported_at'].toDate():null
         });
       });
 
@@ -3932,6 +3988,7 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
     <button class="nav-tab" id="tabVinhetas" disabled onclick="switchMode('vinhetas')"><span class="tab-icon"><i data-lucide="film"></i></span> Vinhetas</button>
     <button class="nav-tab" id="tabIngest" disabled onclick="switchMode('ingest')" style="display:none"></button>
     <button class="nav-tab" id="tabCinemas" disabled onclick="switchMode('cinemas')"><span class="tab-icon"><i data-lucide="clapperboard"></i></span> Cinemas</button>
+    <button class="nav-tab" id="tabKDM" disabled onclick="switchMode('kdm')"><span class="tab-icon"><i data-lucide="key"></i></span> KDM</button>
     <button class="nav-tab" id="tabReceptivo" disabled onclick="switchMode('receptivo')"><span class="tab-icon"><i data-lucide="users"></i></span> Receptivo</button>
     <button class="nav-tab" id="tabBilheteria" disabled onclick="switchMode('bilheteria')"><span class="tab-icon"><i data-lucide="ticket"></i></span> Bilheteria</button>
     <button class="nav-tab" id="tabEquipe" disabled onclick="switchMode('equipe')" style="display:none"><span class="tab-icon"><i data-lucide="shield"></i></span> Administração</button>
@@ -4033,6 +4090,9 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
     <option value="">Todos os complexos</option>
   </select>
 </div>
+<div class="mode-bar hidden" id="barKDM">
+  <div class="event-filters" id="kdmEventFilters"></div>
+</div>
 <div class="mode-bar hidden" id="barDash">
   <div class="day-tabs" id="dashDayTabs"></div>
   <div class="event-filters" id="dashEventFilters" style="margin-left:4px;"></div>
@@ -4112,6 +4172,11 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
       <div class="module-icon"><i data-lucide="clapperboard"></i></div>
       <div class="module-name">Cinemas</div>
       <div class="module-desc">Fichas técnicas das salas, equipamentos e Borderô</div>
+    </div>
+    <div class="module-card disabled" id="modCardKDM" onclick="moduleCardClick('kdm')">
+      <div class="module-icon"><i data-lucide="key"></i></div>
+      <div class="module-name">KDM</div>
+      <div class="module-desc">Validação de chaves e certificados dos servidores</div>
     </div>
     <div class="module-card disabled" id="modCardReceptivo" onclick="moduleCardClick('receptivo')">
       <div class="module-icon"><i data-lucide="users"></i></div>
@@ -4200,6 +4265,9 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
     </div>
     <div id="cinemas-container" style="display:none;"></div>
     <div id="cinemaDetailWrap" style="display:none;"></div>
+  </div>
+  <div class="mode-panel" id="kdm-panel">
+    <div id="kdm-container"></div>
   </div>
   <div class="mode-panel" id="dash-panel">
     <div class="empty-state" id="dashEmpty">
@@ -4352,7 +4420,7 @@ var filmesMap={},filmesArr=[],sessoesArr=[],sessoesMap={};
 var buscaReverseSessoes={},eventColors={};
 var vinhetasArr=[],vinhetaReverseSessoes={},currentVinhetaDetail=null;
 var activeEventsGrade=new Set(),activeEventsBusca=new Set(),activeEventsIngest=new Set(),activeEventsFicha=new Set(),activeEventsCinemas=new Set(),activeEventsDash=new Set(),activeEventsGrade2=new Set(),activeEventsSessoes=new Set(),activeEventsProjecao=new Set(),activeEventsVinhetas=new Set();
-var activeEventsCatalogo=new Set(),activeEventsProgramacao=new Set();
+var activeEventsCatalogo=new Set(),activeEventsProgramacao=new Set(),activeEventsKDM=new Set();
 var catalogoFilmesMap={};
 var days=[],currentDay=null,buscaQuery='',dataLoaded=false,currentMode=null;
 var _browserNav=false;
@@ -4464,21 +4532,21 @@ function applyParsedData(d,filename){
   var initEvs=currentEvs.size>0?currentEvs:new Set(events);
   // Só inicializar os sets na primeira carga. Nas recargas (dataLoaded já true), preservar estado atual.
   if(!dataLoaded){
-    activeEventsGrade=new Set(initEvs);activeEventsBusca=new Set(initEvs);activeEventsIngest=new Set(initEvs);activeEventsFicha=new Set(initEvs);activeEventsCinemas=new Set(initEvs);activeEventsDash=new Set(initEvs);activeEventsGrade2=new Set(initEvs);activeEventsSessoes=new Set(initEvs);activeEventsProjecao=new Set(initEvs);activeEventsVinhetas=new Set(initEvs);activeEventsCatalogo=new Set(initEvs);activeEventsProgramacao=new Set(initEvs);
+    activeEventsGrade=new Set(initEvs);activeEventsBusca=new Set(initEvs);activeEventsIngest=new Set(initEvs);activeEventsFicha=new Set(initEvs);activeEventsCinemas=new Set(initEvs);activeEventsDash=new Set(initEvs);activeEventsGrade2=new Set(initEvs);activeEventsSessoes=new Set(initEvs);activeEventsProjecao=new Set(initEvs);activeEventsVinhetas=new Set(initEvs);activeEventsCatalogo=new Set(initEvs);activeEventsProgramacao=new Set(initEvs);activeEventsKDM=new Set(initEvs);
   } else {
     // Garantir que novos eventos entrem nos sets (não remover os já selecionados)
     events.forEach(function(ev){
       if(initEvs.has(ev)){
         // evento novo: adicionar em todos os sets
-        var allSets=[activeEventsGrade,activeEventsBusca,activeEventsIngest,activeEventsFicha,activeEventsCinemas,activeEventsDash,activeEventsGrade2,activeEventsSessoes,activeEventsProjecao,activeEventsVinhetas,activeEventsCatalogo,activeEventsProgramacao];
+        var allSets=[activeEventsGrade,activeEventsBusca,activeEventsIngest,activeEventsFicha,activeEventsCinemas,activeEventsDash,activeEventsGrade2,activeEventsSessoes,activeEventsProjecao,activeEventsVinhetas,activeEventsCatalogo,activeEventsProgramacao,activeEventsKDM];
         if(!allSets.some(function(s){return s.has(ev);})){allSets.forEach(function(s){s.add(ev);});}
       }
     });
   }
   dataLoaded=true;
-  ['tabProjecao','tabFicha','tabGrade','tabGrade2','tabSessoes','tabVinhetas','tabIngest','tabCinemas','tabDash','tabReceptivo','tabBilheteria','tabCatalogo','tabProgramacao'].forEach(function(id){document.getElementById(id).disabled=false;});
+  ['tabProjecao','tabFicha','tabGrade','tabGrade2','tabSessoes','tabVinhetas','tabIngest','tabCinemas','tabKDM','tabDash','tabReceptivo','tabBilheteria','tabCatalogo','tabProgramacao'].forEach(function(id){document.getElementById(id).disabled=false;});
   if(window._olgaUser&&window._olgaUser.role==='admin'){document.getElementById('tabEquipe').disabled=false;}
-  ['modCardProjecao','modCardGrade','modCardSessoes','modCardVinhetas','modCardCinemas','modCardDash','modCardReceptivo','modCardBilheteria','modCardCatalogo','modCardProgramacao'].forEach(function(id){document.getElementById(id).classList.remove('disabled');});
+  ['modCardProjecao','modCardGrade','modCardSessoes','modCardVinhetas','modCardCinemas','modCardKDM','modCardDash','modCardReceptivo','modCardBilheteria','modCardCatalogo','modCardProgramacao'].forEach(function(id){document.getElementById(id).classList.remove('disabled');});
   buildGradeDays();window._gradeYearsOpen=null;window._grade2YearsOpen=null;window._dashYearsOpen=null;buildFichaFilters();buildGradeFilters();buildGrade2Filters();buildSessoesFilters();buildProjecaoFilters();buildVinhetasFilters();buildBuscaFilters();buildIngestDays();buildIngestFilters();buildBuscaFilterPanel();buildCinemasFilters();buildDashFilters();buildCatalogoFilters();
   fileNameEl.textContent=filename||'arquivo carregado';
   fileNameEl.classList.add('loaded');
@@ -4552,8 +4620,8 @@ function parseWorkbook(data,filename){
 function goHome(){
   if(currentMode){
     currentMode=null;
-    ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','bilheteria','equipe','catalogo','programacao'].forEach(function(m){
-      var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m==='programacao'?'Programacao':m.charAt(0).toUpperCase()+m.slice(1);
+    ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','kdm','dash','receptivo','bilheteria','equipe','catalogo','programacao'].forEach(function(m){
+      var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m==='programacao'?'Programacao':m==='kdm'?'KDM':m.charAt(0).toUpperCase()+m.slice(1);
       document.getElementById('tab'+cap).classList.remove('active');
       document.getElementById('bar'+cap).classList.add('hidden');
       document.getElementById(m+'-panel').classList.remove('active');
@@ -4580,8 +4648,8 @@ function switchMode(mode,noPush){
   if(currentMode==='catalogo'&&mode!=='catalogo'&&!_browserNav){_catResetState();}
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='block';
-  ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','bilheteria','equipe','catalogo','programacao'].forEach(function(m){
-    var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m==='programacao'?'Programacao':m.charAt(0).toUpperCase()+m.slice(1);
+  ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','kdm','dash','receptivo','bilheteria','equipe','catalogo','programacao'].forEach(function(m){
+    var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m==='programacao'?'Programacao':m==='kdm'?'KDM':m.charAt(0).toUpperCase()+m.slice(1);
     document.getElementById('tab'+cap).classList.toggle('active',m===mode);
     document.getElementById('bar'+cap).classList.toggle('hidden',m!==mode);
     document.getElementById(m+'-panel').classList.toggle('active',m===mode);
@@ -4594,6 +4662,7 @@ function switchMode(mode,noPush){
   if(mode==='vinhetas')renderVinhetas();
   if(mode==='ingest')renderIngest();
   if(mode==='cinemas')renderCinemas();
+  if(mode==='kdm')renderKDM();
   if(mode==='dash')renderDash();
   if(mode==='receptivo')renderReceptivo();
   if(mode==='bilheteria')renderBilheteria();
@@ -5786,6 +5855,7 @@ function openCinemaDetail(sala){
     +(specsHtml?'<div class="cinema-detail-meta">'+specsHtml+'</div>':'')
     +(evTags?'<div style="padding:8px 16px;border-top:1px solid var(--border);display:flex;gap:4px;flex-wrap:wrap;">'+evTags+'</div>':'')
     +(c.obs?'<div class="cinema-detail-obs">'+c.obs+'</div>':'')
+    +_cinemaCertSectionHtml(c)
     +'</div>'
     +'<div class="cinema-detail-sessions">'
     +'<div class="cinema-detail-sessions-header">Próximas sessões</div>'
@@ -6428,6 +6498,346 @@ function renderBilheteria(){
     '</div>';
 }
 
+/* ========== KDM MODULE ========== */
+
+var _kdmResults={};
+
+function _sha1(bytes){
+  var H=[0x67452301,0xEFCDAB89,0x98BADCFE,0x10325476,0xC3D2E1F0];
+  var ml=bytes.length*8;
+  var padLen=(bytes.length+9+63)&~63;
+  var buf=new Uint8Array(padLen);buf.set(bytes);buf[bytes.length]=0x80;
+  var dv=new DataView(buf.buffer);
+  dv.setUint32(padLen-4,ml>>>0,false);
+  dv.setUint32(padLen-8,Math.floor(ml/0x100000000),false);
+  var rotl=function(n,s){return(n<<s)|(n>>>(32-s));};
+  for(var bi=0;bi<padLen;bi+=64){
+    var W=[];
+    for(var j=0;j<16;j++)W[j]=dv.getInt32(bi+j*4,false);
+    for(var j=16;j<80;j++)W[j]=rotl(W[j-3]^W[j-8]^W[j-14]^W[j-16],1);
+    var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],t;
+    for(var j=0;j<80;j++){
+      var f,k;
+      if(j<20){f=(b&c)|((~b)&d);k=0x5A827999;}
+      else if(j<40){f=b^c^d;k=0x6ED9EBA1;}
+      else if(j<60){f=(b&c)|(b&d)|(c&d);k=0x8F1BBCDC;}
+      else{f=b^c^d;k=0xCA62C1D6;}
+      t=(rotl(a,5)+f+e+k+W[j])|0;
+      e=d;d=c;c=rotl(b,30);b=a;a=t;
+    }
+    H[0]=(H[0]+a)|0;H[1]=(H[1]+b)|0;H[2]=(H[2]+c)|0;H[3]=(H[3]+d)|0;H[4]=(H[4]+e)|0;
+  }
+  var out=new Uint8Array(20),ov=new DataView(out.buffer);
+  H.forEach(function(h,i){ov.setUint32(i*4,h,false);});
+  return out;
+}
+
+function _parsePemToCert(pem){
+  var b64=pem.replace(/-----[^-]+-----/g,'').replace(/[\r\n\s]/g,'');
+  var raw=atob(b64);
+  var der=new Uint8Array(raw.length);
+  for(var i=0;i<raw.length;i++)der[i]=raw.charCodeAt(i);
+
+  function readLen(pos){
+    var b=der[pos++];
+    if(b<0x80)return{len:b,next:pos};
+    var n=b&0x7f,l=0;
+    for(var i=0;i<n;i++)l=(l<<8)|der[pos++];
+    return{len:l,next:pos};
+  }
+  function readTL(pos){
+    var tag=der[pos++];var r=readLen(pos);
+    return{tag:tag,cs:r.next,ce:r.next+r.len,end:r.next+r.len};
+  }
+  function readOID(s,len){
+    var oid='',val=0,first=der[s];
+    oid=Math.floor(first/40)+'.'+( first%40);
+    for(var i=s+1;i<s+len;i++){val=(val<<7)|(der[i]&0x7f);if(!(der[i]&0x80)){oid+='.'+val;val=0;}}
+    return oid;
+  }
+  function readStr(tag,s,len){
+    if(tag===0x1e){var r='';for(var i=s;i<s+len;i+=2)r+=String.fromCharCode((der[i]<<8)|der[i+1]);return r;}
+    var r='';for(var i=s;i<s+len;i++)r+=String.fromCharCode(der[i]);return r;
+  }
+  var OID_MAP={'2.5.4.3':'CN','2.5.4.6':'C','2.5.4.7':'L','2.5.4.8':'ST','2.5.4.10':'O','2.5.4.11':'OU','0.9.2342.19200300.100.1.25':'DC','1.2.840.113549.1.9.1':'emailAddress'};
+  function parseDN(s,len){
+    var parts=[],pos=s,end=s+len;
+    while(pos<end){
+      var set=readTL(pos);var seq=readTL(set.cs);
+      var oidT=readTL(seq.cs);var oidStr=readOID(oidT.cs,oidT.end-oidT.cs);
+      var name=OID_MAP[oidStr]||oidStr;
+      var valT=readTL(oidT.end);parts.push(name+'='+readStr(valT.tag,valT.cs,valT.end-valT.cs));
+      pos=set.end;
+    }
+    return parts.join(',');
+  }
+
+  var outer=readTL(0);
+  var tbsTagPos=outer.cs;
+  var tbs=readTL(tbsTagPos);
+  var tbsBytes=der.slice(tbsTagPos,tbs.end);
+
+  var pos=tbs.cs;
+  if(der[pos]===0xa0){var ver=readTL(pos);pos=ver.end;}
+  var serialT=readTL(pos);
+  var sb=serialT.cs;
+  while(sb<serialT.end-1&&der[sb]===0)sb++;
+  var serialHex='';
+  for(var i=sb;i<serialT.end;i++)serialHex+=('0'+der[i].toString(16)).slice(-2).toUpperCase();
+  var serialDec;
+  try{serialDec=BigInt('0x'+serialHex).toString();}catch(e){serialDec=serialHex;}
+  pos=serialT.end;
+
+  var sigAlg=readTL(pos);pos=sigAlg.end;
+  var issuerT=readTL(pos);var issuer=parseDN(issuerT.cs,issuerT.end-issuerT.cs);pos=issuerT.end;
+  var validity=readTL(pos);pos=validity.end;
+  var subjectT=readTL(pos);var subject=parseDN(subjectT.cs,subjectT.end-subjectT.cs);
+
+  var sha1bytes=_sha1(tbsBytes);
+  var thumbprint=btoa(String.fromCharCode.apply(null,sha1bytes));
+
+  return{subject:subject,issuer:issuer,serialHex:serialHex,serialDec:serialDec,thumbprint:thumbprint};
+}
+
+function _normalizeDN(dn){
+  if(!dn)return'';
+  var s=dn.replace(/"/g,'').replace(/\\\+/g,'+').replace(/\\(.)/g,'$1').replace(/, /g,',').replace(/\s*=\s*/g,'=');
+  var parts=s.split(',').filter(function(p){return p.indexOf('>')>=0||p.indexOf('=')>0;});
+  parts=parts.filter(function(p){return p.indexOf('=')>0;}).map(function(p){
+    var idx=p.indexOf('=');return p.substring(0,idx).trim()+'='+p.substring(idx+1).trim();
+  }).filter(function(p){var idx=p.indexOf('=');return idx>0&&p.substring(0,idx)&&p.substring(idx+1);});
+  return parts.sort().join(',');
+}
+
+function _normalizeSerial(s){
+  if(!s)return'';
+  var t=s.toString().trim();
+  if(/^[0-9a-fA-F]+$/.test(t)&&/[a-fA-F]/.test(t)&&t.length>10){
+    try{return BigInt('0x'+t).toString();}catch(e){}
+  }
+  return t;
+}
+
+function _cinemaCertSectionHtml(c){
+  var hasCert=!!(c.cert_serial_hex);
+  var canImport=window._olgaUser&&(window._olgaUser.role==='admin'||window._olgaUser.role==='editor')&&c.docId;
+  var safeSala=(c.sala||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  var importBtn=canImport?'<button class="cinema-cert-import-btn" onclick="importCinemasCert(\''+safeSala+'\')">'+( hasCert?'↺ Atualizar certificado':'+ Importar certificado')+'</button>':'';
+  var label=hasCert?'<span class="cinema-cert-label has-cert">Certificado de servidor ✓</span>':'<span class="cinema-cert-label">Certificado de servidor</span>';
+  var fieldsHtml='';
+  if(hasCert){
+    var cf=function(lbl,val){if(!val)return'';return'<div class="cinema-cert-field"><div class="cinema-cert-field-label">'+lbl+'</div><div class="cinema-cert-field-val">'+val+'</div></div>';};
+    var importedStr=c.cert_imported_at?c.cert_imported_at.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
+    fieldsHtml='<div class="cinema-cert-fields">'+cf('Serial hex',c.cert_serial_hex)+cf('Serial dec',c.cert_serial_dec)+cf('Subject',c.cert_subject)+cf('Issuer',c.cert_issuer)+cf('Thumbprint',c.cert_thumbprint)+(c.cert_filename?cf('Arquivo',c.cert_filename):'')+(importedStr?cf('Importado',importedStr):'')+'</div>';
+  }else if(!canImport){
+    fieldsHtml='<div style="padding:8px 16px;font-family:var(--mono);font-size:10px;color:var(--text-muted);">Nenhum certificado cadastrado.</div>';
+  }
+  return'<div class="cinema-cert-section'+(hasCert?' has-cert':'')+'"><div class="cinema-cert-header">'+label+importBtn+'</div>'+fieldsHtml+'</div>';
+}
+
+function importCinemasCert(sala){
+  if(!window._olgaCinemas)return alert('Aguardando conexão com Firestore.');
+  var all=getAllCinemas();var c=all.map[sala];
+  if(!c||!c.docId)return alert('Esta sala não possui registro no Firestore.');
+  var input=document.createElement('input');input.type='file';input.accept='.pem,.crt,.der,.cert';
+  input.onchange=function(){
+    var file=input.files[0];if(!file)return;
+    var isBinary=/\.(der|cert)$/i.test(file.name);
+    var reader=new FileReader();
+    reader.onload=async function(e){
+      try{
+        var certData;
+        if(isBinary){
+          var bytes=new Uint8Array(e.target.result);
+          var b64=btoa(String.fromCharCode.apply(null,bytes));
+          certData=_parsePemToCert('-----BEGIN CERTIFICATE-----\n'+b64+'\n-----END CERTIFICATE-----');
+        }else{
+          certData=_parsePemToCert(e.target.result);
+        }
+        var confirmMsg='Confirmar importação?\n\nArquivo: '+file.name+'\nSerial: '+certData.serialHex+'\nSubject: '+certData.subject.substring(0,80)+(certData.subject.length>80?'...':'');
+        if(!confirm(confirmMsg))return;
+        var fields={cert_subject:certData.subject,cert_issuer:certData.issuer,cert_serial_hex:certData.serialHex,cert_serial_dec:certData.serialDec,cert_thumbprint:certData.thumbprint,cert_filename:file.name,cert_imported_at:new Date()};
+        await window._olgaCinemas.saveCert(c.docId,fields);
+        Object.assign(c,fields);
+        openCinemaDetail(sala);
+      }catch(err){alert('Erro ao processar o certificado:\n'+err.message);}
+    };
+    if(isBinary)reader.readAsArrayBuffer(file);else reader.readAsText(file);
+  };
+  input.click();
+}
+
+function buildKDMFilters(){
+  buildPills(document.getElementById('kdmEventFilters'),eventColors,activeEventsKDM,function(){renderKDM();});
+}
+
+function renderKDM(){
+  var kc=document.getElementById('kdm-container');
+  var filtered=sessoesArr.filter(function(s){
+    if(s.evento&&!activeEventsKDM.has(s.evento))return false;
+    var as=allowedSalas();if(as&&s.cinema&&!as.has(s.cinema))return false;
+    return s.filmes.some(function(code){var f=filmesMap[code];return f&&f.kdm&&f.kdm.toString().toUpperCase()==='SIM';});
+  });
+  if(!filtered.length){
+    kc.innerHTML='<div class="empty-state"><div class="icon"><i data-lucide="key"></i></div><p>Nenhuma sessão com KDM nos eventos selecionados.</p></div>';
+    if(window.lucide)lucide.createIcons();return;
+  }
+  var byDay={},dayOrder=[];
+  filtered.forEach(function(s){
+    var k=s.date?s.date.toISOString().slice(0,10):'0000-00-00';
+    if(!byDay[k]){byDay[k]=[];dayOrder.push(k);}byDay[k].push(s);
+  });
+  dayOrder.sort();
+  dayOrder.forEach(function(k){byDay[k].sort(function(a,b){return(a.time?a.time.h*60+a.time.m:0)-(b.time?b.time.h*60+b.time.m:0);});});
+  var today=new Date();today.setHours(0,0,0,0);
+  var todayKey=today.toISOString().slice(0,10);
+
+  function sessStatus(s){
+    var r=_kdmResults[s.nome];
+    if(!r){var all=getAllCinemas();var ci=all.map[s.cinema];if(!ci||!ci.cert_serial_hex)return{cls:'kdm-status-nocert',label:'Cert ausente'};return{cls:'kdm-status-none',label:'Sem KDM'};}
+    if(r.status==='ok')return{cls:'kdm-status-ok',label:'Válido'};
+    if(r.status==='window')return{cls:'kdm-status-window',label:'Fora da janela'};
+    return{cls:'kdm-status-fail',label:'Inválido'};
+  }
+
+  function sessRowHtml(s){
+    var st=sessStatus(s);
+    var kdmFilms=s.filmes.filter(function(code){var f=filmesMap[code];return f&&f.kdm&&f.kdm.toString().toUpperCase()==='SIM';});
+    var filmTitles=kdmFilms.map(function(code){var f=filmesMap[code];return f&&f.titulo?f.titulo:code;}).join(' · ');
+    var safe=s.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    var evCol=s.evento&&eventColors[s.evento]?eventColors[s.evento]:null;
+    var evTag=s.evento?'<span style="display:inline-block;font-family:var(--mono);font-size:8px;font-weight:700;padding:1px 6px;border-radius:2px;flex-shrink:0;background:'+(evCol?evCol.bg:'var(--surface2)')+';color:'+(evCol?evCol.text:'var(--text-dim)')+'">'+s.evento+'</span>':'';
+    var enc=encodeURIComponent(s.nome);
+    var prevResult=_kdmResults[s.nome]?'<div class="kdm-result-wrap" id="kdmresult-'+enc+'">'+_kdmResultHtml(s.nome)+'</div>':'';
+    return'<div class="kdm-row" id="kdmrow-'+enc+'">'
+      +'<span class="kdm-row-time">'+(s.time?s.time.str:'—')+'</span>'
+      +'<span class="kdm-row-cinema">'+s.cinema+'</span>'
+      +'<div class="kdm-row-body"><div class="kdm-row-name">'+s.nome+'</div>'+(filmTitles?'<div class="kdm-row-films">'+filmTitles+'</div>':'')+'</div>'
+      +(evTag?evTag:'')
+      +'<span class="kdm-status '+st.cls+'">'+st.label+'</span>'
+      +'<button class="kdm-test-btn" onclick="testKDM(\''+safe+'\')">Testar KDM</button>'
+      +'</div>'+prevResult;
+  }
+
+  var html='';
+  dayOrder.forEach(function(k){
+    var d=byDay[k];var dateObj=d[0].date;var isToday=k===todayKey;
+    var lbl=dateObj?dateObj.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+    html+='<div class="kdm-day-group"><div class="kdm-day-header"><span class="kdm-day-label'+(isToday?' today':'')+'">'+lbl+(isToday?' · hoje':'')+'</span><span class="kdm-day-count">'+d.length+' '+(d.length===1?'sessão':'sessões')+'</span></div>'+d.map(sessRowHtml).join('')+'</div>';
+  });
+  kc.innerHTML=html;
+  if(window.lucide)lucide.createIcons();
+}
+
+function _kdmResultHtml(sessaoNome){
+  var r=_kdmResults[sessaoNome];if(!r)return'';
+  var html='<div class="kdm-result-title">Último teste · '+r.timestamp+'</div>';
+  r.lines.forEach(function(l){
+    var cls=l.ok?'kdm-check-ok':l.warn?'kdm-check-warn':'kdm-check-fail';
+    html+='<div class="kdm-check-line '+cls+'"><span>'+(l.ok?'✓':l.warn?'⚠':'✗')+'</span><span>'+l.text+'</span></div>';
+  });
+  return html;
+}
+
+function testKDM(sessaoNome){
+  var s=sessoesMap[sessaoNome];if(!s)return;
+  var input=document.createElement('input');input.type='file';input.accept='.xml';
+  input.onchange=function(){
+    var file=input.files[0];if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(e){try{_processKDMTest(sessaoNome,e.target.result);}catch(err){alert('Erro ao processar o KDM:\n'+err.message);}};
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function _kdmGetTag(xml,tag){
+  var re=new RegExp('<(?:[^:>]+:)?'+tag+'[^>]*>([\\s\\S]*?)</(?:[^:>]+:)?'+tag+'>','i');
+  var m=xml.match(re);return m?m[1].trim():null;
+}
+
+function _processKDMTest(sessaoNome,xml){
+  var s=sessoesMap[sessaoNome];if(!s)return;
+  if(!/DCinemaSecurityMessage/i.test(xml)){alert('Este arquivo não parece ser um KDM.');return;}
+  var isSMPTE=/smpte-ra\.org/.test(xml);
+  var cplUUID=_kdmGetTag(xml,'CompositionPlaylistId');
+  var titleText=_kdmGetTag(xml,'ContentTitleText');
+  var notBefore=_kdmGetTag(xml,'ContentKeysNotValidBefore');
+  var notAfter=_kdmGetTag(xml,'ContentKeysNotValidAfter');
+  var recipM=xml.match(/<Recipient[^>]*>([\s\S]*?)<\/Recipient>/i);
+  var recip=recipM?recipM[1]:'';
+  var kdmIssuer=_kdmGetTag(recip,'X509IssuerName');
+  var kdmSerial=_kdmGetTag(recip,'X509SerialNumber');
+  var kdmSubject=_kdmGetTag(recip,'X509SubjectName');
+  var kdmThumb=_kdmGetTag(recip,'CertificateThumbprint');
+
+  var all=getAllCinemas();var cinema=all.map[s.cinema];
+  var lines=[],overallOk=true,certOk=true,windowFail=false;
+
+  // 1. Find copia by dcp_uuid
+  var matchCopia=null;
+  if(cplUUID){
+    var normUUID=cplUUID.replace(/^urn:uuid:/i,'').toLowerCase();
+    for(var code in filmesMap){var f=filmesMap[code];if(f.dcp_uuid&&f.dcp_uuid.replace(/^urn:uuid:/i,'').toLowerCase()===normUUID){matchCopia=f;break;}}
+  }
+  if(matchCopia){
+    lines.push({ok:true,warn:false,text:'Cópia encontrada: '+matchCopia.titulo+' ('+matchCopia.codigo+')'});
+    if(titleText)lines.push({ok:true,warn:false,text:'CPL: '+titleText});
+  }else{
+    lines.push({ok:false,warn:false,text:'Cópia não encontrada no acervo (UUID: '+(cplUUID||'ausente')+')'});
+    overallOk=false;
+  }
+
+  // 2. Cert match
+  if(!cinema||!cinema.cert_serial_hex){
+    lines.push({ok:false,warn:false,text:'Certificado da sala "'+s.cinema+'" não cadastrado'});
+    overallOk=false;certOk=false;
+  }else{
+    if(isSMPTE){
+      var serialOk=_normalizeSerial(kdmSerial)===cinema.cert_serial_dec;
+      var issuerOk=_normalizeDN(kdmIssuer)===_normalizeDN(cinema.cert_issuer);
+      var subjectOk=_normalizeDN(kdmSubject)===_normalizeDN(cinema.cert_subject);
+      lines.push({ok:serialOk,warn:false,text:'Serial: '+(_normalizeSerial(kdmSerial)||'—')+' '+(serialOk?'✓':'≠ cert: '+cinema.cert_serial_dec)});
+      lines.push({ok:issuerOk,warn:false,text:'Issuer: '+(issuerOk?'✓':'divergente')});
+      lines.push({ok:subjectOk,warn:false,text:'Subject: '+(subjectOk?'✓':'divergente')});
+      if(!serialOk||!issuerOk||!subjectOk){overallOk=false;certOk=false;}
+    }else{
+      var thumbOk=!!(kdmThumb&&cinema.cert_thumbprint&&kdmThumb.trim()===cinema.cert_thumbprint.trim());
+      lines.push({ok:thumbOk,warn:false,text:'Thumbprint Interop: '+(thumbOk?'✓':'divergente')});
+      if(!thumbOk){overallOk=false;certOk=false;}
+    }
+    lines.push({ok:true,warn:false,text:'Tipo: '+(isSMPTE?'SMPTE':'Interop')});
+  }
+
+  // 3. Window validation
+  if(notBefore&&notAfter&&s.date){
+    try{
+      var nbMs=new Date(notBefore).getTime(),naMs=new Date(notAfter).getTime();
+      var sessMs=Date.UTC(s.date.getFullYear(),s.date.getMonth(),s.date.getDate(),s.time?s.time.h:0,s.time?s.time.m:0,0);
+      var inWindow=sessMs>=nbMs&&sessMs<=naMs;
+      var fmt=function(iso){try{var d=new Date(iso);return d.toISOString().replace('T',' ').slice(0,16)+' UTC';}catch(e){return iso;}};
+      if(inWindow){lines.push({ok:true,warn:false,text:'Janela: dentro ('+fmt(notBefore)+' → '+fmt(notAfter)+')'});}
+      else{lines.push({ok:false,warn:true,text:'Janela: fora ('+fmt(notBefore)+' → '+fmt(notAfter)+')'});overallOk=false;windowFail=true;}
+    }catch(e){lines.push({ok:false,warn:true,text:'Janela: não foi possível validar'});}
+  }else{
+    lines.push({ok:false,warn:true,text:'Janela de validade ausente no KDM'});
+  }
+
+  var now=new Date();
+  var ts=now.toLocaleDateString('pt-BR')+' '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  var status=overallOk?'ok':(windowFail&&certOk?'window':'fail');
+  _kdmResults[sessaoNome]={status:status,timestamp:ts,lines:lines};
+
+  var enc=encodeURIComponent(sessaoNome);
+  var rowEl=document.getElementById('kdmrow-'+enc);
+  var resultEl=document.getElementById('kdmresult-'+enc);
+  var stMap={ok:{cls:'kdm-status-ok',label:'Válido'},window:{cls:'kdm-status-window',label:'Fora da janela'},fail:{cls:'kdm-status-fail',label:'Inválido'}};
+  var st=stMap[status]||stMap.fail;
+  if(rowEl){var stEl=rowEl.querySelector('.kdm-status');if(stEl){stEl.className='kdm-status '+st.cls;stEl.textContent=st.label;}}
+  if(resultEl){resultEl.innerHTML=_kdmResultHtml(sessaoNome);}
+  else if(rowEl){var wrap=document.createElement('div');wrap.className='kdm-result-wrap';wrap.id='kdmresult-'+enc;wrap.innerHTML=_kdmResultHtml(sessaoNome);rowEl.parentNode.insertBefore(wrap,rowEl.nextSibling);}
+}
+
 function buildProjecaoFilters(){
   buildPills(document.getElementById('projecaoEventFilters'),eventColors,activeEventsProjecao,function(){
     renderProjecao();
@@ -6997,14 +7407,14 @@ function efv(v){return(!v||v==='-'||v==='0')?'—':v;}// expand field value
 /* EVENT FILTER SYNC */
 function syncEventFiltersFrom(src){
   var evs=Array.from(src);
-  [activeEventsGrade,activeEventsBusca,activeEventsIngest,activeEventsFicha,activeEventsCinemas,activeEventsDash,activeEventsGrade2,activeEventsSessoes,activeEventsProjecao,activeEventsVinhetas,activeEventsProgramacao].forEach(function(s){s.clear();evs.forEach(function(e){s.add(e);});});
+  [activeEventsGrade,activeEventsBusca,activeEventsIngest,activeEventsFicha,activeEventsCinemas,activeEventsDash,activeEventsGrade2,activeEventsSessoes,activeEventsProjecao,activeEventsVinhetas,activeEventsProgramacao,activeEventsKDM].forEach(function(s){s.clear();evs.forEach(function(e){s.add(e);});});
 }
 function activeEventsForMode(m){
   if(m==='grade')return activeEventsGrade;if(m==='busca')return activeEventsBusca;
   if(m==='ingest')return activeEventsIngest;if(m==='ficha')return activeEventsFicha;
   if(m==='cinemas')return activeEventsCinemas;if(m==='dash')return activeEventsDash;
   if(m==='grade2')return activeEventsGrade2;if(m==='sessoes')return activeEventsSessoes;
-  if(m==='projecao')return activeEventsProjecao;if(m==='vinhetas')return activeEventsVinhetas;if(m==='catalogo')return activeEventsCatalogo;if(m==='programacao')return activeEventsProgramacao;return null;
+  if(m==='projecao')return activeEventsProjecao;if(m==='vinhetas')return activeEventsVinhetas;if(m==='catalogo')return activeEventsCatalogo;if(m==='programacao')return activeEventsProgramacao;if(m==='kdm')return activeEventsKDM;return null;
 }
 function rebuildPillsForMode(m){
   if(m==='grade')buildGradeFilters();else if(m==='grade2')buildGrade2Filters();
@@ -7016,6 +7426,7 @@ function rebuildPillsForMode(m){
   else if(m==='busca')buildBuscaFilters();else if(m==='dash')buildDashFilters();
   else if(m==='catalogo')buildCatalogoFilters();
   else if(m==='programacao')buildProgramacaoFilters();
+  else if(m==='kdm')buildKDMFilters();
 }
 
 /* BUSCA ADITIVA */
@@ -8864,7 +9275,7 @@ async function duplicateProgSessao(nome){
 }
 
 var _equipeUsers=[], _equipeEditId=null, _equipeDeleteId=null, _adminEventos=[], _equipeEventoFiltro='';
-var _EQUIPE_MODULOS=['projecao','grade','sessoes','busca','vinhetas','cinemas','dash','receptivo','bilheteria','catalogo','programacao'];
+var _EQUIPE_MODULOS=['projecao','grade','sessoes','busca','vinhetas','cinemas','kdm','dash','receptivo','bilheteria','catalogo','programacao'];
 var _EQUIPE_ROLES=['admin','editor','projecao','programacao','producao','viewer'];
 var _EQUIPE_RESTRICOES=[
   {k:'cinemas.bordero',label:'Cinemas · Borderô'},
@@ -10746,6 +11157,7 @@ function _mobDispatch(frame){
   else if(v==='acervo')_mobRenderAcervo(p,true);
   else if(v==='acervo-detail')_mobRenderAcervoDetail(p,true);
   else if(v==='receptivo')_mobRenderReceptivo(p,true);
+  else if(v==='kdm')_mobRenderKDM(p,true);
   else if(v==='bilheteria')_mobRenderBilheteria(p,true);
   else if(v==='vinhetas')_mobRenderVinhetas(p,true);
   else if(v==='catalogo')_mobRenderCatalogo(p,true);
@@ -10931,6 +11343,7 @@ function olgaMobileHome(noStack){
     {mod:'projecao', icon:'projector',        label:'Projeção',    sub:'Sessões e fichas',    fn:'olgaMobileProjecao()'},
     {mod:'sessoes',  icon:'calendar-clock',   label:'Sessões',     sub:'Calendário do dia',   fn:'olgaMobileProjecao()'},
     {mod:'receptivo',icon:'monitor',          label:'Receptivo',   sub:'Gestão de convidados',fn:'olgaMobileReceptivo()'},
+    {mod:'kdm',       icon:'key',             label:'KDM',         sub:'Validação de chaves',  fn:'olgaMobileKDM()'},
     {mod:'bilheteria',icon:'ticket',          label:'Bilheteria',  sub:'Ingressos e acesso',   fn:'olgaMobileBilheteria()'},
     {mod:'vinhetas', icon:'film',             label:'vinhetas',    sub:'Por sessão',          fn:'olgaMobileVinhetas()'},
     {mod:'busca',    icon:'file-text',        label:'Acervo',      sub:'Busca por título',    fn:'olgaMobileAcervo()'},
@@ -11239,6 +11652,21 @@ window._mobReceptivoWip=function(nome){
     '</div>'
   );
 };
+
+/* ── kdm ─────────────────────────────────────────────────────────── */
+function olgaMobileKDM(){
+  _mobPush({view:'kdm',params:{},title:'KDM'});
+  _mobRenderKDM({});
+}
+function _mobRenderKDM(params,back){
+  _mobSetContent(
+    '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;">'+
+    '<div style="font-size:40px;margin-bottom:16px;">🔑</div>'+
+    '<div style="font-family:var(--mono);font-size:16px;font-weight:600;color:var(--text);margin-bottom:10px;">KDM</div>'+
+    '<div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);line-height:1.6;max-width:280px;">Use a versão desktop para validar KDMs e importar certificados.</div>'+
+    '</div>'
+  );
+}
 
 /* ── bilheteria ─────────────────────────────────────────────────── */
 function olgaMobileBilheteria(){
