@@ -4740,8 +4740,8 @@ function fmtTimeStr(val){if(!val)return'—';if(typeof val==='string'&&/^\d{1,2}
 function fmtDur(val){if(!val||val==='-')return'—';if(typeof val==='string'&&/^\d{1,2}:\d{2}/.test(val)){var p=val.split(':').map(Number);if(p[0]>0)return p[0]+'h'+String(p[1]).padStart(2,'0');return p[1]+'min';}return val;}
 function parseDate(v){if(!v)return null;var iso=v.match?v.match(/^(\d{4})-(\d{2})-(\d{2})$/):null;if(iso)return new Date(+iso[1],+iso[2]-1,+iso[3]);var d=new Date(v);if(!isNaN(d))return new Date(d.getFullYear(),d.getMonth(),d.getDate());var m=v.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);if(m)return new Date(+m[3]<100?2000+Number(m[3]):+m[3],m[2]-1,+m[1]);return null;}
 function parseTime(v){if(!v)return{h:0,m:0,str:'?'};var h=0,m=0;if(typeof v==='string'&&/^\d{1,2}:\d{2}/.test(v)){var p=v.split(':').map(Number);h=p[0];m=p[1];}else{var d=new Date(v);if(!isNaN(d)){h=d.getHours();m=d.getMinutes();}}return{h:h,m:m,str:String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')};}
-function lenteBadge(v){var u=(v||'').toUpperCase();if(u.includes('FLAT')&&u.includes('200'))return'<span class="badge badge-flat200">FLAT 200</span>';if(u.includes('FLAT')&&(u.includes('(C)')||u.replace(/\s/g,'').includes('(C)')))return'<span class="badge badge-flatc">FLAT (C)</span>';if(u.includes('FLAT'))return'<span class="badge badge-flat">FLAT</span>';if(u.includes('SCOPE'))return'<span class="badge badge-scope">SCOPE</span>';if(u.includes('2.0'))return'<span class="badge badge-scope">2.0:1</span>';if(v&&v!=='-')return'<span class="badge badge-flat">'+v+'</span>';return'—';}
-function somBadge(v){var u=(v||'').toUpperCase();if(u.includes('5.1'))return'<span class="badge badge-51">5.1</span>';if(u.includes('STEREO'))return'<span class="badge badge-stereo">Stereo</span>';if(v&&v!=='-')return'<span class="badge badge-stereo">'+v+'</span>';return'—';}
+function lenteBadge(v){var u=(v||'').toUpperCase();if(u.includes('FLAT')&&u.includes('200'))return'<span class="badge badge-flat200">FLAT 200</span>';if(u.includes('FLAT')&&(u.includes('(C)')||u.replace(/\s/g,'').includes('(C)')))return'<span class="badge badge-flatc">FLAT (C)</span>';if(u.includes('FLAT'))return'<span class="badge badge-flat">FLAT</span>';if(u.includes('SCOPE'))return'<span class="badge badge-scope">SCOPE</span>';if(u.includes('2.0'))return'<span class="badge badge-scope">2.0:1</span>';if(v&&v!=='-')return'<span class="badge badge-flat">'+v+'</span>';return'';}
+function somBadge(v){var u=(v||'').toUpperCase();if(u.includes('5.1'))return'<span class="badge badge-51">5.1</span>';if(u.includes('STEREO'))return'<span class="badge badge-stereo">Stereo</span>';if(v&&v!=='-')return'<span class="badge badge-stereo">'+v+'</span>';return'';}
 function kdmFichaBadge(v){if((v||'').toLowerCase()==='sim')return'<span class="badge badge-kdm-sim">KDM !</span>';return'<span class="badge badge-kdm-nao">não</span>';}
 
 /* FICHA */
@@ -8456,7 +8456,7 @@ function renderBuscaResults(){
     var legStr=vf?'VF '+vf:leg;
 
     var kdmTag=kdm?'<span class="badge badge-kdm">⚠ KDM</span>':'';
-    var resTag=res?'<div class="meta-tag"><span class="label">Res</span>'+res+'</div>':'';
+    var resTag=res?'<span class="meta-tag"><span class="label">Res</span>'+res+'</span>':'';
     var cplOVRow=cplOV?'<div class="cpl-ov-row"><div class="cpl-ov-label">CPL OV</div><div class="cpl-ov-value">'+hl(cplOV,buscaQuery)+'</div></div>':'';
     var cplPanel=cpl
       ?'<div class="card-cpl"><div class="cpl-label">CPL</div><div class="cpl-value">'+hl(cpl,buscaQuery)+'</div><div class="cpl-sub">'+(fps?fps+'fps ':'')+(gb?gb+' GB':'')+'</div>'+cplOVRow+'</div>'
@@ -8478,11 +8478,11 @@ function renderBuscaResults(){
           '<div class="card-meta">'+
             kdmTag+
             lenteBadge(clean(f.lente))+somBadge(clean(f.som))+
-            (hd?'<div class="meta-tag"><span class="label">HD</span>'+hl(hd,buscaQuery)+'</div>':'')+
-            (f.idioma?'<div class="meta-tag"><span class="label">Idioma</span>'+hl(f.idioma,buscaQuery)+'</div>':'')+
-            (legStr?'<div class="meta-tag"><span class="label">Leg</span>'+hl(legStr,buscaQuery)+'</div>':'')+
-            (dur&&dur!=='—'?'<div class="meta-tag"><span class="label">Dur</span>'+dur+'</div>':'')+
-            (gbRaw?'<div class="meta-tag"><span class="label">GB</span>'+gbRaw+'</div>':'')+
+            (hd?'<span class="meta-tag"><span class="label">HD</span>'+hl(hd,buscaQuery)+'</span>':'')+
+            (f.idioma?'<span class="meta-tag"><span class="label">Idioma</span>'+hl(f.idioma,buscaQuery)+'</span>':'')+
+            (legStr?'<span class="meta-tag"><span class="label">Leg</span>'+hl(legStr,buscaQuery)+'</span>':'')+
+            (dur&&dur!=='—'?'<span class="meta-tag"><span class="label">Dur</span>'+dur+'</span>':'')+
+            (gbRaw?'<span class="meta-tag"><span class="label">GB</span>'+gbRaw+'</span>':'')+
             resTag+
           '</div>'+
           (obs?'<div class="card-obs">'+hl(obs,buscaQuery)+'</div>':'')+
@@ -8982,7 +8982,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 04/05/2026 às 16:50';
+  var sysUpdate='última atualização do sistema · 04/05/2026 às 17:00';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -11544,7 +11544,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 04/05/2026 às 16:50</span></div>
+<div id="page-footer"><span>última atualização · 04/05/2026 às 17:00</span></div>
 
 </div>
 
