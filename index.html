@@ -6733,8 +6733,12 @@ function _kdmResultHtml(sessaoNome){
   var r=_kdmResults[sessaoNome];if(!r)return'';
   var html='<div class="kdm-result-title">Último teste · '+r.timestamp+'</div>';
   r.lines.forEach(function(l){
-    var cls=l.ok?'kdm-check-ok':l.warn?'kdm-check-warn':'kdm-check-fail';
-    html+='<div class="kdm-check-line '+cls+'"><span>'+(l.ok?'✓':l.warn?'⚠':'✗')+'</span><span>'+l.text+'</span></div>';
+    if(l.diag){
+      html+='<div class="kdm-check-line kdm-check-info" style="font-size:9px;padding:1px 0 1px 16px;word-break:break-all;opacity:0.8;"><span>'+l.text+'</span></div>';
+    }else{
+      var cls=l.ok?'kdm-check-ok':l.warn?'kdm-check-warn':'kdm-check-fail';
+      html+='<div class="kdm-check-line '+cls+'"><span>'+(l.ok?'✓':l.warn?'⚠':'✗')+'</span><span>'+l.text+'</span></div>';
+    }
   });
   return html;
 }
@@ -6797,10 +6801,26 @@ function _processKDMTest(sessaoNome,xml){
       var serialOk=_normalizeSerial(kdmSerial)===cinema.cert_serial_dec;
       var issuerOk=_normalizeDN(kdmIssuer)===_normalizeDN(cinema.cert_issuer);
       lines.push({ok:serialOk,warn:false,text:'Serial: '+(_normalizeSerial(kdmSerial)||'—')+' '+(serialOk?'✓':'≠ cert: '+cinema.cert_serial_dec)});
-      lines.push({ok:issuerOk,warn:false,text:'Issuer: '+(issuerOk?'✓':'divergente')});
+      if(issuerOk){
+        lines.push({ok:true,warn:false,text:'Issuer: ✓'});
+      }else{
+        lines.push({ok:false,warn:false,text:'Issuer: divergente'});
+        lines.push({ok:false,warn:false,diag:true,text:'  KDM  raw: '+(kdmIssuer||'(vazio)')});
+        lines.push({ok:false,warn:false,diag:true,text:'  KDM norm: '+_normalizeDN(kdmIssuer)});
+        lines.push({ok:false,warn:false,diag:true,text:'  Cert raw: '+(cinema.cert_issuer||'(vazio)')});
+        lines.push({ok:false,warn:false,diag:true,text:'  Cert norm: '+_normalizeDN(cinema.cert_issuer)});
+      }
       if(kdmSubject){
         var subjectOk=_normalizeDN(kdmSubject)===_normalizeDN(cinema.cert_subject);
-        lines.push({ok:subjectOk,warn:false,text:'Subject: '+(subjectOk?'✓':'divergente')});
+        if(subjectOk){
+          lines.push({ok:true,warn:false,text:'Subject: ✓'});
+        }else{
+          lines.push({ok:false,warn:false,text:'Subject: divergente'});
+          lines.push({ok:false,warn:false,diag:true,text:'  KDM  raw: '+(kdmSubject||'(vazio)')});
+          lines.push({ok:false,warn:false,diag:true,text:'  KDM norm: '+_normalizeDN(kdmSubject)});
+          lines.push({ok:false,warn:false,diag:true,text:'  Cert raw: '+(cinema.cert_subject||'(vazio)')});
+          lines.push({ok:false,warn:false,diag:true,text:'  Cert norm: '+_normalizeDN(cinema.cert_subject)});
+        }
         if(!serialOk||!issuerOk||!subjectOk){overallOk=false;certOk=false;}
       }else{
         // SMPTE KDMs usando X509IssuerSerial não incluem SubjectName — OK
