@@ -2997,6 +2997,9 @@ mark{background:rgba(255,186,32,0.28);color:var(--accent);border-radius:2px;padd
 .kdm-status-fail{color:#ffb4ab;border-color:rgba(255,100,80,0.4);}
 .kdm-status-window{color:var(--accent);border-color:rgba(255,186,32,0.4);}
 .kdm-status-nocert{color:var(--text-muted);border-color:var(--border);font-style:italic;}
+.kdm-past-toggle{width:100%;padding:9px 24px;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);background:var(--surface2);border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:left;transition:color 0.15s;}
+.kdm-past-toggle:hover{color:var(--text-dim);}
+.kdm-past-section{border-bottom:1px solid var(--border);}
 .kdm-test-btn{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:4px 12px;background:transparent;border:1px solid var(--border2);color:var(--text-dim);cursor:pointer;transition:all 0.15s;flex-shrink:0;}
 .kdm-test-btn:hover{border-color:var(--accent);color:var(--accent);}
 .kdm-result-wrap{padding:12px 24px 16px;background:var(--surface2);border-top:1px solid var(--border);}
@@ -3273,15 +3276,24 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
 
 /* landing modules stay readable at high zoom */
 #landing .landing-modules{
-  display:grid!important;
-  grid-auto-flow:column!important;
-  grid-auto-columns:minmax(120px,1fr)!important;
-  grid-template-columns:none!important;
-  width:min(100%,1800px)!important;
-  max-width:1800px!important;
-  overflow-x:auto!important;
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  justify-content:center!important;
+  width:auto!important;
+  max-width:calc(100% - 48px)!important;
+  border:1px solid var(--border)!important;
+  overflow:visible!important;
 }
-#landing .landing-modules .module-card{min-width:120px;}
+#landing .landing-modules .module-card{
+  flex:0 0 auto;
+  width:clamp(120px,14vw,180px);
+  border-right:1px solid var(--border);
+  border-left:none;
+}
+#landing .landing-modules .module-card:first-child{border-left:none;}
+#landing .landing-modules .module-card:last-child{border-right:none;}
+/* last VISIBLE card loses its right border */
+#landing .landing-modules .module-card:not([style*="display:none"]):last-of-type{border-right:none;}
 
 /* win98 readability polish */
 [data-theme="win98"]{
@@ -3625,11 +3637,15 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
       if (tabEl)  tabEl.style.display  = visible ? '' : 'none';
       if (cardEl) cardEl.style.display = visible ? '' : 'none';
     });
-    // Ajusta colunas do grid conforme cards visíveis
+    // Fix borders on visible cards
     var grid = document.querySelector('.landing-modules');
     if (grid) {
-      var visible = grid.querySelectorAll('.module-card:not([style*="display: none"]):not([style*="display:none"])').length;
-      grid.style.gridTemplateColumns = 'repeat('+visible+',1fr)';
+      var visibleCards = Array.from(grid.querySelectorAll('.module-card')).filter(function(el){
+        return el.style.display !== 'none';
+      });
+      visibleCards.forEach(function(el, i){
+        el.style.borderRight = (i < visibleCards.length - 1) ? '1px solid var(--border)' : 'none';
+      });
     }
     // aba Equipe: só para admin, independente de modulos
     var tabEquipe = document.getElementById('tabEquipe');
@@ -4129,6 +4145,12 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
 </div>
 <div class="mode-bar hidden" id="barKDM">
   <div class="event-filters" id="kdmEventFilters"></div>
+  <select id="kdmComplexoSelect" style="min-width:160px;margin-left:8px;" onchange="kdmComplexoFilter=this.value;rebuildKDMSalaSelect();renderKDM();">
+    <option value="">Todos os complexos</option>
+  </select>
+  <select id="kdmSalaSelect" style="min-width:160px;margin-left:6px;" onchange="kdmSalaFilter=this.value;renderKDM();">
+    <option value="">Todas as salas</option>
+  </select>
 </div>
 <div class="mode-bar hidden" id="barDash">
   <div class="day-tabs" id="dashDayTabs"></div>
@@ -4169,7 +4191,7 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
     <div class="drop-label">Carregar sistema_olga.xlsx</div>
     <div class="drop-sub">clique ou arraste o arquivo aqui</div>
   </div>
-  <div class="landing-modules" style="max-width:1800px;width:min(100%,1800px);">
+  <div class="landing-modules">
     <div class="module-card disabled" id="modCardDash" onclick="moduleCardClick('dash')">
       <div class="module-icon"><i data-lucide="bar-chart-2"></i></div>
       <div class="module-name">Dashboard</div>
@@ -4210,10 +4232,22 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
       <div class="module-name">Bilheteria</div>
       <div class="module-desc">Gestão de ingressos, bilheterias e controle de acesso</div>
     </div>
-    <!-- hidden cards (accessible via header only) -->
-    <div class="module-card disabled" id="modCardCatalogo" onclick="moduleCardClick('catalogo')" style="display:none"></div>
-    <div class="module-card disabled" id="modCardSessoes" onclick="moduleCardClick('sessoes')" style="display:none"></div>
-    <div class="module-card disabled" id="modCardKDM" onclick="moduleCardClick('kdm')" style="display:none"></div>
+    <!-- cards acessíveis só pelo header (ocultos no landing por padrão) -->
+    <div class="module-card disabled" id="modCardCatalogo" onclick="moduleCardClick('catalogo')" style="display:none">
+      <div class="module-icon"><i data-lucide="library"></i></div>
+      <div class="module-name">Catálogo</div>
+      <div class="module-desc">Fichas curatoriais e metadados de exibição</div>
+    </div>
+    <div class="module-card disabled" id="modCardSessoes" onclick="moduleCardClick('sessoes')" style="display:none">
+      <div class="module-icon"><i data-lucide="calendar-clock"></i></div>
+      <div class="module-name">Sessões</div>
+      <div class="module-desc">Lista de sessões por dia com filtro por sala</div>
+    </div>
+    <div class="module-card disabled" id="modCardKDM" onclick="moduleCardClick('kdm')" style="display:none">
+      <div class="module-icon"><i data-lucide="key"></i></div>
+      <div class="module-name">KDM</div>
+      <div class="module-desc">Validação de chaves e certificados dos servidores</div>
+    </div>
   </div>
 </div>
 
@@ -4468,6 +4502,7 @@ var _browserNav=false;
 var filteredFilmes=[];
 var cinemasArr=[];
 var cinemasComplexoFilter='',cinemasEstadoFilter='',cinemasEventoFilter='',currentCinemaDetail=null;
+var kdmComplexoFilter='',kdmSalaFilter='';
 var ingestDays=[],currentIngestDay=null,ingestCinemaFilter='',ingestHdFilter='',gradeCinemaFilter='';
 var grade2Days=[],grade2CurrentDay=null,grade2CinemaFilter='';
 var sessoesCinemaFilter='',_sessoesHidePast=true;
@@ -6947,18 +6982,77 @@ function importCinemasCert(sala){
 }
 
 function buildKDMFilters(){
-  buildPills(document.getElementById('kdmEventFilters'),eventColors,activeEventsKDM,function(){renderKDM();});
+  buildPills(document.getElementById('kdmEventFilters'),eventColors,activeEventsKDM,function(){
+    rebuildKDMComplexoSelect();
+    renderKDM();
+  });
+  rebuildKDMComplexoSelect();
+}
+
+function rebuildKDMComplexoSelect(){
+  var allC=getAllCinemas();
+  var as=allowedSalas();
+  var complexos=new Set();
+  // Only complexos that have at least one KDM session in active events
+  sessoesArr.forEach(function(s){
+    if(s.evento&&!activeEventsKDM.has(s.evento))return;
+    if(as&&s.cinema&&!as.has(s.cinema))return;
+    var hasKDM=s.filmes.some(function(c){var f=filmesMap[c];return f&&f.kdm&&f.kdm.toString().toUpperCase()==='SIM';});
+    if(!hasKDM)return;
+    var c=allC.map[s.cinema];
+    complexos.add((c&&c.complexo)||s.cinema);
+  });
+  var sel=document.getElementById('kdmComplexoSelect');
+  var prev=sel.value;
+  sel.innerHTML='<option value="">Todos os complexos</option>';
+  Array.from(complexos).sort().forEach(function(cx){
+    var o=document.createElement('option');o.value=cx;o.textContent=cx;sel.appendChild(o);
+  });
+  if(prev&&complexos.has(prev))sel.value=prev;
+  else{sel.value='';kdmComplexoFilter='';}
+  rebuildKDMSalaSelect();
+}
+
+function rebuildKDMSalaSelect(){
+  var allC=getAllCinemas();
+  var as=allowedSalas();
+  var salas=new Set();
+  sessoesArr.forEach(function(s){
+    if(s.evento&&!activeEventsKDM.has(s.evento))return;
+    if(as&&s.cinema&&!as.has(s.cinema))return;
+    var hasKDM=s.filmes.some(function(c){var f=filmesMap[c];return f&&f.kdm&&f.kdm.toString().toUpperCase()==='SIM';});
+    if(!hasKDM)return;
+    var c=allC.map[s.cinema];
+    var cx=(c&&c.complexo)||s.cinema;
+    if(kdmComplexoFilter&&cx!==kdmComplexoFilter)return;
+    salas.add(s.cinema);
+  });
+  var sel=document.getElementById('kdmSalaSelect');
+  var prev=sel.value;
+  sel.innerHTML='<option value="">Todas as salas</option>';
+  Array.from(salas).sort().forEach(function(sala){
+    var o=document.createElement('option');o.value=sala;o.textContent=sala;sel.appendChild(o);
+  });
+  if(prev&&salas.has(prev))sel.value=prev;
+  else{sel.value='';kdmSalaFilter='';}
 }
 
 function renderKDM(){
   var kc=document.getElementById('kdm-container');
+  var allC=getAllCinemas();
+  var as=allowedSalas();
   var filtered=sessoesArr.filter(function(s){
     if(s.evento&&!activeEventsKDM.has(s.evento))return false;
-    var as=allowedSalas();if(as&&s.cinema&&!as.has(s.cinema))return false;
+    if(as&&s.cinema&&!as.has(s.cinema))return false;
+    if(kdmSalaFilter&&s.cinema!==kdmSalaFilter)return false;
+    if(kdmComplexoFilter){
+      var c=allC.map[s.cinema];
+      if(((c&&c.complexo)||s.cinema)!==kdmComplexoFilter)return false;
+    }
     return s.filmes.some(function(code){var f=filmesMap[code];return f&&f.kdm&&f.kdm.toString().toUpperCase()==='SIM';});
   });
   if(!filtered.length){
-    kc.innerHTML='<div class="empty-state"><div class="icon"><i data-lucide="key"></i></div><p>Nenhuma sessão com KDM nos eventos selecionados.</p></div>';
+    kc.innerHTML='<div class="empty-state"><div class="icon"><i data-lucide="key"></i></div><p>Nenhuma sessão com KDM nos filtros selecionados.</p></div>';
     if(window.lucide)lucide.createIcons();return;
   }
   var byDay={},dayOrder=[];
@@ -6973,7 +7067,7 @@ function renderKDM(){
 
   function sessStatus(s){
     var r=_kdmResults[s.nome];
-    if(!r){var all=getAllCinemas();var ci=all.map[s.cinema];if(!ci||!ci.cert_serial_hex)return{cls:'kdm-status-nocert',label:'Cert ausente'};return{cls:'kdm-status-none',label:'Sem KDM'};}
+    if(!r){var ci=allC.map[s.cinema];if(!ci||!ci.cert_serial_hex)return{cls:'kdm-status-nocert',label:'Cert ausente'};return{cls:'kdm-status-none',label:'Sem KDM'};}
     if(r.status==='ok')return{cls:'kdm-status-ok',label:'Válido'};
     if(r.status==='window')return{cls:'kdm-status-window',label:'Fora da janela'};
     return{cls:'kdm-status-fail',label:'Inválido'};
@@ -6998,14 +7092,49 @@ function renderKDM(){
       +'</div>'+prevResult;
   }
 
+  // Split days into past and upcoming
+  var pastDays=dayOrder.filter(function(k){return k<todayKey;});
+  var upcomingDays=dayOrder.filter(function(k){return k>=todayKey;});
+  var pastCount=pastDays.reduce(function(acc,k){return acc+byDay[k].length;},0);
+
   var html='';
-  dayOrder.forEach(function(k){
+
+  // Past block (collapsed)
+  if(pastDays.length){
+    html+='<div class="kdm-past-section" id="kdmPastSection" style="display:none;">';
+    pastDays.forEach(function(k){
+      var d=byDay[k];var dateObj=d[0].date;
+      var lbl=dateObj?dateObj.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+      html+='<div class="kdm-day-group"><div class="kdm-day-header"><span class="kdm-day-label">'+lbl+'</span><span class="kdm-day-count">'+d.length+' '+(d.length===1?'sessão':'sessões')+'</span></div>'+d.map(sessRowHtml).join('')+'</div>';
+    });
+    html+='</div>';
+    html+='<button class="kdm-past-toggle" id="kdmPastToggle" onclick="toggleKDMPast(this)">▸ Ver '+pastCount+' '+(pastCount===1?'sessão anterior':'sessões anteriores')+' ('+pastDays.length+' '+(pastDays.length===1?'dia':'dias')+')</button>';
+  }
+
+  // Upcoming days
+  upcomingDays.forEach(function(k){
     var d=byDay[k];var dateObj=d[0].date;var isToday=k===todayKey;
     var lbl=dateObj?dateObj.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}):'—';
     html+='<div class="kdm-day-group"><div class="kdm-day-header"><span class="kdm-day-label'+(isToday?' today':'')+'">'+lbl+(isToday?' · hoje':'')+'</span><span class="kdm-day-count">'+d.length+' '+(d.length===1?'sessão':'sessões')+'</span></div>'+d.map(sessRowHtml).join('')+'</div>';
   });
+
   kc.innerHTML=html;
   if(window.lucide)lucide.createIcons();
+}
+
+function toggleKDMPast(btn){
+  var sec=document.getElementById('kdmPastSection');
+  if(!sec)return;
+  var open=sec.style.display!=='none';
+  sec.style.display=open?'none':'block';
+  if(open){
+    // re-count when collapsing
+    var cnt=sec.querySelectorAll('.kdm-row').length;
+    var days=sec.querySelectorAll('.kdm-day-group').length;
+    btn.textContent='▸ Ver '+cnt+' '+(cnt===1?'sessão anterior':'sessões anteriores')+' ('+days+' '+(days===1?'dia':'dias')+')';
+  }else{
+    btn.textContent='▾ Ocultar sessões anteriores';
+  }
 }
 
 function _kdmResultHtml(sessaoNome){
@@ -8794,7 +8923,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 04/05/2026 às 15:10';
+  var sysUpdate='última atualização do sistema · 04/05/2026 às 15:50';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -11356,7 +11485,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 04/05/2026 às 15:10</span></div>
+<div id="page-footer"><span>última atualização · 04/05/2026 às 15:50</span></div>
 
 </div>
 
