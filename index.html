@@ -4580,7 +4580,7 @@ function switchMode(mode,noPush){
   if(currentMode==='catalogo'&&mode!=='catalogo'&&!_browserNav){_catResetState();}
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='block';
-  ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','equipe','catalogo','programacao'].forEach(function(m){
+  ['projecao','ficha','grade','grade2','sessoes','busca','vinhetas','ingest','cinemas','dash','receptivo','bilheteria','equipe','catalogo','programacao'].forEach(function(m){
     var cap=m==='grade2'?'Grade2':m==='projecao'?'Projecao':m==='sessoes'?'Sessoes':m==='vinhetas'?'Vinhetas':m==='programacao'?'Programacao':m.charAt(0).toUpperCase()+m.slice(1);
     document.getElementById('tab'+cap).classList.toggle('active',m===mode);
     document.getElementById('bar'+cap).classList.toggle('hidden',m!==mode);
