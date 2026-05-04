@@ -7950,9 +7950,9 @@ function renderBuscaResults(){
             '<span class="card-codigo">'+hl(f.codigo,buscaQuery)+'</span>'+
             (f.evento&&col?'<span class="card-evento" style="background:'+col.bg+';color:'+col.text+'">'+f.evento+'</span>':'')+
             statusBadge(f.status)+
-            kdmTag+
           '</div>'+
           '<div class="card-meta">'+
+            kdmTag+
             lenteBadge(clean(f.lente))+' '+somBadge(clean(f.som))+
             (hd?'<div class="meta-tag"><span class="label">HD</span>'+hl(hd,buscaQuery)+'</div>':'')+
             (f.idioma?'<div class="meta-tag"><span class="label">Idioma</span>'+hl(f.idioma,buscaQuery)+'</div>':'')+
@@ -8458,7 +8458,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 04/05/2026 às 00:15';
+  var sysUpdate='última atualização do sistema · 04/05/2026 às 01:00';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -9091,9 +9091,8 @@ function openProgSessaoModal(sessaoNome,programId,subprogramId){
   var evData=(_adminEventos||[]).find(function(e){return e.id===ev;});
   var evEstados=evData&&evData.data&&evData.data.estados?new Set(evData.data.estados):null;
   var cinemasFilt=cinemasArr.filter(function(c){
-    var cEv=(c.evento||'').split(';').map(function(x){return x.trim();});
-    if(evEstados)return evEstados.has(c.estado);
-    return!ev||cEv.indexOf(ev)>=0||!c.evento;
+    if(evEstados&&evEstados.size)return evEstados.has(c.estado);
+    return true;
   });
   var cinemaOpts=cinemasFilt.map(function(c){return'<option value="'+esc(c.sala)+'"'+(s&&s.cinema===c.sala?' selected':'')+'>'+esc(c.sala)+'</option>';}).join('');
   _progSessaoFilmsArr=s?s.filmes.slice():[];
@@ -11021,7 +11020,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 04/05/2026 às 00:15</span></div>
+<div id="page-footer"><span>última atualização · 04/05/2026 às 01:00</span></div>
 
 </div>
 
