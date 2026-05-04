@@ -5976,7 +5976,7 @@ function openCinemaEdit(sala,complexoCtx){
       '<div class="cem-section" style="margin-top:8px;">Sala</div>'+
       '<div class="cem-row">'+
         '<div class="cem-field"><label class="cem-label">Nome da sala</label><input class="cem-input" id="cemSalaNome" value="'+sala.replace(/"/g,'&quot;')+'" placeholder="Ex: Sala 1"></div>'+
-        '<div class="cem-field"><label class="cem-label">Evento(s) <span style='font-weight:400;text-transform:none;letter-spacing:0;'>separados por ;</span></label><input class="cem-input" id="cemEvento" value="'+(c.evento||'').replace(/"/g,'&quot;')+'" placeholder="Ex: FESTIVAL2025;MOSTRA"></div>'+
+        '<div class="cem-field"><label class="cem-label">Evento(s) <span style="font-weight:400;text-transform:none;letter-spacing:0;">separados por ;</span></label><input class="cem-input" id="cemEvento" value="'+(c.evento||'').replace(/"/g,'&quot;')+'" placeholder="Ex: FESTIVAL2025;MOSTRA"></div>'+
       '</div>'+
       '<div class="cem-section" style="margin-top:8px;">Equipamentos</div>'+
       '<div class="cem-row">'+
@@ -6010,8 +6010,8 @@ function openCinemaEdit(sala,complexoCtx){
       '<div class="cem-row full"><div class="cem-field"><label class="cem-label">Endereço</label><input class="cem-input" id="cemEndereco" value="" placeholder="Rua, número · Bairro · Cidade"></div></div>'+
       '<div class="cem-section" style="margin-top:8px;">Sala</div>'+
       '<div class="cem-row">'+
-        '<div class="cem-field"><label class="cem-label">Nome da sala <span style='color:var(--warn)'>*</span></label><input class="cem-input" id="cemSalaNome" value="" placeholder="Ex: Sala 1"></div>'+
-        '<div class="cem-field"><label class="cem-label">Evento(s) <span style='font-weight:400;text-transform:none;letter-spacing:0;'>separados por ;</span></label><input class="cem-input" id="cemEvento" value="" placeholder="Ex: FESTIVAL2025"></div>'+
+        '<div class="cem-field"><label class="cem-label">Nome da sala <span style="color:var(--warn)">*</span></label><input class="cem-input" id="cemSalaNome" value="" placeholder="Ex: Sala 1"></div>'+
+        '<div class="cem-field"><label class="cem-label">Evento(s) <span style="font-weight:400;text-transform:none;letter-spacing:0;">separados por ;</span></label><input class="cem-input" id="cemEvento" value="" placeholder="Ex: FESTIVAL2025"></div>'+
       '</div>'+
       '<div class="cem-section" style="margin-top:8px;">Equipamentos</div>'+
       '<div class="cem-row">'+
@@ -8756,7 +8756,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 04/05/2026 às 14:30';
+  var sysUpdate='última atualização do sistema · 04/05/2026 às 14:50';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -11318,7 +11318,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 04/05/2026 às 14:30</span></div>
+<div id="page-footer"><span>última atualização · 04/05/2026 às 14:50</span></div>
 
 </div>
 
