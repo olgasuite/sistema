@@ -1327,9 +1327,20 @@ td.cpl-cell{background:var(--cpl-bg);border-left:3px solid var(--cpl-border);pad
 mark{background:rgba(255,186,32,0.28);color:var(--accent);border-radius:2px;padding:0 1px;}
 .card-codigo{font-family:var(--mono);font-size:10px;color:var(--text-dim);white-space:nowrap;}
 .card-evento{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;border-radius:2px;}
-.card-meta{display:flex;gap:8px;flex-wrap:nowrap;align-items:center;margin-top:5px;overflow-x:auto;scrollbar-width:none;}
-.meta-tag{font-family:var(--mono);font-size:10px;color:var(--text-dim);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0;}
-.meta-tag .label{font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);}
+.card-meta{display:flex;gap:5px;flex-wrap:nowrap;align-items:stretch;margin-top:6px;overflow-x:auto;scrollbar-width:none;}
+/* unified pill — every card-meta child is this exact height */
+.cp{display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:2px;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;text-transform:uppercase;line-height:1;}
+/* label·value pill */
+.cp .cp-lbl{font-size:7.5px;letter-spacing:0.14em;color:var(--text-muted);margin-right:4px;font-weight:600;}
+/* colour variants */
+.cp-kdm{background:rgba(232,55,32,0.12);color:#ff6e55;border:1px solid rgba(232,55,32,0.28);}
+.cp-flat{background:rgba(100,180,255,0.1);color:#64b4ff;border:1px solid rgba(100,180,255,0.2);}
+.cp-flat200{background:rgba(80,210,200,0.1);color:#50d2c8;border:1px solid rgba(80,210,200,0.2);}
+.cp-flatc{background:rgba(100,200,140,0.1);color:#60c88a;border:1px solid rgba(100,200,140,0.2);}
+.cp-scope{background:rgba(180,100,255,0.1);color:#c87aff;border:1px solid rgba(180,100,255,0.2);}
+.cp-51{background:rgba(255,186,32,0.1);color:var(--accent);border:1px solid rgba(255,186,32,0.25);}
+.cp-stereo{background:rgba(255,186,32,0.06);color:#c8a060;border:1px solid rgba(255,186,32,0.12);}
+.cp-meta{background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);}
 .card-obs{margin-top:7px;font-family:var(--sans);font-size:11px;font-style:italic;color:rgba(255,186,32,0.7);line-height:1.4;padding:5px 9px;border-left:2px solid rgba(255,186,32,0.3);background:rgba(255,186,32,0.04);}
 .card-status{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.08em;padding:2px 8px;border-radius:2px;}
 .status-ok{background:rgba(61,186,110,0.14);color:#3dba6e;border:1px solid rgba(61,186,110,0.3);}
@@ -4740,8 +4751,8 @@ function fmtTimeStr(val){if(!val)return'—';if(typeof val==='string'&&/^\d{1,2}
 function fmtDur(val){if(!val||val==='-')return'—';if(typeof val==='string'&&/^\d{1,2}:\d{2}/.test(val)){var p=val.split(':').map(Number);if(p[0]>0)return p[0]+'h'+String(p[1]).padStart(2,'0');return p[1]+'min';}return val;}
 function parseDate(v){if(!v)return null;var iso=v.match?v.match(/^(\d{4})-(\d{2})-(\d{2})$/):null;if(iso)return new Date(+iso[1],+iso[2]-1,+iso[3]);var d=new Date(v);if(!isNaN(d))return new Date(d.getFullYear(),d.getMonth(),d.getDate());var m=v.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);if(m)return new Date(+m[3]<100?2000+Number(m[3]):+m[3],m[2]-1,+m[1]);return null;}
 function parseTime(v){if(!v)return{h:0,m:0,str:'?'};var h=0,m=0;if(typeof v==='string'&&/^\d{1,2}:\d{2}/.test(v)){var p=v.split(':').map(Number);h=p[0];m=p[1];}else{var d=new Date(v);if(!isNaN(d)){h=d.getHours();m=d.getMinutes();}}return{h:h,m:m,str:String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')};}
-function lenteBadge(v){var u=(v||'').toUpperCase();if(u.includes('FLAT')&&u.includes('200'))return'<span class="badge badge-flat200">FLAT 200</span>';if(u.includes('FLAT')&&(u.includes('(C)')||u.replace(/\s/g,'').includes('(C)')))return'<span class="badge badge-flatc">FLAT (C)</span>';if(u.includes('FLAT'))return'<span class="badge badge-flat">FLAT</span>';if(u.includes('SCOPE'))return'<span class="badge badge-scope">SCOPE</span>';if(u.includes('2.0'))return'<span class="badge badge-scope">2.0:1</span>';if(v&&v!=='-')return'<span class="badge badge-flat">'+v+'</span>';return'';}
-function somBadge(v){var u=(v||'').toUpperCase();if(u.includes('5.1'))return'<span class="badge badge-51">5.1</span>';if(u.includes('STEREO'))return'<span class="badge badge-stereo">Stereo</span>';if(v&&v!=='-')return'<span class="badge badge-stereo">'+v+'</span>';return'';}
+function lenteBadge(v){var u=(v||'').toUpperCase();if(u.includes('FLAT')&&u.includes('200'))return'<span class="cp cp-flat200">FLAT 200</span>';if(u.includes('FLAT')&&(u.includes('(C)')||u.replace(/\s/g,'').includes('(C)')))return'<span class="cp cp-flatc">FLAT (C)</span>';if(u.includes('FLAT'))return'<span class="cp cp-flat">FLAT</span>';if(u.includes('SCOPE'))return'<span class="cp cp-scope">SCOPE</span>';if(u.includes('2.0'))return'<span class="cp cp-scope">2.0:1</span>';if(v&&v!=='-')return'<span class="cp cp-flat">'+v+'</span>';return'';}
+function somBadge(v){var u=(v||'').toUpperCase();if(u.includes('5.1'))return'<span class="cp cp-51">5.1</span>';if(u.includes('STEREO'))return'<span class="cp cp-stereo">Stereo</span>';if(v&&v!=='-')return'<span class="cp cp-stereo">'+v+'</span>';return'';}
 function kdmFichaBadge(v){if((v||'').toLowerCase()==='sim')return'<span class="badge badge-kdm-sim">KDM !</span>';return'<span class="badge badge-kdm-nao">não</span>';}
 
 /* FICHA */
@@ -8455,8 +8466,8 @@ function renderBuscaResults(){
     var sess=buscaReverseSessoes[f.codigo]||[];
     var legStr=vf?'VF '+vf:leg;
 
-    var kdmTag=kdm?'<span class="badge badge-kdm">⚠ KDM</span>':'';
-    var resTag=res?'<span class="meta-tag"><span class="label">Res</span>'+res+'</span>':'';
+    var kdmTag=kdm?'<span class="cp cp-kdm">⚠ KDM</span>':'';
+    var resTag=''; // now inlined in card-meta
     var cplOVRow=cplOV?'<div class="cpl-ov-row"><div class="cpl-ov-label">CPL OV</div><div class="cpl-ov-value">'+hl(cplOV,buscaQuery)+'</div></div>':'';
     var cplPanel=cpl
       ?'<div class="card-cpl"><div class="cpl-label">CPL</div><div class="cpl-value">'+hl(cpl,buscaQuery)+'</div><div class="cpl-sub">'+(fps?fps+'fps ':'')+(gb?gb+' GB':'')+'</div>'+cplOVRow+'</div>'
@@ -8477,13 +8488,14 @@ function renderBuscaResults(){
           '</div>'+
           '<div class="card-meta">'+
             kdmTag+
-            lenteBadge(clean(f.lente))+somBadge(clean(f.som))+
-            (hd?'<span class="meta-tag"><span class="label">HD</span>'+hl(hd,buscaQuery)+'</span>':'')+
-            (f.idioma?'<span class="meta-tag"><span class="label">Idioma</span>'+hl(f.idioma,buscaQuery)+'</span>':'')+
-            (legStr?'<span class="meta-tag"><span class="label">Leg</span>'+hl(legStr,buscaQuery)+'</span>':'')+
-            (dur&&dur!=='—'?'<span class="meta-tag"><span class="label">Dur</span>'+dur+'</span>':'')+
-            (gbRaw?'<span class="meta-tag"><span class="label">GB</span>'+gbRaw+'</span>':'')+
-            resTag+
+            lenteBadge(clean(f.lente))+
+            somBadge(clean(f.som))+
+            (hd?'<span class="cp cp-meta"><span class="cp-lbl">HD</span>'+hl(hd,buscaQuery)+'</span>':'')+
+            (f.idioma?'<span class="cp cp-meta"><span class="cp-lbl">Idioma</span>'+hl(f.idioma,buscaQuery)+'</span>':'')+
+            (legStr?'<span class="cp cp-meta"><span class="cp-lbl">Leg</span>'+hl(legStr,buscaQuery)+'</span>':'')+
+            (dur&&dur!=='—'?'<span class="cp cp-meta"><span class="cp-lbl">Dur</span>'+dur+'</span>':'')+
+            (gbRaw?'<span class="cp cp-meta"><span class="cp-lbl">GB</span>'+gbRaw+'</span>':'')+
+            (res?'<span class="cp cp-meta"><span class="cp-lbl">Res</span>'+res+'</span>':'')+
           '</div>'+
           (obs?'<div class="card-obs">'+hl(obs,buscaQuery)+'</div>':'')+
         '</div>'+
@@ -8982,7 +8994,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 04/05/2026 às 17:00';
+  var sysUpdate='última atualização do sistema · 04/05/2026 às 17:10';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -11544,7 +11556,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 04/05/2026 às 17:00</span></div>
+<div id="page-footer"><span>última atualização · 04/05/2026 às 17:10</span></div>
 
 </div>
 
