@@ -322,12 +322,11 @@ select:disabled{opacity:0.3;cursor:not-allowed;}
   border:1px solid var(--border);border-radius:var(--r);overflow:hidden;
 }
 .module-card{
-  background:var(--surface);padding:16px 14px;
+  background:var(--surface);padding:clamp(10px,1.4vw,18px) clamp(8px,1.1vw,16px);
   display:flex;flex-direction:column;gap:4px;
   cursor:pointer;transition:background 0.1s;
   border-right:1px solid var(--border);
   position:relative;
-  min-width:120px;
 }
 .module-card:last-child{border-right:none;}
 /* Hover: amber hairline accent (DESIGN.md Cards spec) */
@@ -339,10 +338,10 @@ select:disabled{opacity:0.3;cursor:not-allowed;}
 /* Module icons — hidden per "rejects decorative elements" */
 .module-icon{display:none;}
 .module-name{
-  font-family:var(--sans);font-size:9px;font-weight:700;
+  font-family:var(--sans);font-size:clamp(7.5px,0.85vw,10px);font-weight:700;
   letter-spacing:0.05em;text-transform:uppercase;color:var(--text);
 }
-.module-desc{font-family:var(--sans);font-size:10px;font-weight:400;color:var(--text-muted);line-height:1.4;}
+.module-desc{font-family:var(--sans);font-size:clamp(8px,0.9vw,11px);font-weight:400;color:var(--text-muted);line-height:1.4;}
 
 /* ── PROGRAMAÇÃO ── */
 .prog-landing{padding:24px 28px 60px;}
@@ -1074,8 +1073,8 @@ select:disabled{opacity:0.35;cursor:not-allowed;}
 [data-theme="light"] .module-icon{color:var(--accent);opacity:0.85;}
 [data-theme="gray"] .module-icon{color:#333333;opacity:0.7;}
 [data-theme="terminal"] .module-icon{color:var(--accent);opacity:0.85;}
-.module-name{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-dim);}
-.module-desc{font-family:var(--sans);font-size:10px;color:var(--text-muted);line-height:1.5;}
+.module-name{font-family:var(--mono);font-size:clamp(8px,0.95vw,11px);font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-dim);}
+.module-desc{font-family:var(--sans);font-size:clamp(8.5px,0.95vw,11px);color:var(--text-muted);line-height:1.5;}
 /* PROGRAMAÇÃO */
 .prog-landing{padding:28px 32px 60px;}
 .prog-event-block{margin-bottom:40px;}
@@ -3276,24 +3275,15 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
 
 /* landing modules stay readable at high zoom */
 #landing .landing-modules{
-  display:flex!important;
-  flex-wrap:nowrap!important;
-  justify-content:center!important;
-  width:auto!important;
-  max-width:calc(100% - 48px)!important;
-  border:1px solid var(--border)!important;
+  display:grid!important;
+  grid-auto-flow:column!important;
+  grid-auto-columns:minmax(0,1fr)!important;
+  grid-template-columns:none!important;
+  width:min(100%,1800px)!important;
+  max-width:1800px!important;
   overflow:visible!important;
 }
-#landing .landing-modules .module-card{
-  flex:0 0 auto;
-  width:clamp(120px,14vw,180px);
-  border-right:1px solid var(--border);
-  border-left:none;
-}
-#landing .landing-modules .module-card:first-child{border-left:none;}
-#landing .landing-modules .module-card:last-child{border-right:none;}
-/* last VISIBLE card loses its right border */
-#landing .landing-modules .module-card:not([style*="display:none"]):last-of-type{border-right:none;}
+#landing .landing-modules .module-card{min-width:0;}
 
 /* win98 readability polish */
 [data-theme="win98"]{
@@ -3637,15 +3627,11 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
       if (tabEl)  tabEl.style.display  = visible ? '' : 'none';
       if (cardEl) cardEl.style.display = visible ? '' : 'none';
     });
-    // Fix borders on visible cards
+    // Ajusta colunas do grid conforme cards visíveis
     var grid = document.querySelector('.landing-modules');
     if (grid) {
-      var visibleCards = Array.from(grid.querySelectorAll('.module-card')).filter(function(el){
-        return el.style.display !== 'none';
-      });
-      visibleCards.forEach(function(el, i){
-        el.style.borderRight = (i < visibleCards.length - 1) ? '1px solid var(--border)' : 'none';
-      });
+      var visible = grid.querySelectorAll('.module-card:not([style*="display: none"]):not([style*="display:none"])').length;
+      grid.style.gridTemplateColumns = 'repeat('+visible+',1fr)';
     }
     // aba Equipe: só para admin, independente de modulos
     var tabEquipe = document.getElementById('tabEquipe');
@@ -4197,6 +4183,11 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
       <div class="module-name">Dashboard</div>
       <div class="module-desc">Monitoramento de filmes por situação no sistema e dados gerais do evento</div>
     </div>
+    <div class="module-card disabled" id="modCardCatalogo" onclick="moduleCardClick('catalogo')">
+      <div class="module-icon"><i data-lucide="library"></i></div>
+      <div class="module-name">Catálogo</div>
+      <div class="module-desc">Fichas curatoriais dos filmes, sinopses, equipe e metadados de exibição</div>
+    </div>
     <div class="module-card disabled" id="modCardProgramacao" onclick="moduleCardClick('programacao')">
       <div class="module-icon"><i data-lucide="layout-list"></i></div>
       <div class="module-name">Programação</div>
@@ -4209,8 +4200,13 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
     </div>
     <div class="module-card disabled" id="modCardGrade" onclick="moduleCardClick('grade')">
       <div class="module-icon"><i data-lucide="layout-dashboard"></i></div>
-      <div class="module-name">Grades</div>
+      <div class="module-name">Grade</div>
       <div class="module-desc">Grade visual de programação por dia e sala</div>
+    </div>
+    <div class="module-card disabled" id="modCardSessoes" onclick="moduleCardClick('sessoes')">
+      <div class="module-icon"><i data-lucide="calendar-clock"></i></div>
+      <div class="module-name">Sessões</div>
+      <div class="module-desc">Lista de sessões por dia com filtro por sala</div>
     </div>
     <div class="module-card disabled" id="modCardVinhetas" onclick="moduleCardClick('vinhetas')">
       <div class="module-icon"><i data-lucide="film"></i></div>
@@ -4222,6 +4218,11 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
       <div class="module-name">Cinemas</div>
       <div class="module-desc">Fichas técnicas das salas, equipamentos e Borderô</div>
     </div>
+    <div class="module-card disabled" id="modCardKDM" onclick="moduleCardClick('kdm')">
+      <div class="module-icon"><i data-lucide="key"></i></div>
+      <div class="module-name">KDM</div>
+      <div class="module-desc">Validação de chaves e certificados dos servidores</div>
+    </div>
     <div class="module-card disabled" id="modCardReceptivo" onclick="moduleCardClick('receptivo')">
       <div class="module-icon"><i data-lucide="users"></i></div>
       <div class="module-name">Receptivo</div>
@@ -4231,22 +4232,6 @@ html[data-theme]:not([data-theme="win98"]){--mono:var(--sans);}
       <div class="module-icon"><i data-lucide="ticket"></i></div>
       <div class="module-name">Bilheteria</div>
       <div class="module-desc">Gestão de ingressos, bilheterias e controle de acesso</div>
-    </div>
-    <!-- cards acessíveis só pelo header (ocultos no landing por padrão) -->
-    <div class="module-card disabled" id="modCardCatalogo" onclick="moduleCardClick('catalogo')" style="display:none">
-      <div class="module-icon"><i data-lucide="library"></i></div>
-      <div class="module-name">Catálogo</div>
-      <div class="module-desc">Fichas curatoriais e metadados de exibição</div>
-    </div>
-    <div class="module-card disabled" id="modCardSessoes" onclick="moduleCardClick('sessoes')" style="display:none">
-      <div class="module-icon"><i data-lucide="calendar-clock"></i></div>
-      <div class="module-name">Sessões</div>
-      <div class="module-desc">Lista de sessões por dia com filtro por sala</div>
-    </div>
-    <div class="module-card disabled" id="modCardKDM" onclick="moduleCardClick('kdm')" style="display:none">
-      <div class="module-icon"><i data-lucide="key"></i></div>
-      <div class="module-name">KDM</div>
-      <div class="module-desc">Validação de chaves e certificados dos servidores</div>
     </div>
   </div>
 </div>
@@ -8923,7 +8908,7 @@ function renderDash(){
   html+=colBlock('controle','Controle de filmes',ctrlBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 04/05/2026 às 15:50';
+  var sysUpdate='última atualização do sistema · 04/05/2026 às 16:00';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -11485,7 +11470,7 @@ window.addEventListener('popstate',function(e){
 <script>
   if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-<div id="page-footer"><span>última atualização · 04/05/2026 às 15:50</span></div>
+<div id="page-footer"><span>última atualização · 04/05/2026 às 16:00</span></div>
 
 </div>
 
