@@ -13366,7 +13366,7 @@ function _bilhRelRenderTabela(){
       +'<td class="bilh-rel-td bilh-rel-td-data">'+(s.date?s.date.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'—')+'</td>'
       +'<td class="bilh-rel-td bilh-rel-td-hora">'+(s.time?s.time.str:'—')+'</td>'
       +'<td class="bilh-rel-td">'+esc(s.cinema||'—')+'</td>'
-      +'<td class="bilh-rel-td bilh-rel-td-nome">'+esc(s.nome)+(s.name?'<div class="bilh-rel-name">'+esc(s.name)+'</div>':'')+'</td>'
+      +'<td class="bilh-rel-td bilh-rel-td-nome">'+esc(stripEvPrefix(s.nome,s.evento))+(s.name?'<div class="bilh-rel-name">'+esc(s.name)+'</div>':'')+'</td>'
       +'<td class="bilh-rel-td bilh-rel-td-filme">'+esc(filmes)+'</td>'
       +(showPub?'<td class="bilh-rel-td bilh-rel-num">'+(hasSPub?pub.toLocaleString('pt-BR')+(bloq>0?' <span style="font-weight:400;font-size:0.85em;opacity:0.6;">('+bloq.toLocaleString('pt-BR')+' '+bloqLbl+')</span>':''):'—')+'</td>':'')
       +(showRenda?'<td class="bilh-rel-td bilh-rel-num">'+(hasSRenda?_bilhFmtRenda(renda):'—')+'</td>':'')
@@ -13460,7 +13460,7 @@ function _bilhBloqRenderReport(){
           tbody+='<tr class="bilh-rel-row">'
             +'<td class="bilh-rel-td bilh-rel-td-data">'+(s.date?s.date.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'—')+'</td>'
             +'<td class="bilh-rel-td bilh-rel-td-hora">'+(s.time?s.time.str:'—')+'</td>'
-            +'<td class="bilh-rel-td bilh-rel-td-nome">'+esc(s.nome)+(s.name?'<div class="bilh-rel-name">'+esc(s.name)+'</div>':'')+'</td>'
+            +'<td class="bilh-rel-td bilh-rel-td-nome">'+esc(stripEvPrefix(s.nome,s.evento))+(s.name?'<div class="bilh-rel-name">'+esc(s.name)+'</div>':'')+'</td>'
             +'<td class="bilh-rel-td bilh-rel-td-filme">'+esc(filmes)+'</td>'
             +'<td class="bilh-rel-td bilh-rel-num">'+n.toLocaleString('pt-BR')+'</td>'
             +'</tr>';
@@ -13549,7 +13549,7 @@ function _bilhBatchRenderTable(preserveChecked){
       +'<td class="bilh-rel-td bilh-batch-chk-col"><input type="checkbox" class="bilh-batch-row-chk" value="'+esc(s.nome)+'" '+chk+'></td>'
       +'<td class="bilh-rel-td bilh-rel-td-data">'+(s.date?s.date.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'—')+'</td>'
       +'<td class="bilh-rel-td bilh-rel-td-hora">'+(s.time?s.time.str:'—')+'</td>'
-      +'<td class="bilh-rel-td bilh-rel-td-nome">'+esc(s.nome)+(s.name?'<div class="bilh-rel-name">'+esc(s.name)+'</div>':'')+'</td>'
+      +'<td class="bilh-rel-td bilh-rel-td-nome">'+esc(stripEvPrefix(s.nome,s.evento))+(s.name?'<div class="bilh-rel-name">'+esc(s.name)+'</div>':'')+'</td>'
       +'<td class="bilh-rel-td">'+esc(s.cinema||'—')+'</td>'
       +'<td class="bilh-rel-td bilh-rel-num">'+nStr+'</td>'
       +'</tr>';
@@ -17416,7 +17416,7 @@ function renderBuscaResults(){
     var sessRow=sess.length?'<div class="card-sessions"><span class="sessions-label">Sessões</span>'+sess.map(function(nome){
       var so=sessoesMap[nome];
       var extra=so?[[so.dia,so.hora].filter(Boolean).join(' '),so.cinema].filter(Boolean).join(' · '):'';
-      return'<span class="session-tag" onclick="goToFicha(\''+nome.replace(/'/g,"\\'")+'\')" title="Abrir ficha: '+nome.replace(/"/g,'&quot;')+'">'+esc(nome)+(extra?' <span style="opacity:.6;">('+esc(extra)+')</span>':'')+'</span>';
+      return'<span class="session-tag" onclick="goToFicha(\''+nome.replace(/'/g,"\\'")+'\')" title="Abrir ficha: '+nome.replace(/"/g,'&quot;')+'">'+esc(stripEvPrefix(nome,so&&so.evento))+(extra?' <span style="opacity:.6;">('+esc(extra)+')</span>':'')+'</span>';
     }).join('')+'</div>':'';
     var progs=_filmProgramNames(f.codigo);
     var progRow=progs.length?'<div class="card-sessions"><span class="sessions-label">Programas</span>'+progs.map(function(p){return'<span class="session-tag" style="cursor:default;">'+esc(p)+'</span>';}).join('')+'</div>':'';
@@ -18522,7 +18522,7 @@ function renderDash(){
             '<span class="dash-sess-cinema">'+esc(s.cinema)+'</span>'+
             (dt?'<span class="dash-sess-cinema">'+esc(dt)+'</span>':'')+
             '<span class="kdm-status '+s.st.cls+'" style="font-size:8px;padding:1px 5px;margin-right:4px;">'+s.st.label+'</span>'+
-            esc(s.nome)+'</button>';
+            esc(stripEvPrefix(s.nome,f.evento))+'</button>';
         }).join('');
         kdmBody+='<div class="dash-film-card" style="border-left-color:'+(col?col.bg:'var(--border2)')+'">'+
           '<div class="dash-film-top">'+
@@ -18584,7 +18584,7 @@ function renderDash(){
   html+=colBlock('legendagem','Legendagem',legBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 30/08/2026 às 13:03';
+  var sysUpdate='última atualização do sistema · 06/09/2026 às 09:57';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -19165,12 +19165,15 @@ async function _pvAssignSession(colId,rowId,nome){
 }
 async function _pvCreateFromShowCell(colId,rowId,showId){
   var sh=_showById(showId);if(!sh){alert('Programa não encontrado.');return;}
-  var code=_catCriaSessUniqueId((sh.data&&sh.data.code)||'');
-  if(!code){alert('Este programa não tem código cadastrado — edite o programa e preencha o código antes de criar sessões a partir dele.');return;}
+  var ev=_pvState.ev;
+  var shortCode=_catCriaSessUniqueId((sh.data&&sh.data.code)||'',ev);
+  if(!shortCode){alert('Este programa não tem código cadastrado — edite o programa e preencha o código antes de criar sessões a partir dele.');return;}
+  // código real leva o prefixo do evento (não colide com o mesmo código curto em outro evento)
+  var code=ev+shortCode;
   var col=_pvColById(colId),row=_pvRowById(rowId);
   var colDate=(col&&col.date)||'',rowTime=(row&&row.time)||'';
   var data={
-    session_id:code,name:(sh.data&&sh.data.name)||'',event_name:_pvState.ev,
+    session_id:code,name:(sh.data&&sh.data.name)||'',event_name:ev,
     date:colDate,time:rowTime,slot_time:rowTime,
     venue_name:_pvState.venue,venue_custom:'',
     grid_col:colId,grid_row:rowId,
@@ -19477,7 +19480,7 @@ function _showsPanelRender(){
         +'<input id="showEdFilmSearch" type="text" class="prog-modal-input" placeholder="Buscar por código ou qualquer título (PT, original, inglês)…" oninput="_showEdFilmAutocomplete()" onblur="setTimeout(function(){var r=document.getElementById(\'showEdFilmResults\');if(r)r.style.display=\'none\';},200)">'
         +'<div id="showEdFilmResults" class="prog-autocomplete-results" style="position:static;box-shadow:none;"></div>'
       +'</div></div>'
-      +(linked.length?'<div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);">Sessões vinculadas ('+linked.length+'): '+linked.map(function(s){return esc(s.nome);}).join(' · ')+'<br>Ao salvar com filmes alterados, todas serão atualizadas (backup automático antes).</div>':'')
+      +(linked.length?'<div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);">Sessões vinculadas ('+linked.length+'): '+linked.map(function(s){return esc(stripEvPrefix(s.nome,s.evento));}).join(' · ')+'<br>Ao salvar com filmes alterados, todas serão atualizadas (backup automático antes).</div>':'')
       +'<div id="showEdErr" style="font-family:var(--mono);font-size:10px;color:var(--warn);display:none;"></div>'
       +'</div>'
       +'<div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;">'
@@ -19933,7 +19936,7 @@ function openProgBatchModal(){
   listHtml+='<div style="max-height:90px;overflow-y:auto;border:1px solid var(--border);padding:5px 10px;background:var(--surface2);display:flex;flex-direction:column;gap:2px;margin-bottom:2px;">';
   selArr.forEach(function(nome){
     var s=sessoesMap[nome];
-    listHtml+='<div style="font-family:var(--mono);font-size:9px;color:var(--text);">'+esc(nome)+(s&&s.cinema?'<span style="color:var(--text-dim);"> · '+esc(s.cinema)+'</span>':'')+'</div>';
+    listHtml+='<div style="font-family:var(--mono);font-size:9px;color:var(--text);">'+esc(stripEvPrefix(nome,s&&s.evento))+(s&&s.cinema?'<span style="color:var(--text-dim);"> · '+esc(s.cinema)+'</span>':'')+'</div>';
   });
   listHtml+='</div>';
   var _batchCurProg=_progView.programId?_progData.programs.find(function(p){return p.id===_progView.programId;}):null;
@@ -21288,7 +21291,7 @@ async function openCatCriaSessao(filmCode, opts){
   var label=isFilm?filmDisplayTitle(filmCode):(meta.title_pt||meta.title||copia.titulo||filmCode);
   document.getElementById('catCriaSessaoTitle').textContent=isFilm?('Criar sessão · '+label):(opts.titleLabel?('Criar sessão · '+opts.titleLabel):'Criar sessão');
   // ID pré-preenchido a partir do nome do filme (modo filme) ou do programa
-  document.getElementById('catCriaSessaoId').value=isFilm?_catCriaSessDefaultId(filmCode):(opts.idBase?_catCriaSessUniqueId(opts.idBase):'');
+  document.getElementById('catCriaSessaoId').value=isFilm?_catCriaSessDefaultId(filmCode):(opts.idBase?_catCriaSessUniqueId(opts.idBase,ev):'');
   // Seletor de evento — só no modo genérico (no modo filme o evento vem do filme)
   var evRow=document.getElementById('catCriaSessaoEventoRow');
   var evSel=document.getElementById('catCriaSessaoEventoSel');
@@ -21506,18 +21509,20 @@ function _catCriaSessExistingIds(){
   if(window._usedIds&&_usedIds.sessoes)Object.keys(_usedIds.sessoes).forEach(function(k){m[k.toLowerCase()]=1;});
   return m;
 }
-function _catCriaSessUniqueId(base){
+function _catCriaSessUniqueId(base,ev){
   base=(base||'').replace(/\s+/g,'');
   if(!base)return'';
   var existing=_catCriaSessExistingIds();
-  if(!existing[base.toLowerCase()])return base;
-  var n=2;while(existing[(base+'.'+n).toLowerCase()])n++;
+  var pfx=ev||'';
+  if(!existing[(pfx+base).toLowerCase()])return base;
+  var n=2;while(existing[(pfx+base+'.'+n).toLowerCase()])n++;
   return base+'.'+n;
 }
 function _catCriaSessDefaultId(filmCode){
   var meta=(catalogoFilmesMap&&catalogoFilmesMap[filmCode])||{};
   var copia=filmesMap[filmCode]||{};
-  return _catCriaSessUniqueId((meta.title_pt||meta.title||copia.titulo||filmCode))||filmCode;
+  var ev=copia.evento||meta.evento||'';
+  return _catCriaSessUniqueId((meta.title_pt||meta.title||copia.titulo||filmCode),ev)||filmCode;
 }
 async function saveCatCriaSessao(){
   var ev=_catCriaSessEvento;
@@ -21531,8 +21536,12 @@ async function saveCatCriaSessao(){
   if(!time){_catCriaSessErr('Hora obrigatória.');return;}
   if(!sala){_catCriaSessErr('Sala obrigatória.');return;}
   if(_catCriaSessFilmCode&&!_catCriaSessFilms.length){_catCriaSessErr('Inclua pelo menos um filme.');return;}
+  // código real (documento/session_id) leva o prefixo do evento, pra não colidir
+  // com o mesmo código curto usado em outro evento — na tela continua exibindo
+  // só o código curto (stripEvPrefix cuida disso nos pontos de exibição)
+  var fullId=ev+id;
   var existing=_catCriaSessExistingIds();
-  if(existing[id.toLowerCase()]){_catCriaSessErr('Código "'+id+'" já está em uso.');return;}
+  if(existing[fullId.toLowerCase()]){_catCriaSessErr('Código "'+id+'" já está em uso neste evento.');return;}
   // Criação a partir de programa: alterar filmes ou mostra/submostra cria desvinculada — sempre com aviso
   if(_catCriaSessShowId){
     var _shC=_showById(_catCriaSessShowId);
@@ -21557,7 +21566,7 @@ async function saveCatCriaSessao(){
   var bloqVal=(document.getElementById('catCriaSessaoBloq').value||'').trim();
   var reserved=bloqVal?(bloqMode==='pct'?bloqVal+'%':bloqVal):'';
   var data={
-    session_id:id,
+    session_id:fullId,
     name:name||'',
     event_name:ev,
     date:date,
@@ -21579,9 +21588,9 @@ async function saveCatCriaSessao(){
   };
   var btn=document.getElementById('catCriaSessaoSave');btn.disabled=true;btn.textContent='Salvando…';
   try{
-    await window._olgaSessoes.save(id,data);
-    if(window._olgaRegistry)await window._olgaRegistry.register('sessoes',id);
-    window._logFirestoreEdit&&window._logFirestoreEdit('individual',id,data,'catalogo','sessoes');
+    await window._olgaSessoes.save(fullId,data);
+    if(window._olgaRegistry)await window._olgaRegistry.register('sessoes',fullId);
+    window._logFirestoreEdit&&window._logFirestoreEdit('individual',fullId,data,'catalogo','sessoes');
     await window._olgaSessoes.reload();
     closeCatCriaSessao();
     if(_catCriaSessOnSaved)_catCriaSessOnSaved();
@@ -28085,7 +28094,7 @@ function _sxcPrint(){
     }
   });
 </script>
-<div id="page-footer"><span>última atualização · 30/08/2026 às 13:03</span></div>
+<div id="page-footer"><span>última atualização · 06/09/2026 às 09:57</span></div>
 
 </div>
 
@@ -28788,7 +28797,7 @@ function _mobRenderProjecao(params,noScroll){
       '</div>'+
       '<div class="mob-sessao-body">'+
         filmes.map(function(t){return'<div class="mob-sessao-filme">'+_mobEsc(t)+'</div>';}).join('')+
-        '<div class="mob-sessao-meta">'+_mobEsc(s.nome)+(s.convidados?' · convidados':'')+(s.apresentacao&&s.apresentacao.toLowerCase().indexOf('sim')!==-1?' · apresentação':'')+'</div>'+
+        '<div class="mob-sessao-meta">'+_mobEsc(stripEvPrefix(s.nome,s.evento))+(s.convidados?' · convidados':'')+(s.apresentacao&&s.apresentacao.toLowerCase().indexOf('sim')!==-1?' · apresentação':'')+'</div>'+
       '</div>'+
     '</div>';
   }).join('');
@@ -28839,7 +28848,7 @@ function _mobRenderSessaoFicha(params){
 
   var html='<div class="mob-ficha-block">';
   html+='<div style="margin-bottom:12px;">'+evPill+'</div>';
-  html+='<div class="mob-ficha-titulo">'+_mobEsc(params.nome)+'</div>';
+  html+='<div class="mob-ficha-titulo">'+_mobEsc(stripEvPrefix(params.nome,s.evento))+'</div>';
   html+='<div class="mob-ficha-subtitulo">'+_mobEsc(s.cinema)+' · '+_mobEsc(s.dia||'')+(s.hora?' · '+_mobEsc(s.hora):'')+'</div>';
 
   var _pdfNomeSafe=_mobJsq(params.nome);
@@ -29563,7 +29572,7 @@ function _mobRenderBilheteria(params,back){
       html+='<div style="padding:10px 16px;border-bottom:1px solid var(--border);font-family:var(--mono);">'+
         '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">'+
           (s.evento?'<span style="font-size:8px;padding:1px 5px;border-radius:2px;background:'+(evCol?evCol.bg:'var(--surface2)')+';color:'+(evCol?evCol.text:'var(--text-dim)')+'">'+_mobEsc(s.evento)+'</span>':'')+
-          '<span style="font-size:10px;font-weight:600;color:var(--text-dim);">'+_mobEsc(s.nome)+'</span>'+
+          '<span style="font-size:10px;font-weight:600;color:var(--text-dim);">'+_mobEsc(stripEvPrefix(s.nome,s.evento))+'</span>'+
           '<span style="font-size:9px;color:var(--text-muted);margin-left:auto;">'+_mobEsc(s.hora||'')+'</span>'+
         '</div>'+
         '<div style="font-size:9px;color:var(--text-muted);">'+_mobEsc(s.cinema||'')+'</div>'+
@@ -29886,7 +29895,7 @@ function _mobRenderGrade(params,noScroll){
       var temErro=_mobSessaoTemErro(s);
       return'<div onclick="_mobGradeAbrirProgSessao(\''+_mobEsc(s.nome)+'\')" style="display:flex;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;">'+
         '<span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);flex-shrink:0;min-width:40px;">'+(s.hora||'?')+'</span>'+
-        '<span style="font-family:var(--sans);font-size:12px;color:var(--text-dim);flex:1;">'+_mobEsc(filmes||s.nome)+'</span>'+
+        '<span style="font-family:var(--sans);font-size:12px;color:var(--text-dim);flex:1;">'+_mobEsc(filmes||stripEvPrefix(s.nome,s.evento))+'</span>'+
         (temErro?'<span style="font-family:var(--mono);font-size:8px;color:var(--warn);">⚠</span>':'')+
         '<svg style="width:12px;height:12px;stroke:var(--text-muted);stroke-width:2;fill:none;flex-shrink:0;" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>'+
       '</div>';
@@ -30079,7 +30088,7 @@ function _mobRenderProgSessao(params,noScroll){
   var sub=s.subprogram_id&&_progData.subprograms.find(function(x){return x.id===s.subprogram_id;});
   var html='<div class="mob-ficha-block">';
   html+='<div style="margin-bottom:8px;">'+evPill+(p?'<span style="font-family:var(--mono);font-size:9px;color:var(--text-muted);">'+_mobEsc(p.data.name||p.id)+'</span>':'')+(sub?'<span style="font-family:var(--mono);font-size:9px;color:var(--text-muted);"> · '+_mobEsc(sub.data.name||sub.id)+'</span>':'')+'</div>';
-  html+='<div class="mob-ficha-titulo">'+_mobEsc(params.nome)+'</div>';
+  html+='<div class="mob-ficha-titulo">'+_mobEsc(stripEvPrefix(params.nome,s.evento))+'</div>';
   html+='<div class="mob-ficha-subtitulo">'+_mobEsc(s.cinema)+' · '+_mobEsc(s.dia||'')+(s.hora?' · '+_mobEsc(s.hora):'')+'</div>';
   if(s.session_description)html+='<div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:10px;line-height:1.5;">'+_mobEsc(s.session_description)+'</div>';
   var extraParts=[];
