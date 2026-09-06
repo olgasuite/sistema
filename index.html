@@ -18584,7 +18584,7 @@ function renderDash(){
   html+=colBlock('legendagem','Legendagem',legBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 06/09/2026 às 10:16';
+  var sysUpdate='última atualização do sistema · 06/09/2026 às 10:26';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -20175,7 +20175,14 @@ function _progRenderProgram(programId){
   if(prog.data.tipo==='paralela')bHtml+='<span class="prog-flag-badge prog-flag-paralela">Atividade paralela</span>';
   if(prog.data.competitive)bHtml+='<span class="prog-flag-badge prog-flag-comp">Competitivo</span>';
   if(prog.data.popular_vote)bHtml+='<span class="prog-flag-badge prog-flag-pop">Voto popular</span>';
-  if(canEdit&&!vinOnly){bHtml+='<div class="prog-header-actions"><button class="prog-btn-sm prog-btn-ghost" onclick="openProgSubprogramModal(null,\''+safePid+'\')">+ submostra</button><button class="prog-btn-sm prog-btn-ghost" onclick="openProgSessaoModal(null,\''+safePid+'\',\'\')">+ sessão</button><button class="prog-btn-sm prog-btn-ghost" onclick="openShowsPanelEv(\''+esc(ev)+'\')">⧉ programas</button><button class="prog-btn-sm prog-btn-ghost" onclick="openProgramadorVisual(\''+esc(ev)+'\')">▦ programador visual</button><button class="prog-btn-sm prog-btn-ghost" onclick="openProgProgramModal(\''+safePid+'\',\''+esc(ev)+'\')">✎ editar mostra</button><button class="prog-btn-sm '+(_progBatchMode?'':'prog-btn-ghost')+'" onclick="_toggleProgBatchMode()">'+(_progBatchMode?'✕ cancelar':'✎ editar sessões')+'</button></div>';}
+  if(canEdit&&!vinOnly){
+    var _bVizTop=_progBatchMode?_progBatchVisibleNomes():[];
+    var _bAllSelTop=_bVizTop.length>0&&_bVizTop.every(function(n){return _progBatchSelected.has(n);});
+    bHtml+='<div class="prog-header-actions"><button class="prog-btn-sm prog-btn-ghost" onclick="openProgSubprogramModal(null,\''+safePid+'\')">+ submostra</button><button class="prog-btn-sm prog-btn-ghost" onclick="openProgSessaoModal(null,\''+safePid+'\',\'\')">+ sessão</button><button class="prog-btn-sm prog-btn-ghost" onclick="openShowsPanelEv(\''+esc(ev)+'\')">⧉ programas</button><button class="prog-btn-sm prog-btn-ghost" onclick="openProgramadorVisual(\''+esc(ev)+'\')">▦ programador visual</button><button class="prog-btn-sm prog-btn-ghost" onclick="openProgProgramModal(\''+safePid+'\',\''+esc(ev)+'\')">✎ editar mostra</button><button class="prog-btn-sm '+(_progBatchMode?'':'prog-btn-ghost')+'" onclick="_toggleProgBatchMode()">'+(_progBatchMode?'✕ cancelar':'✎ editar sessões')+'</button>'
+      +(_progBatchMode&&_bVizTop.length&&!_bAllSelTop?'<button class="prog-btn-sm prog-btn-ghost" onclick="_progBatchSelectAllVisible()">selecionar todas</button>':'')
+      +(_progBatchMode&&_progBatchSelected.size>0?'<button class="prog-btn-sm prog-btn-ghost" onclick="_progBatchClearAll()">desmarcar todas</button>':'')
+      +'</div>';
+  }
   var html='<div class="prog-module-wrap">';
   html+='<div class="prog-prog-title">'+esc(prog.data.name||programId)+'</div>';
   if(prog.data.program_description)html+='<div class="prog-prog-desc">'+esc(prog.data.program_description)+'</div>';
@@ -28094,7 +28101,7 @@ function _sxcPrint(){
     }
   });
 </script>
-<div id="page-footer"><span>última atualização · 06/09/2026 às 10:16</span></div>
+<div id="page-footer"><span>última atualização · 06/09/2026 às 10:26</span></div>
 
 </div>
 
