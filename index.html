@@ -10103,10 +10103,10 @@ function openComplexoCreate(){
   body.innerHTML=
     _complexoFields(all,'','','','','','','')+
     '<div style="margin-top:4px;padding:10px 0 4px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;">'+
-      '<input type="checkbox" id="cemAddSala" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer;" onchange="document.getElementById(&quot;cemSalaBlock&quot;).style.display=this.checked?&quot;contents&quot;:&quot;none&quot;">'+
-      '<label for="cemAddSala" style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">Cadastrar uma sala agora</label>'+
+      '<input type="checkbox" id="cemAddSala" checked style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer;" onchange="document.getElementById(&quot;cemSalaBlock&quot;).style.display=this.checked?&quot;contents&quot;:&quot;none&quot;">'+
+      '<label for="cemAddSala" style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">Cadastrar uma sala agora (obrigatório — complexo não existe sem sala)</label>'+
     '</div>'+
-    '<div id="cemSalaBlock" style="display:none;contents">'+
+    '<div id="cemSalaBlock" style="display:contents;">'+
       _salaFields('','',true)+
       _telaFields(null)+
       _equipFields(null)+
@@ -10228,12 +10228,14 @@ async function saveCinemaEdit(){
           var eventoSala3=_cemSalaEventos();
           var sFields={venue_name:salaNome,event_name:eventoSala3,complex_name:complexo,state:estado,address:endereco,complex_phone:g('cemTelefone'),kdm_email:g('cemEmailKdm'),mgmt_email:g('cemEmailGer'),server_model:g('cemServidor'),server_serial:g('cemSerial'),projector_model:g('cemProjetor'),sound_system:g('cemSom'),screen_aspect_ratio:g('cemProporcao'),seat_count:g('cemAssentos'),cineassist_system:g('cemCineassista'),notes:g('cemObs'),screen_height:g('cemTelaH'),screen_width:g('cemTelaW'),utc_offset:g('cemUtcOffset')};
           var newId=await window._olgaCinemas.createSala(sFields);
-          cinemasArr.push({docId:newId,sala:salaNome,complexo:complexo,estado:estado,endereco:endereco,telefone:g('cemTelefone'),email_kdm:g('cemEmailKdm'),email_ger:g('cemEmailGer'),evento:eventoSala3,servidor:g('cemServidor'),serial:g('cemSerial'),projetor:g('cemProjetor'),som:g('cemSom'),proporcao:g('cemProporcao'),assentos:g('cemAssentos'),tela_h:telaH2,tela_w:telaW2,cineassista:g('cemCineassista'),obs:'',utc_offset:g('cemUtcOffset'),cert_serial_hex:'',cert_serial_dec:'',cert_issuer:'',cert_subject:'',cert_thumbprint:'',cert_filename:'',cert_imported_at:null});
+          cinemasArr.push({docId:newId,sala:salaNome,complexo:complexo,estado:estado,endereco:endereco,telefone:g('cemTelefone'),email_kdm:g('cemEmailKdm'),email_ger:g('cemEmailGer'),evento:eventoSala3,servidor:g('cemServidor'),serial:g('cemSerial'),projetor:g('cemProjetor'),som:g('cemSom'),proporcao:g('cemProporcao'),assentos:g('cemAssentos'),tela_h:g('cemTelaH'),tela_w:g('cemTelaW'),cineassista:g('cemCineassista'),obs:'',utc_offset:g('cemUtcOffset'),cert_serial_hex:'',cert_serial_dec:'',cert_issuer:'',cert_subject:'',cert_thumbprint:'',cert_filename:'',cert_imported_at:null});
           status.className='cem-status ok';status.textContent='Complexo e sala criados ✓';
           setTimeout(function(){closeCinemaEdit();renderCinemas();openCinemaDetail(salaNome);},700);
         }else{
-          status.className='cem-status ok';status.textContent='Complexo criado ✓ (sem salas ainda)';
-          setTimeout(function(){closeCinemaEdit();renderCinemas();},700);
+          // não existe complexo sem sala neste modelo de dados (cada complexo só existe
+          // através das salas que apontam pra ele) — sem marcar o checkbox não há o que salvar
+          status.className='cem-status err';status.textContent='É necessário cadastrar ao menos uma sala — marque "Cadastrar uma sala agora" e preencha o nome. Não é possível salvar um complexo sem sala.';
+          btn.disabled=false;
         }
       }else{
         status.className='cem-status ok';status.textContent='Complexo atualizado ✓';
@@ -18584,7 +18586,7 @@ function renderDash(){
   html+=colBlock('legendagem','Legendagem',legBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 06/09/2026 às 09:57';
+  var sysUpdate='última atualização do sistema · 06/09/2026 às 10:03';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -28094,7 +28096,7 @@ function _sxcPrint(){
     }
   });
 </script>
-<div id="page-footer"><span>última atualização · 06/09/2026 às 09:57</span></div>
+<div id="page-footer"><span>última atualização · 06/09/2026 às 10:03</span></div>
 
 </div>
 
