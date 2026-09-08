@@ -18589,7 +18589,7 @@ function renderDash(){
   html+=colBlock('legendagem','Legendagem',legBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 08/09/2026 às 17:03';
+  var sysUpdate='última atualização do sistema · 08/09/2026 às 17:05';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -25080,9 +25080,12 @@ function _aeHdRemove(i){_aeHdTags.splice(i,1);_aeHdRender();setTimeout(function(
 async function openAcervoEdit(idx){
   var f=filteredFilmes[idx];if(!f)return;
   _acervoEditCode=f.codigo;
-  var statusVals=[...new Set(filmesArr.map(function(x){return x.status;}).filter(Boolean))].sort();
-  var lentes=[...new Set(filmesArr.map(function(x){return x.lente;}).filter(Boolean))].sort();
-  var sons=[...new Set(filmesArr.map(function(x){return x.som;}).filter(Boolean))].sort();
+  // sugestões só dos eventos ativos (pills selecionados na Busca), não de todos os
+  // eventos que o usuário tem acesso — evita sugerir preenchimento de outro evento
+  var _aeFilmes=filmesArr.filter(function(x){return!x.evento||activeEventsBusca.has(x.evento);});
+  var statusVals=[...new Set(_aeFilmes.map(function(x){return x.status;}).filter(Boolean))].sort();
+  var lentes=[...new Set(_aeFilmes.map(function(x){return x.lente;}).filter(Boolean))].sort();
+  var sons=[...new Set(_aeFilmes.map(function(x){return x.som;}).filter(Boolean))].sort();
   function listOpts(arr){return arr.map(function(v){return'<option value="'+esc(v)+'">';}).join('');}
   function aeRow(label,inputHtml){return'<div class="cat-field" style="margin-bottom:8px;"><div class="cat-label">'+label+'</div><div class="cat-value">'+inputHtml+'</div></div>';}
   function aeInp(id,val,type){return'<input class="cat-input" id="ae_'+id+'" type="'+(type||'text')+'" value="'+esc(val||'')+'">';}
@@ -28106,7 +28109,7 @@ function _sxcPrint(){
     }
   });
 </script>
-<div id="page-footer"><span>última atualização · 08/09/2026 às 17:03</span></div>
+<div id="page-footer"><span>última atualização · 08/09/2026 às 17:05</span></div>
 
 </div>
 
