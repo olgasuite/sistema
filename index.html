@@ -16583,11 +16583,11 @@ function applyBuscaFilters(f){
 }
 
 function buildBuscaFilterPanel(){
-  // reset filter state
-  var normKeys=['evento','hd','idioma','legenda','vf','lente','som','kdm','status','col_k','resolucao','fps','exhibition_format','col_n','responsavel'];
-  normKeys.forEach(function(k){buscaFilters[k].clear();buscaFilters[k+'_ex'].clear();});
-  ['titulo_bin','obs_bin','cpl_bin','cplOV_bin','dcp_link_bin','legenda_bin'].forEach(function(k){buscaFilters[k]=null;});
-
+  // reconstrói os pills (opções disponíveis podem mudar quando os dados mudam),
+  // mas preserva a seleção atual do usuário — quem quiser limpar de verdade
+  // chama clearAllBuscaFilters() antes. Essa função é chamada também em
+  // background (snapshot do catálogo, import em lote) então NUNCA deve zerar
+  // buscaFilters como efeito colateral.
   var fieldMap=[
     {key:'evento',label:'Evento',field:'evento'},
     {key:'hd',label:'Storage / HD',getVals:function(f){return(f.hd||'').split(/[;]+/).map(function(x){return x.trim();}).filter(Boolean);}},
@@ -16646,6 +16646,8 @@ function buildBuscaFilterPanel(){
 
     sorted.forEach(function(v){
       var p=document.createElement('button');p.className='fpill';p.textContent=v;
+      if(buscaFilters[fd.key].has(v))p.classList.add('active');
+      else if(buscaFilters[fd.key+'_ex'].has(v))p.classList.add('excluded');
       p.addEventListener('click',function(){
         if(buscaFilters[fd.key].has(v)){
           // included → excluded
@@ -16664,6 +16666,7 @@ function buildBuscaFilterPanel(){
       });
       wrap.appendChild(p);
     });
+    refreshLblState();
     row.appendChild(lbl);row.appendChild(wrap);ng.appendChild(row);
   });
 
@@ -16690,6 +16693,7 @@ function buildBuscaFilterPanel(){
 
     function mkBpill(label,state,cls){
       var p=document.createElement('button');p.className='bpill';p.textContent=label;
+      if(buscaFilters[fd.key]===state)p.classList.add(cls);
       p.addEventListener('click',function(){
         if(buscaFilters[fd.key]===state){
           buscaFilters[fd.key]=null;p.classList.remove(cls);
@@ -16704,6 +16708,7 @@ function buildBuscaFilterPanel(){
     }
     wrap.appendChild(mkBpill('✓ preenchido','sim','active-yes'));
     wrap.appendChild(mkBpill('— vazio','nao','active-no'));
+    lbl.classList.toggle('has-active',buscaFilters[fd.key]!==null);
     row.appendChild(lbl);row.appendChild(wrap);bg.appendChild(row);
   });
   updateFilterBadge();
@@ -18584,7 +18589,7 @@ function renderDash(){
   html+=colBlock('legendagem','Legendagem',legBody);
 
   // footer
-  var sysUpdate='última atualização do sistema · 06/09/2026 às 10:26';
+  var sysUpdate='última atualização do sistema · 08/09/2026 às 17:03';
   var dataUpdate='—';
   if(window._olgaDataLabel&&window._olgaDataLabel.indexOf('Firestore')===0){
     dataUpdate=window._olgaDataLabel;
@@ -28101,7 +28106,7 @@ function _sxcPrint(){
     }
   });
 </script>
-<div id="page-footer"><span>última atualização · 06/09/2026 às 10:26</span></div>
+<div id="page-footer"><span>última atualização · 08/09/2026 às 17:03</span></div>
 
 </div>
 
